@@ -21,8 +21,8 @@ Physics1D.Beta = Analyse_Var.Results.Beta; % Storing the 'Beta' input
 
 %% Initializing functions
 Physics1D.Potential_function = cell(Method.Ncomponents);
-Physics1D.Disperion_function = cell(Method.Ncomponents);
-Physics1D.TimeDisperion_function = cell(Method.Ncomponents);
+Physics1D.Dispersion_function = cell(Method.Ncomponents);
+Physics1D.TimeDispersion_function = cell(Method.Ncomponents);
 Physics1D.TimePotential_function = cell(Method.Ncomponents);
 Physics1D.StochasticPotential_function = cell(Method.Ncomponents);
 Physics1D.IntegratedTimePotential_function = cell(Method.Ncomponents);

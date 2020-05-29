@@ -24,22 +24,22 @@ Function_Name = Analyse_Var.Results.Function_Name; %Storing the 'Function_Name' 
 
 if (iscell(Function) == 0)
 % FOR each component
-for n = 1:Method.Ncomponents
-    %% Printing the figure of the square of the modulus of wave function
-    Figure.label = n; % Number of the figure
-    Figure.title = strcat(Function_Name,' of component ', 32, num2str(n)); % Storing title of the figure
-    draw_function_2d(Function(Phi{n},Geometry2D.X,Geometry2D.Y),Geometry2D,Figure); % Drawing the square of the modulus of the wave function
-    %% Printing the figure of the angle of wave function
-    Figure.label = n+Method.Ncomponents; % Number of the figure
-    Figure.title = strcat('angle(\phi',32,'(x,y)) of component ', 32 ,num2str(n)); % Storing title of the figure
-    draw_function_2d(angle(Phi{n}),Geometry2D,Figure); % Drawing the angle of the wave function
-end
+    for n = 1:Method.Ncomponents
+        %% Printing the figure of the square of the modulus of wave function
+        Figure.label = n; % Number of the figure
+        Figure.title = strcat(Function_Name,' of component ', 32, num2str(n)); % Storing title of the figure
+        draw_function_2d(Function(Phi{n},Geometry2D.X,Geometry2D.Y),Geometry2D,Figure); % Drawing the square of the modulus of the wave function
+        %% Printing the figure of the angle of wave function
+        Figure.label = n+Method.Ncomponents; % Number of the figure
+        Figure.title = strcat('angle(\phi',32,'(x,y)) of component ', 32 ,num2str(n)); % Storing title of the figure
+        draw_function_2d(angle(Phi{n}),Geometry2D,Figure); % Drawing the angle of the wave function
+    end
 elseif (iscell(Function) == 1)
 % FOR each component
-for n = 1:length(Function)
-    %% Printing the figure of the square of the modulus of wave function
-    Figure.label = n; % Number of the figure
-    Figure.title = strcat(Function_Name{n}); % Storing title of the figure
-    draw_function_2d(Function{n}(Phi,Geometry2D.X,Geometry2D.Y),Geometry2D,Figure); % Drawing the square of the modulus of the wave function
-end
+    for n = 1:length(Function)
+        %% Printing the figure of the square of the modulus of wave function
+        Figure.label = n; % Number of the figure
+        Figure.title = strcat(Function_Name{n}); % Storing title of the figure
+        draw_function_2d(Function{n}(Phi,Geometry2D.X,Geometry2D.Y),Geometry2D,Figure); % Drawing the square of the modulus of the wave function
+    end
 end

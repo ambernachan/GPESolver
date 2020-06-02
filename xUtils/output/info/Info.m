@@ -9,21 +9,23 @@ classdef Info  < handle
         timerCreationValue
 
         startTime
-        startCpuTime        
+        endTime
+        startCpuTime
+        endCpuTime
         timerStartValue
         
         outputdir
         subdir
         fulldir
         filenameInfo
-        path
+        pathInfo
         fileID
     end
     methods
         % 
         function obj = Info(name, dimensions)
-            if nargin ~= 1
-                error('Invalid number of arguments given %s, expected 1', nargin);
+            if nargin ~= 2
+                error('Invalid number of arguments given %d, expected 2', nargin);
             end
             if ~(isstring(name) || ischar(name))
                 error('Name should be a string or character array');
@@ -32,7 +34,7 @@ classdef Info  < handle
             obj.dimensions = dimensions;
 
             obj.creationTime = now;
-            obj.creationTimeString = string(datestr(obj.creationTime, 'yyyy-mm-dd_HH-MM-SS'));
+            obj.creationTimeString = [datestr(obj.creationTime, 'yyyy-mm-dd') '@' datestr(obj.creationTime, 'HHMMSS') ];
             obj.creationCpuTime = cputime;
             obj.timerCreationValue = tic;
 
@@ -40,7 +42,7 @@ classdef Info  < handle
             obj.outputdir = 'xOutputs';
             obj.subdir = name; % Name of simulation (folder)
             obj.fulldir = string(pwd) + '/' + obj.outputdir + '/' + obj.subdir;
-            obj.filenameInfo = obj.creationTimeString + string('info_') + '.txt';
+            obj.filenameInfo = obj.creationTimeString + string('_info') + '.txt';
             obj.pathInfo = obj.fulldir + '/' + obj.filenameInfo;
 
             % Create directory
@@ -57,11 +59,10 @@ classdef Info  < handle
 
             % Initially print the start time
             fprintf(obj.fileID, 'Start: %s\n', datestr(obj.creationTime, 'dd mmm yy @ HH:MM:SS')); 
-            obj.start()
+            obj.start_info()
         end
 
-        $
-        function start(obj)
+        function start_info(obj)
             obj.startTime = now;
             obj.startCpuTime = cputime;
             obj.timerStartValue = tic;
@@ -69,11 +70,11 @@ classdef Info  < handle
 
         function add_simulation_info(obj, Geometry)
             fprintf(obj.fileID, 'Nx:\t%d\n', Geometry.Nx);
-            if dimensions > 1
-                fprintf(obj.fileID, 'Ny:\t%d\n', Geometry.Ny);
+            if obj.dimensions > 1
+               fprintf(obj.fileID, 'Ny:\t%d\n', Geometry.Ny);
             end
-            if dimensions > 2
-                fprintf(obj.fileID, 'Nz:\t%d\n', Geometry.Nz);
+            if obj.dimensions > 2
+               fprintf(obj.fileID, 'Nz:\t%d\n', Geometry.Nz);
             end
             
         end
@@ -111,14 +112,14 @@ classdef Info  < handle
         % Save a named workspace snapshot to disk
         function save_workspace(obj, name)
             % save workspace to workspace folder with name = 'groundstate' or 'dynamics'
-            workspacePath = obj.fulldir + '/' + obj.creationTimeString + string('workspace_') + '_' + name;
-            save(workspacePath);
+            workspacePath = obj.fulldir + '/' + obj.creationTimeString + string('_workspace') + '_' + name;
+            save(char(workspacePath));
         end
 
         % Save a specified figure (num) to the outputs directory of this simulation
         function save_figure(obj, fignum, name)
-            figurePath = obj.fulldir + '/' + obj.creationTimeString + string('fig_') + '_' + name;
-            savefig(fignum, figurePath)
+            figurePath = obj.fulldir + '/' + obj.creationTimeString + string('_fig') + '_' + name;
+            savefig(fignum, char(figurePath))
         end
     end
 end

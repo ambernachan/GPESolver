@@ -17,7 +17,7 @@ Analyse_Var.addOptional('plotall', true, @(x)islogical(x));
 % Print all the ouput or simply generate it
 Analyse_Var.addOptional('printall', true, @(x)islogical(x));
 % Fitting option; show the source/input image/data or not
-Analyse_Var.addOptional('showsource', true, @(x)islogical(x));
+Analyse_Var.addOptional('showsource', false, @(x)islogical(x));
 % Fitting in 3d (more accurate) or not (less computation)
 Analyse_Var.addOptional('dim3', false, @(x)islogical(x));
 

@@ -6,7 +6,7 @@ ybox = Geometry2D.Y(end);
 %% Definition of the input options struct, with default values as given
 
 % default struct: s = struct('fitmethod', 'both', 'centered', true, 'plotall', true,
-% 'printall', true, 'showsource', true, 'dim3', false);
+% 'printall', true, 'showsource', false, 'dim3', false);
 
 if nargin == 2
     s = OptionFactory();
@@ -17,7 +17,6 @@ elseif nargin > 3
 else
     error('Something went wrong, check your input arguments')
 end
-
 
 
 %% Find array sizes
@@ -36,9 +35,9 @@ end
 xDATA = phi(rowindex, :);
 yDATA = phi(:, colindex);
 
-xa = linspace(-ybox,ybox,m);
+xa = linspace(-ybox, ybox, m);
 ya = xDATA;
-xb = linspace(-xbox,xbox,n);
+xb = linspace(-xbox, xbox, n);
 yb = yDATA;
 
 %% Derived quantities
@@ -51,19 +50,15 @@ if strcmp(s.fitmethod, 'both') || strcmp(s.fitmethod, 'manual')
         UexpectX = max(xa)/2;
         UexpectY = max(xb)/2;
     end
+
     WexpectX = max(xa)/8;
     WexpectY = max(xb)/8;
 end
 
-%% Generate (empty) output lists
-
-widths1 = zeros(1, 6); % for gauss1 matlab std fit
-widths = zeros(1, 3); % for gaussianFit output
-
 %% View input image
 
 if s.showsource
-    fig=Figure_Var2d();
+    fig = Figure_Var2d();
     fig.label = 1;
     fig.title = 'Input function \phi(x,y)';
     draw_function_2d(phi,Geometry2D, fig)

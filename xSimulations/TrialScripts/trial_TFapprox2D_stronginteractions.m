@@ -26,7 +26,7 @@ Type = 'BESP';
 Deltat = 0.05;
 Stop_time = [];
 Stop_crit = {'MaxNorm', 1e-8};
-Max_iter = 6e4;
+Max_iter = 6e1;
 
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -86,13 +86,13 @@ info.save_workspace('groundstate');
 
 Draw_solution2d(Phi_0, Method, Geometry2D, Figure_Var2d());
 
-info.save_figure(1, 'psi_sq-initialdata');
-info.save_figure(2, 'angle-initialdata');
+info.save_figure(1, 'initialdata', 'psi_sq');
+info.save_figure(2, 'initialdata', 'angle');
 
 Draw_solution2d(Phi_1, Method, Geometry2D, Figure_Var2d());
 
-info.save_figure(1, 'psi_sq-groundstate');
-info.save_figure(2, 'angle-groundstate');
+info.save_figure(1, 'groundstate', 'psi_sq');
+info.save_figure(2, 'groundstate', 'angle');
 
 %%
 %{
@@ -104,8 +104,8 @@ DYNAMICAL SIMULATION
 Computation = 'Dynamic';
 Ncomponents = 1;
 Type = 'Splitting';
-Deltat = 1e-4;
-Stop_time = 100;
+Deltat = 1e-2;
+Stop_time = 1;
 Stop_crit = [];
 
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit);
@@ -133,14 +133,14 @@ Print = Print_Var2d(Printing, Evo, Draw);
 
 info.add_result_info(Method, Outputs);
 info.finish_info();
-info.save_workspace('dynamics')
+info.save_workspace('dynamics');
 
 %% Draw & save solution
 
 Draw_solution2d(Phi, Method, Geometry2D, Figure_Var2d());
 
-info.save_figure(1, 'psi_sq-dynamics');
-info.save_figure(2, 'angle-dynamics');
+info.save_figure(1, 'dynamics', 'psi_sq');
+info.save_figure(2, 'dynamics', 'angle');
 
 %% expected solution
 

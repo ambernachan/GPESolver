@@ -9,17 +9,9 @@ clear;
 S = 0.01;
 
 %% Saving info files
-currentdir = pwd;
-%workingFile = mfilename;
-%fnameBase = workingFile(1:16); % = 'trial_Gaussian2D'
-fnameBase = 'trial_Gaussian2D';
 
-fnameInfo = strcat(currentdir, '/xOutputs/', fnameBase, '-info.txt'); % infofile name
-fInfo = fopen(fnameInfo, 'w'); % create new file with simulation info
-tStart = tic; % starting time for timer
-CPUtimeAtStart = cputime; % CPU start time
-
-fprintf( fInfo, 'Start: %s\n', datestr(now, 'dd mmm yy @ HH:MM:SS')); % print start time
+dimensions = 2;
+info = Info(name_from_filename(mfilename), dimensions);
 
 %%
 %{
@@ -73,14 +65,18 @@ Phi_0 = InitialData_Var2d(Method, Geometry2D, Physics2D, InitialData_choice, X0,
 
 %% Printing interaction strength
 
-fprintf( fInfo, 'S =\t %f', S); % print interaction strength S
-fprintf( fInfo, 'Beta =\t %f', Beta); % print interaction parameter Beta
-fprintf( fInfo, 'w =\t %f', w); % print Gaussian parameter w
+info.add_info_separator();
+info.add_custom_info('S \t=\t %f \n', S); % print interaction strength
+info.add_custom_info('Beta \t=\t %f \n', Beta); % print interaction parameter Beta
+info.add_custom_info('w \t=\t %f \n', w); % print Gaussian parameter w
+info.add_info_separator();
 
 %% Determining outputs
+
 Outputs = OutputsINI_Var2d(Method);
 
 %% Printing preliminary outputs
+
 Printing = 1;
 Evo = 15;
 Draw = 0;
@@ -88,40 +84,28 @@ Print = Print_Var2d(Printing, Evo, Draw);
 
 %% RUN THE SIMULATION to find the ground state
 
+info.add_simulation_info(Geometry2D);
 [Phi_1, Outputs] = GPELab2d(Phi_0, Method, Geometry2D, Physics2D, Outputs, [], Print);
 
 %% Save the workspace & simulation info
-endTime = now;
-tElapsed = toc(tStart); % save time elapsed
-dimensions = 2; % get dimensionality from file name
 
-% save information about final simulation iteration in info file
-add_info( fInfo, Outputs, Method, dimensions, tElapsed, CPUtimeAtStart, cputime); 
-fprintf( fInfo, 'Nx:\t%d\n', Nx);
-fprintf( fInfo, 'Ny:\t%d\n', Ny);
-fprintf( fInfo, 'End ground state sims: %s\n', datestr(endTime, 'dd mmm yy @ HH:MM:SS')); % end time
-
+% save information about final iteration in info file
+info.add_result_info(Method, Outputs);
 % save workspace to workspace folder
-fnameWspace = strcat('xWorkspace-data/', fnameBase); % = 'GPEpaper#_Example#_#D'
-save(strcat(fnameWspace, '-workspace-groundstate') )
-save(strcat(fnameWspace, '-outputs-groundstate') , 'Phi_1', 'Outputs')
-
-% (print) starting time for dynamical simulation
-tStartDyn = tic; % starting time for dynamical sims timer
-CPUtimeAtStartDyn = cputime; % CPU start time
-fprintf( fInfo, 'Start dynamics: %s\n', datestr(now, 'dd mmm yy @ HH:MM:SS'));
+info.save_workspace('groundstate');
 
 %% Draw & save solution
 
-fnameFigspace = strcat('xFigures/', fnameBase);
-
 Draw_solution2d(Phi_0, Method, Geometry2D, Figure_Var2d());
-savefig(1, strcat(fnameFigspace, '-psi_sq-testfunction'))
-savefig(2, strcat(fnameFigspace, '-angle-testfunction'))
+
+info.save_figure(1, 'initialdata', 'psi_sq');
+info.save_figure(2, 'initialdata', 'angle');
 
 Draw_solution2d(Phi_1, Method, Geometry2D, Figure_Var2d());
-savefig(1, strcat(fnameFigspace, '-psi_sq-groundstate'))
-savefig(2, strcat(fnameFigspace, '-angle-groundstate'))
+
+info.save_figure(1, 'groundstate', 'psi_sq');
+info.save_figure(2, 'groundstate', 'angle');
+
 
 %%
 %{
@@ -159,32 +143,18 @@ Print = Print_Var2d(Printing, Evo, Draw);
 [Phi, Outputs] = GPELab2d(Phi_1, Method, Geometry2D, Physics2D, Outputs, [], Print);
 
 %% Save the workspace & simulation info
-endTime = now;
-tElapsed = toc(tStart); % save total time elapsed
-tElapsedDyn = toc(tStartDyn); % save time elapsed during dynamical sims
 
 % save information about final simulation iteration in info file
-add_info( fInfo, Outputs, Method, dimensions, tElapsedDyn, CPUtimeAtStartDyn, cputime); 
-
-% extra time information on full simulation (ground+dynamics)
-fprintf( fInfo, '-------------------------------------------\n');
-fprintf( fInfo, 'Total CPU time:\t%8.2f\n', cputime - CPUtimeAtStart);
-fprintf( fInfo, 'Total elapsed time:\t' );
-fprintf( fInfo, print_time(tElapsed) );
-fprintf( fInfo, '-------------------------------------------\n');
-
-fprintf( fInfo, 'End: %s\n', datestr(endTime, 'dd mmm yy @ HH:MM:SS')); % end time
-fclose( fInfo );
-
-% save workspace to workspace folder
-save(strcat(fnameWspace, '-workspace-dynamics') )
-save(strcat(fnameWspace, '-outputs-dynamics') , 'Phi', 'Outputs')
+info.add_result_info(Method, Outputs);
+info.finish_info();
+info.save_workspace('dynamics');
 
 %% Draw & save solution
 
 Draw_solution2d(Phi, Method, Geometry2D, Figure_Var2d());
-savefig(1, strcat(fnameFigspace, '-psi_sq-dynamics'))
-savefig(2, strcat(fnameFigspace, '-angle-dynamics'))
+
+info.save_figure(1, 'dynamics', 'psi_sq');
+info.save_figure(2, 'dynamics', 'angle');
 
 %% expected solution
 

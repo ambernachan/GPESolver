@@ -3,6 +3,9 @@ classdef Info  < handle
     properties
         name
         dimensions
+
+        separatorStr
+
         creationTime
         creationTimeString
         creationCpuTime
@@ -22,7 +25,7 @@ classdef Info  < handle
         fileID
     end
     methods
-        % 
+        % Constructor
         function obj = Info(name, dimensions)
             if nargin ~= 2
                 error('Invalid number of arguments given %d, expected 2', nargin);
@@ -30,19 +33,22 @@ classdef Info  < handle
             if ~(isstring(name) || ischar(name))
                 error('Name should be a string or character array');
             end
+
             obj.name = string(name);
             obj.dimensions = dimensions;
 
+            obj.separatorStr = '-------------------------------------------';
+
             obj.creationTime = now;
-            obj.creationTimeString = [datestr(obj.creationTime, 'yyyy-mm-dd') '@' datestr(obj.creationTime, 'HHMMSS') ];
+            obj.creationTimeString = [datestr(obj.creationTime, 'yyyy-mm-dd') '@' datestr(obj.creationTime, 'HH.MM.SS') ];
             obj.creationCpuTime = cputime;
             obj.timerCreationValue = tic;
 
             % Set dirs and filenames
             obj.outputdir = 'xOutputs';
             obj.subdir = name; % Name of simulation (folder)
-            obj.fulldir = string(pwd) + '/' + obj.outputdir + '/' + obj.subdir;
-            obj.filenameInfo = obj.creationTimeString + string('_info') + '.txt';
+            obj.fulldir = string(pwd) + '/' + obj.outputdir + '/' + obj.subdir + '/' + obj.creationTimeString;
+            obj.filenameInfo = string('INFO') + '.txt';
             obj.pathInfo = obj.fulldir + '/' + obj.filenameInfo;
 
             % Create directory
@@ -76,7 +82,6 @@ classdef Info  < handle
             if obj.dimensions > 2
                fprintf(obj.fileID, 'Nz:\t%d\n', Geometry.Nz);
             end
-            
         end
         
         % Add basic information about the simulation to an info file
@@ -84,8 +89,13 @@ classdef Info  < handle
             if obj.fileID == -1
                 error('File not open, did you already finish this Info object?');
             end
-            add_info(obj.fileID, obj.dimensions, Method, Outputs, toc(obj.timerStartValue), obj.startCpuTime, cputime)
+            add_info(obj.fileID, obj.dimensions, Method, Outputs, toc(obj.timerStartValue), obj.startCpuTime, cputime, obj.separatorStr)
             fprintf(obj.fileID, 'End simulation stage: %s\n', datestr(now, 'dd mmm yy @ HH:MM:SS')); % end time
+        end
+        
+        % Add a string to the INFO.txt file
+        function add_custom_info(obj, format_str, varargin)
+            fprintf(obj.fileID, format_str, varargin{:});
         end
       
         % Finish up this object, close files and write final information
@@ -97,11 +107,11 @@ classdef Info  < handle
             obj.endTime = now;
             obj.endCpuTime = cputime;
 
-            fprintf(obj.fileID, '-------------------------------------------\n');
+            obj.add_info_separator()
             fprintf(obj.fileID, 'Total CPU time:\t%8.2f\n', obj.endCpuTime - obj.creationCpuTime);
             fprintf(obj.fileID, 'Total elapsed time:\t' );
             fprintf(obj.fileID, print_time(toc(obj.timerCreationValue)) );
-            fprintf(obj.fileID, '-------------------------------------------\n');
+            obj.add_info_separator()
 
             fprintf(obj.fileID, 'End: %s\n', datestr(obj.endTime, 'dd mmm yy @ HH:MM:SS'));
             
@@ -112,14 +122,18 @@ classdef Info  < handle
         % Save a named workspace snapshot to disk
         function save_workspace(obj, name)
             % save workspace to workspace folder with name = 'groundstate' or 'dynamics'
-            workspacePath = obj.fulldir + '/' + obj.creationTimeString + string('_workspace') + '_' + name;
+            workspacePath = obj.fulldir + '/workspace_' + name + '.mat';
             save(char(workspacePath));
         end
 
         % Save a specified figure (num) to the outputs directory of this simulation
-        function save_figure(obj, fignum, name)
-            figurePath = obj.fulldir + '/' + obj.creationTimeString + string('_fig') + '_' + name;
+        function save_figure(obj, fignum, state, title)
+            figurePath = obj.fulldir + '/' + state + '_fig_' + title + '.fig';
             savefig(fignum, char(figurePath))
+        end
+
+        function add_info_separator(obj)
+            fprintf(obj.fileID, '%s\n', obj.separatorStr);
         end
     end
 end

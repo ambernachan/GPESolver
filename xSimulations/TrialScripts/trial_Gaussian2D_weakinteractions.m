@@ -32,12 +32,13 @@ Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_cr
 
 %% Geometry2D
 
-xmin = -5;
-xmax = 5;
-ymin = -5;
-ymax = 5;
+xmin = -10;
+xmax = 10;
+ymin = -10;
+ymax = 10;
 Nx = 2^8 + 1;
 Ny = 2^8 + 1;
+
 Geometry2D = Geometry2D_Var2d(xmin, xmax, ymin, ymax, Nx, Ny);
 
 %% Physics2D

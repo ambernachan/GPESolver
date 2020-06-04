@@ -33,8 +33,11 @@ classdef Info  < handle
             if ~(isstring(name) || ischar(name))
                 error('Name should be a string or character array');
             end
+            if isstring(name)
+                name = char(name);
+            end
 
-            obj.name = string(name);
+            obj.name = name;
             obj.dimensions = dimensions;
 
             obj.separatorStr = '-------------------------------------------';
@@ -47,9 +50,9 @@ classdef Info  < handle
             % Set dirs and filenames
             obj.outputdir = 'xOutputs';
             obj.subdir = name; % Name of simulation (folder)
-            obj.fulldir = string(pwd) + '/' + obj.outputdir + '/' + obj.subdir + '/' + obj.creationTimeString;
-            obj.filenameInfo = string('INFO') + '.txt';
-            obj.pathInfo = obj.fulldir + '/' + obj.filenameInfo;
+            obj.fulldir = [pwd '/' obj.outputdir '/' obj.subdir '/' obj.creationTimeString];
+            obj.filenameInfo = 'INFO.txt';
+            obj.pathInfo = [obj.fulldir '/' obj.filenameInfo];
 
             % Create directory
             [mkdirStatus, mkdirMsg] = mkdir(char(obj.fulldir));
@@ -75,12 +78,12 @@ classdef Info  < handle
         end
 
         function add_simulation_info(obj, Geometry)
-            fprintf(obj.fileID, 'Nx:\t%d\n', Geometry.Nx);
+            fprintf(obj.fileID, 'Nx:\t%d\t\t%d<x<%d\n', Geometry.Nx, (Geometry.Lx/2));
             if obj.dimensions > 1
-               fprintf(obj.fileID, 'Ny:\t%d\n', Geometry.Ny);
+               fprintf(obj.fileID, 'Ny:\t%d\t\t%d<x<%d\n', Geometry.Ny, (Geometry.Ly/2));
             end
             if obj.dimensions > 2
-               fprintf(obj.fileID, 'Nz:\t%d\n', Geometry.Nz);
+               fprintf(obj.fileID, 'Nz:\t%d\t\t%d<x<%d\n', Geometry.Nz, (Geometry.Lx/2));
             end
         end
         
@@ -122,13 +125,13 @@ classdef Info  < handle
         % Save a named workspace snapshot to disk
         function save_workspace(obj, name)
             % save workspace to workspace folder with name = 'groundstate' or 'dynamics'
-            workspacePath = obj.fulldir + '/workspace_' + name + '.mat';
+            workspacePath = [obj.fulldir '/workspace_' name '.mat'];
             save(char(workspacePath));
         end
 
         % Save a specified figure (num) to the outputs directory of this simulation
         function save_figure(obj, fignum, state, title)
-            figurePath = obj.fulldir + '/' + state + '_fig_' + title + '.fig';
+            figurePath = [obj.fulldir '/' state '_fig_' title '.fig'];
             savefig(fignum, char(figurePath))
         end
 

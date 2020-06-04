@@ -2,25 +2,13 @@ function compare_phisq_2d(fignum, phi1, phi2, Method, Geometry2D, varargin)
 
 % COMPARE_PHISQ_2D 
 %   compare_phisq_2d(figure number, phi1, phi2, Method, Geometry2D, varargin)
-% 
-%   height. XX and YY are vectors or matrices defining the x and y 
-%   components of a surface. If XX and YY are vectors, length(XX) = n and 
-%   length(YY) = m, where [m,n] = size(Z). In this case, the vertices of the
-%   surface faces are (XX(j), YY(i), ZZ(i,j)) triples. To create XX and YY 
-%   matrices for arbitrary domains, use the meshgrid function. FMGAUSSFIT
-%   uses the lsqcurvefit tool, and the OPTIMZATION TOOLBOX. The initial
-%   guess for the gaussian is places at the maxima in the ZZ plane. The fit
-%   is restricted to be in the span of XX and YY.
-%   See:
-%       http://en.wikipedia.org/wiki/Gaussian_function
-%          
-%   Examples:
-%     To fit a 2D gaussian:
-%       [fitresult, zfit, fiterr, zerr, resnorm, rr] =
-%       fmgaussfit(xx,yy,zz);
-%   See also SURF, OMPTMSET, LSQCURVEFIT, NLPARCI, NLPREDCI.
+%   varargin: 'minus' / 'ratio'
 
-%   Copyright 2013, Nathan Orloff.
+difference_type = 'minus';
+
+if nargin > 5
+    difference_type = varargin{1};
+end
 
 % Create a Figure
 fig = Figure_Var2d();
@@ -40,6 +28,7 @@ for n = 1:Method.Ncomponents
     phi2_sq{n} = Default_Function(phi2{n}, Geometry2D.X, Geometry2D.Y);
     phi_difference{n} = phi1_sq{n} - phi2_sq{n};
     phi_reverse_difference{n} = phi2_sq{n} - phi1_sq{n};
+    phi_ratio{n} = phi1_sq{n} ./ phi2_sq{n};
 end
 
 Function_Name = '|\phi(x,y)|^2';
@@ -48,6 +37,15 @@ Function_Name = '|\phi(x,y)|^2';
 
 start_fignums_phi2 = 2*Method.Ncomponents;
 start_fignums_diff = 2*Method.Ncomponents*2;
+
+phi_comparison = cell(1, Method.Ncomponents);
+for n = 1:Method.Ncomponents
+    if strcmp(difference_type, 'minus')
+        phi_comparison{n} = phi_difference{n};
+    else
+        phi_comparison{n} = phi_ratio{n};
+    end
+end
 
 for n = 1:Method.Ncomponents
     
@@ -77,7 +75,7 @@ for n = 1:Method.Ncomponents
     % Printing phi^2
     fig.label = start_fignums_diff + (fignum-1)+n; % Number of the figure
     fig.title = strcat(Function_Name,' (component ', 32, num2str(n), '), [diff]'); % Storing title of the figure
-    draw_function_2d(phi_difference{n},Geometry2D,fig); % Drawing the square of the modulus of the wave function
+    draw_function_2d(phi_comparison{n},Geometry2D,fig); % Drawing the square of the modulus of the wave function
     
     % Printing angle(phi)
     fig.label = start_fignums_diff + (fignum-1)+n+Method.Ncomponents; % Number of the figure

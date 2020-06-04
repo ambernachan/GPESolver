@@ -2,6 +2,7 @@
 classdef PhiData  < handle
     properties
         dimensions
+        ncomponents
 
         phi
         phisq
@@ -16,7 +17,7 @@ classdef PhiData  < handle
     end
     methods
         % Constructor
-        function obj = PhiData(phi, geometry, ncomponents)
+        function obj = PhiData(phi, geometry)
 
             % Set number of dimensions, linspace X(,Y,Z) and grid spacing dx(,dy,dz)
             obj.dimensions = 1;
@@ -39,14 +40,10 @@ classdef PhiData  < handle
                 obj.phi = phi;
             end
            
-            if nargin == 2
-                obj.ncomponents = 1;
-            else
-                obj.ncomponents = ncomponents;
-            end
-
+            obj.ncomponents = size(phi,2);
+            
             % create obj.phisq, obj.phase
-            obj.make_phisq_and_phase_from_phi(obj) 
+            obj.make_phisq_and_phase_from_phi();
             
             % normalizes phi using phisq, then redefines obj.phisq, obj.phase
             obj.normalize(); 
@@ -58,7 +55,7 @@ classdef PhiData  < handle
             %   L2norm2d = sqrt(obj.dx*obj.dy) * sqrt(sum(sum(obj.phisq)));
             %   L2norm3d = sqrt(obj.dx*obj.dy*obj.dz) * sqrt(sum(sum(sum(obj.phisq))));
         function [L2norm] = L2norm(obj, phisqarray)
-            phisum = cell();
+            phisum = cell(1, obj.ncomponents);
             prefactor = 1;
             axisNames = ['x', 'y', 'z'];
 
@@ -82,9 +79,9 @@ classdef PhiData  < handle
 
         % normalizes phi using phisq, then redefines phi,phisq,phase
         function normalize(obj)
-            L2norm = cell();
+            L2norm = cell(1, obj.ncomponents);
             for n = 1:obj.ncomponents
-                L2norm{n} = L2norm(obj.phisq{n});
+                L2norm{n} = obj.L2norm(obj.phisq{n});
                 obj.phi{n} = obj.phi{n} ./ L2norm{n};
             end
             obj.make_phisq_and_phase_from_phi();
@@ -92,12 +89,12 @@ classdef PhiData  < handle
         
         % creates obj.phisq, obj.phase from obj.phi
         function make_phisq_and_phase_from_phi(obj)
-            obj.phisq = cell();
-            obj.phase = cell();
+            obj.phisq = cell(1, obj.ncomponents);
+            obj.phase = cell(1, obj.ncomponents);
             for n = 1:obj.ncomponents
                 obj.phisq{n} = abs(obj.phi{n}).^2;
                 if isreal(obj.phi{n})
-                    obj.phase{n} = zeros(size(obj.phi{n}));
+                    obj.phase{n} = [];
                 else
                     obj.phase{n} = angle(obj.phi{n});
                 end

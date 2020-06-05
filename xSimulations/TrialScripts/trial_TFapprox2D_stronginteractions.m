@@ -26,9 +26,14 @@ Type = 'BESP';
 Deltat = 0.05;
 Stop_time = [];
 Stop_crit = {'MaxNorm', 1e-8};
-Max_iter = 6e1;
+Max_iter = 6e4;
 
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
+
+% Saving workspace with relevant data for fitting
+Method_ground = Method;
+save(info.get_workspace_path('fittingdata'), 'Method_ground');
+clear Method_ground;
 
 %% Geometry2D
 
@@ -104,7 +109,7 @@ DYNAMICAL SIMULATION
 Computation = 'Dynamic';
 Ncomponents = 1;
 Type = 'Splitting';
-Deltat = 1e-2;
+Deltat = 1e-4;
 Stop_time = 1;
 Stop_crit = [];
 
@@ -122,7 +127,7 @@ Outputs = OutputsINI_Var2d(Method, Save_solution);
 %% Printing preliminary outputs
 Printing = 1;
 Evo = 10;
-Draw = 1;
+Draw = 0;
 Print = Print_Var2d(Printing, Evo, Draw);
 
 %% RUN THE SIMULATION to find the ground state
@@ -142,14 +147,16 @@ Draw_solution2d(Phi, Method, Geometry2D, Figure_Var2d());
 info.save_figure(1, 'dynamics', 'psi_sq');
 info.save_figure(2, 'dynamics', 'angle');
 
-%% expected solution
+%% Save PhiData structures for fitting w/o the whole workspace
 
-%expected = 1;
-%X0 = 0;
-%Y0 = 0;
-%gamma_x = 1;
-%gamma_y = 1;
+phi_dyn = PhiData(Phi, Geometry2D);
+phi_ground = PhiData(Phi_1, Geometry2D);
+phi_input = PhiData(Phi_0, Geometry2D);
 
-%Phi_exp = InitialData_Var2d(Method, Geometry2D, Physics2D, expected, X0, Y0, gamma_x, gamma_y);
+% Saving workspace with relevant data for fitting
+save(info.get_workspace_path('fittingdata'), ... 
+    'phi_dyn', 'phi_ground', 'phi_input', 'info', ... % necessary data
+    'S', 'w', 'Beta', 'Method', ... % additional data
+    '-append'); % to not overwrite Method_ground
 
 %% end

@@ -132,7 +132,8 @@ classdef Info  < handle
         % Save a specified figure (num) to the outputs directory of this simulation
         function save_figure(obj, fignum, state, title)
             figurePath = [obj.fulldir '/' state '_fig_' title '.fig'];
-            savefig(fignum, char(figurePath))
+            %savefig(fignum, char(figurePath))
+            savefig(fignum, figurePath);
         end
 
         function add_info_separator(obj)

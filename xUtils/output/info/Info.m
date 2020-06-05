@@ -123,10 +123,10 @@ classdef Info  < handle
         end
 
         % Save a named workspace snapshot to disk
-        function save_workspace(obj, name)
+        function wspath = get_workspace_path(obj, name)
             % save workspace to workspace folder with name = 'groundstate' or 'dynamics'
-            workspacePath = [obj.fulldir '/workspace_' name '.mat'];
-            save(char(workspacePath));
+            wspath = [obj.fulldir '/workspace_' name '.mat'];
+            % save(workspacePath);
         end
 
         % Save a specified figure (num) to the outputs directory of this simulation

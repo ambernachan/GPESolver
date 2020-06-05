@@ -80,7 +80,7 @@ info.add_simulation_info(Geometry2D);
 %% Save the workspace & simulation info
 
 info.add_result_info(Method, Outputs); 
-info.save_workspace('groundstate');
+save(info.get_workspace_path('groundstate'));
 
 %% Draw & save solution
 
@@ -133,7 +133,7 @@ Print = Print_Var2d(Printing, Evo, Draw);
 
 info.add_result_info(Method, Outputs);
 info.finish_info();
-info.save_workspace('dynamics');
+save(info.get_workspace_path('dynamics'));
 
 %% Draw & save solution
 

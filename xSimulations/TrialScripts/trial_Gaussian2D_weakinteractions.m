@@ -93,7 +93,7 @@ info.add_simulation_info(Geometry2D);
 % save information about final iteration in info file
 info.add_result_info(Method, Outputs);
 % save workspace to workspace folder
-info.save_workspace('groundstate');
+save(info.get_workspace_path('groundstate'));
 
 %% Draw & save solution
 
@@ -148,7 +148,7 @@ Print = Print_Var2d(Printing, Evo, Draw);
 % save information about final simulation iteration in info file
 info.add_result_info(Method, Outputs);
 info.finish_info();
-info.save_workspace('dynamics');
+save(info.get_workspace_path('dynamics'))
 
 %% Draw & save solution
 

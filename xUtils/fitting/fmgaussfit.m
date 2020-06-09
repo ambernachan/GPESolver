@@ -26,13 +26,13 @@ function [fitresult, zfit, fiterr, zerr, resnorm, rr] = fmgaussfit(xx,yy,zz)
     xyData = {xData,yData};
 
     %% Set up the startpoint
-    [amp, ind] = max(zData); % amp is the amplitude.
-    xo = xData(ind); % guess that it is at the maximum
-    yo = yData(ind); % guess that it is at the maximum
-    ang = 45; % angle in degrees.
-    sy = 1;
-    sx = 1;
-    zo = median(zData(:))-std(zData(:));
+    [amplitude, index] = max(zData);
+    x0 = xData(index); % guess that the gauss center is at its maximum
+    y0 = yData(index); % guess that the gauss center is at its maximum
+    angl = 45; % angle in degrees.
+    sigmay = 1;
+    sigmax = 1;
+    z0 = median(zData(:))-std(zData(:));
     xmax = max(xData)+2;
     ymax = max(yData)+2;
     xmin = min(xData)-2;
@@ -41,7 +41,7 @@ function [fitresult, zfit, fiterr, zerr, resnorm, rr] = fmgaussfit(xx,yy,zz)
     %% Set up fittype and options.
     Lower = [0, 0, 0, 0, xmin, ymin, 0];
     Upper = [Inf, 180, Inf, Inf, xmax, ymax, Inf]; % angles greater than 90 are redundant
-    StartPoint = [amp, ang, sx, sy, xo, yo, zo];%[amp, sx, sxy, sy, xo, yo, zo];
+    StartPoint = [amplitude, angl, sigmax, sigmay, x0, y0, z0]; % [amplitude, sigmax, sigmaxy, sigmay, x0, y0, z0];
 
     tols = 1e-16;
     options = optimset('Algorithm','levenberg-marquardt',...
@@ -69,11 +69,33 @@ function rr = rsquared(z,zf,ze)
     rr = 1./(numel(z)-8).*sum(dz.^2./ze.^2); % minus 8 because there are 7 fit parameters +1 (DOF)
 end
 
-function z = gaussian2D(par,xy)
+% function z = gaussian2D(par,xy)
+%     % compute 2D gaussian
+%     z = par(7) + ...
+%         par(1)*exp(-( ( (xy{1}-par(5)).*cosd(par(2))  + (xy{2}-par(6)).*sind(par(2)) ) ./par(3)).^2 ...
+%                    -( ( -(xy{1}-par(5)).*sind(par(2)) + (xy{2}-par(6)).*cosd(par(2)) ) ./par(4)).^2 );
+% end
+function z = gaussian2D(parameters,xy)
+    % widthx/y is defined as in exp(-X^2/width^2) so 2*sigma^2=width^2
+    % t is a constant offset
+    [amplitude, angl, widthx, widthy, x0, y0, t] = parameters(:);
+    
+    % % compute 2D gaussian V IDENTICAL TO COMMENTED ORIGINAL
+    % z = t + ...
+    %     amplitude*exp(-( ( (xy{1}-x0).*cosd(angl)  + (xy{2}-y0).*sind(angl) ) ./widthx).^2 ...
+    %                -( ( -(xy{1}-x0).*sind(angl) + (xy{2}-y0).*cosd(angl) ) ./widthy).^2 );
+
     % compute 2D gaussian
-    z = par(7) + ...
-        par(1)*exp(-(((xy{1}-par(5)).*cosd(par(2))+(xy{2}-par(6)).*sind(par(2)))./par(3)).^2-...
-        ((-(xy{1}-par(5)).*sind(par(2))+(xy{2}-par(6)).*cosd(par(2)))./par(4)).^2);
+    Rotation_matrix = makehgtform('zrotate', angl);
+    R = Rotation_matrix(1:2, 1:2); % make it 2d
+    Var = [1/widthx^2 0; 0 1/widthy^2];
+    Var = R*(Var)*R.';
+
+    z = t + amplitude ...
+         * exp( -( Var(1,1)*(xy{1}-x0).^2 ) ) ...
+        .* exp( -( Var(2,2)*(xy{2}-y0).^2 ) ) ...
+        .* exp( -( (Var(1,2)+Var(2,1)) .* (xy{1}-y0) .* (xy{2}-y0) ) );
+
 end
 
 function [dpar,zf,dzf] = gaussian2Duncert(par,resid,xy)
@@ -84,14 +106,15 @@ function [dpar,zf,dzf] = gaussian2Duncert(par,resid,xy)
     [zf,dzf] = nlpredci(@gaussian2D,xy,par,resid,'Jacobian',J);
 end
 
-function J = guassian2DJacobian(par,xy)
+function J = guassian2DJacobian(parameters,xy)
+    [amplitude, angl, widthx, widthy, x0, y0, t] = parameters(:);
     % compute the jacobian
     x = xy{1}; y = xy{2};
-    J(:,1) = exp(- (cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).^2./par(3).^2 - (cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))).^2./par(4).^2);
-    J(:,2) = -par(1).*exp(- (cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).^2./par(3).^2 - (cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))).^2./par(4).^2).*((2.*(cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).*(cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))))./par(3).^2 - (2.*(cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).*(cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))))./par(4).^2);
-    J(:,3) = (2.*par(1).*exp(- (cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).^2./par(3).^2 - (cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))).^2./par(4).^2).*(cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).^2)./par(3)^3;
-    J(:,4) = (2.*par(1).*exp(- (cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).^2./par(3).^2 - (cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))).^2./par(4).^2).*(cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))).^2)./par(4)^3;
-    J(:,5) = par(1).*exp(- (cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).^2./par(3).^2 - (cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))).^2./par(4).^2).*((2.*cosd(par(2)).*(cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))))./par(3).^2 - (2.*sind(par(2)).*(cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))))./par(4).^2);
-    J(:,6) = par(1).*exp(- (cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))).^2./par(3).^2 - (cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))).^2./par(4).^2).*((2.*cosd(par(2)).*(cosd(par(2)).*(y - par(6)) - sind(par(2)).*(x - par(5))))./par(4).^2 + (2.*sind(par(2)).*(cosd(par(2)).*(x - par(5)) + sind(par(2)).*(y - par(6))))./par(3).^2);
+    J(:,1) = exp(- (cosd(angl).*(x - x0) + sind(angl).*(y - y0)).^2./widthx.^2 - (cosd(angl).*(y - y0) - sind(angl).*(x - x0)).^2./widthy.^2);
+    J(:,2) = -amplitude.*exp(- (cosd(angl).*(x - x0) + sind(angl).*(y - y0)).^2./widthx.^2 - (cosd(angl).*(y - y0) - sind(angl).*(x - x0)).^2./widthy.^2).*((2.*(cosd(angl).*(x - x0) + sind(angl).*(y - y0)).*(cosd(angl).*(y - y0) - sind(angl).*(x - x0)))./widthx.^2 - (2.*(cosd(angl).*(x - x0) + sind(angl).*(y - y0)).*(cosd(angl).*(y - y0) - sind(angl).*(x - x0)))./widthy.^2);
+    J(:,3) = (2.*amplitude.*exp(- (cosd(angl).*(x - x0) + sind(angl).*(y - y0)).^2./widthx.^2 - (cosd(angl).*(y - y0) - sind(angl).*(x - x0)).^2./widthy.^2).*(cosd(angl).*(x - x0) + sind(angl).*(y - y0)).^2)./widthx^3;
+    J(:,4) = (2.*amplitude.*exp(- (cosd(angl).*(x - x0) + sind(angl).*(y - y0)).^2./widthx.^2 - (cosd(angl).*(y - y0) - sind(angl).*(x - x0)).^2./widthy.^2).*(cosd(angl).*(y - y0) - sind(angl).*(x - x0)).^2)./widthy^3;
+    J(:,5) = amplitude.*exp(- (cosd(angl).*(x - x0) + sind(angl).*(y - y0)).^2./widthx.^2 - (cosd(angl).*(y - y0) - sind(angl).*(x - x0)).^2./widthy.^2).*((2.*cosd(angl).*(cosd(angl).*(x - x0) + sind(angl).*(y - y0)))./widthx.^2 - (2.*sind(angl).*(cosd(angl).*(y - y0) - sind(angl).*(x - x0)))./widthy.^2);
+    J(:,6) = amplitude.*exp(- (cosd(angl).*(x - x0) + sind(angl).*(y - y0)).^2./widthx.^2 - (cosd(angl).*(y - y0) - sind(angl).*(x - x0)).^2./widthy.^2).*((2.*cosd(angl).*(cosd(angl).*(y - y0) - sind(angl).*(x - x0)))./widthy.^2 + (2.*sind(angl).*(cosd(angl).*(x - x0) + sind(angl).*(y - y0)))./widthx.^2);
     J(:,7) = ones(size(x));
 end

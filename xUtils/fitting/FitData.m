@@ -39,10 +39,12 @@ classdef PhiData  < handle
                 if nargin > 2
                     error('guessParameters given but not used.');
                 end
+                if obj.phiData.dimensions == 1
+                    obj.fitmethod = 'gauss1';
+                end
             elseif (~isstring(fitmethod) || ~ischar(fitmethod))
                 error('fitmethod is not a string or char array');
-            else 
-                % in this case, not a standard fit is used but rather a function that is given as input
+            elseif ~strcmp(fitmethod, 'gauss1') % for custom fits with given function
                 if nargin < 3
                     error('Too few arguments given; custom fit requires guessParameters');
                 end
@@ -68,8 +70,12 @@ classdef PhiData  < handle
            
         end
 
+        %% Fitting
+        % Note that |phi|^2 is fitted!
+        
         function [] = func(obj)
-            a = 1;
+
+            [fitresult, zfit, fiterr, zerr, resnorm, rr] = fmgaussfit(phiData.X,phiData.Y,phiData.phisq)
         end
 
     end

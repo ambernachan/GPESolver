@@ -13,7 +13,7 @@ isonormals(Geometry3D.X,Geometry3D.Y,Geometry3D.Z,phi,hpatch); % Computing the i
 set(hpatch,'facecolor',Figure.color,'edgecolor','none'); % Setting the color of faces and edges
 daspect(Figure.aspect); % Setting the data aspect ratio
 view(Figure.view); % Setting the angle of view
-axis tight; % Setting the axis limits to the range of the data
+%axis tight; % Setting the axis limits to the range of the data
 grid on; % Adding major grid lines
 camlight; % Setting light
 axis  equal; % Setting the aspect ratio so that increments on the x,y,z axis are of equal size

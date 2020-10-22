@@ -36,7 +36,7 @@ for n = 1:Method.Ncomponents
 % Setting figure and properties
 Figure.label = n; % Number of the figure
 Figure.title = strcat('|\phi(x,y,z)|^2 of component ', 32, num2str(n)); % Storing title of the figure
-clf(n);
+%clf(n);
 % surf(Geometry2D.X,Geometry2D.Y,Function{n}(Outputs.Solution{1}{n},Geometry2D.X,Geometry2D.Y),'EdgeColor','none','Colormap',Figure.map)
 draw_isosurface_3d(Function{n}(Outputs.Solution{1}{n},Geometry3D.X,Geometry3D.Y,Geometry3D.Z),Geometry3D,Figure);
 drawnow;

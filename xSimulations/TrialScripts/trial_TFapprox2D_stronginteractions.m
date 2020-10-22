@@ -3,6 +3,7 @@
 %}
 
 clear;
+pause('on'); 
 
 %% Determine interaction strength compared to kinetic energy
 
@@ -58,7 +59,7 @@ Physics2D = Nonlinearity_Var2d(Method, Physics2D); % std cubic nonlinearity
 
 %% Defining a starting function Phi_0
 
-InitialData_choice = 2; % Gaussian initial data
+InitialData_choice = 2; % TF initial data
 w = (1+Beta/(2*pi))^(1/4); % interaction strength, w<1 for interactions; w=1 no interactions
 s = 4; % size of the condensate for the trial function; s=1 is the expected result
 X0 = 2;
@@ -89,6 +90,9 @@ save(info.get_workspace_path('groundstate'));
 
 %% Draw & save solution
 
+close all;
+pause(2) % pauses the program for 2 seconds
+
 Draw_solution2d(Phi_0, Method, Geometry2D, Figure_Var2d());
 
 info.save_figure(1, 'initialdata', 'psi_sq');
@@ -114,6 +118,11 @@ Stop_time = 1;
 Stop_crit = [];
 
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit);
+
+% Saving workspace with relevant data for fitting
+Method_dynamical = Method;
+save(info.get_workspace_path('fittingdata'), 'Method_dynamical');
+clear Method_dynamical;
 
 %% We keep Geometry2D as-is
 
@@ -141,6 +150,10 @@ info.finish_info();
 save(info.get_workspace_path('dynamics'));
 
 %% Draw & save solution
+
+close all;
+pause(10) % pauses the program for 10 seconds, program errors in next line, 
+% but not when i put a breakpoint just before
 
 Draw_solution2d(Phi, Method, Geometry2D, Figure_Var2d());
 

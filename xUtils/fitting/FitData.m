@@ -5,6 +5,7 @@ classdef PhiData  < handle
         fittedphiData
         
         fitmethod
+        fitfunc
 
         guessParameters
         
@@ -18,18 +19,43 @@ classdef PhiData  < handle
         % Constructor
         function obj = FitData(phi, fitmethod, guessParameters)
 
+            % if only 'phi' is provided:
             if nargin < 2
-                error('Too few arguments given, expected 2 or more.');
+                prompt = 'Give fitmethod: "gauss", "thomasfermi", or "function".';
+                obj.fitmethod = input(prompt, 's');
+                if strcmp(obj.fitmethod, 'function')
+                    prompt = 'Provide the fit function.';
+                    obj.fitfunc = input(prompt);
+                end
+                % if a function is provided rather than the input 'function':
+                if ~strcmp(obj.fitmethod, 'gauss') && ~strcmp(obj.fitmethod, 'thomasfermi') && ~strcmp(obj.fitmethod, 'function')
+                    obj.fitfunc = obj.fitmethod;
+                    obj.fitmethod = 'function';
+                end
             end
+
             if ~isa(phi,'PhiData')
                 error('Input is not a PhiData structure.');
             end
-
             obj.phiData = phi;
-            obj.fitmethod = fitmethod;
+
+            % if 'fitmethod' is provided
+            if nargin > 1
+                % If the 'fitmethod' is not given as options 'gauss' or 'thomasfermi', then it
+                % must be 'function', and a function may be given in its place, so the input is 
+                % saved as the obj.fitfunction and the obj.fitmethod is set to be 'function'.
+                if ~strcmp(fitmethod, 'gauss') && ~strcmp(fitmethod, 'thomasfermi')
+                    obj.fitfunc = fitmethod;
+                    obj.fitmethod = 'function';
+                end
+            end
+            
+            % if 'guessParameters' is provided
             if nargin > 2
                 obj.guessParameters = guessParameters;
             end
+
+            % ------------------------------------------------------------------ fix below ---------
 
             if strcmp(fitmethod, '1dgauss')
                 if nargin < 3
@@ -42,6 +68,8 @@ classdef PhiData  < handle
                 if obj.phiData.dimensions == 1
                     obj.fitmethod = 'gauss1';
                 end
+                if obj.phiData.dimensions == 3
+                    error('fitmethod fullfit not possible for 3D simulations.')
             elseif (~isstring(fitmethod) || ~ischar(fitmethod))
                 error('fitmethod is not a string or char array');
             elseif ~strcmp(fitmethod, 'gauss1') % for custom fits with given function
@@ -72,10 +100,55 @@ classdef PhiData  < handle
 
         %% Fitting
         % Note that |phi|^2 is fitted!
-        
-        function [] = func(obj)
 
+        function fullfit(obj)
+            
             [fitresult, zfit, fiterr, zerr, resnorm, rr] = fmgaussfit(phiData.X,phiData.Y,phiData.phisq)
+        end
+
+        function gauss1(obj)
+            if obj.phiData.dimensions == 1
+                X = cell(1, obj.phiData.ncomponents);
+                xaxis = cell(1, obj.phiData.ncomponents);
+                fitresult = cell(1, obj.phiData.ncomponents)
+                for n = 1:obj.ncomponents
+                    X{n} = obj.phiData.phisq{n};
+                    xaxis{n} = obj.phiData.X;
+                end
+            end
+            if obj.phiData.dimensions == 2
+                X = cell(1, obj.phiData.ncomponents);
+                Y = cell(1, obj.phiData.ncomponents);
+                xaxis = cell(1, obj.phiData.ncomponents);
+                yaxis = cell(1, obj.phiData.ncomponents);
+                fitresult = cell(1, obj.phiData.ncomponents)
+                for n = 1:obj.ncomponentsv
+                    (X{n}, Y{n}) = obj.phiData.phisq{n};
+                    xaxis{n} = obj.phiData.X;
+                    yaxis{n} = obj.phiData.Y;
+                end
+            end
+            if obj.phiData.dimensions == 3
+                X = cell(1, obj.phiData.ncomponents);
+                Y = cell(1, obj.phiData.ncomponents);
+                Z = cell(1, obj.phiData.ncomponents);
+                xaxis = cell(1, obj.phiData.ncomponents);
+                yaxis = cell(1, obj.phiData.ncomponents);
+                zaxis = cell(1, obj.phiData.ncomponents);
+                fitresult = cell(1, obj.phiData.ncomponents)
+                for n = 1:obj.ncomponents
+                    (X{n}, Y{n}, Z{n}) = obj.phiData.phisq{n};
+                    xaxis{n} = obj.phiData.X;
+                    yaxis{n} = obj.phiData.Y;
+                    zaxis{n} = obj.phiData.Z;
+                end
+            end
+
+            sprintf('Starting fit (test message)...');
+
+            
+
+            f = fit(x.',y.','gauss1')
         end
 
     end

@@ -75,26 +75,39 @@ end
 %         par(1)*exp(-( ( (xy{1}-par(5)).*cosd(par(2))  + (xy{2}-par(6)).*sind(par(2)) ) ./par(3)).^2 ...
 %                    -( ( -(xy{1}-par(5)).*sind(par(2)) + (xy{2}-par(6)).*cosd(par(2)) ) ./par(4)).^2 );
 % end
-function z = gaussian2D(parameters,xy)
+function f = gaussian2D(parameters,XYZ,dim3)
+    
+    % % compute 2D gaussian V IDENTICAL TO COMMENTED ORIGINAL
+    % f = t + ...
+    %     amplitude*exp(-( ( (XYZ{1}-x0).*cosd(angl)  + (XYZ{2}-y0).*sind(angl) ) ./widthx).^2 ...
+    %                -( ( -(XYZ{1}-x0).*sind(angl) + (XYZ{2}-y0).*cosd(angl) ) ./widthy).^2 );
+
     % widthx/y is defined as in exp(-X^2/width^2) so 2*sigma^2=width^2
     % t is a constant offset
     [amplitude, angl, widthx, widthy, x0, y0, t] = parameters(:);
-    
-    % % compute 2D gaussian V IDENTICAL TO COMMENTED ORIGINAL
-    % z = t + ...
-    %     amplitude*exp(-( ( (xy{1}-x0).*cosd(angl)  + (xy{2}-y0).*sind(angl) ) ./widthx).^2 ...
-    %                -( ( -(xy{1}-x0).*sind(angl) + (xy{2}-y0).*cosd(angl) ) ./widthy).^2 );
+    dim = 2;
+    if dim3
+        dim = 3;
+        [amplitude, angl, widthx, widthy, widthz, x0, y0, z0, t] = parameters(:);
+    end
 
     % compute 2D gaussian
     Rotation_matrix = makehgtform('zrotate', angl);
-    R = Rotation_matrix(1:2, 1:2); % make it 2d
-    Var = [1/widthx^2 0; 0 1/widthy^2];
+    R = Rotation_matrix(1:dim, 1:dim); % make it 2d or 3d
+    if dim == 2
+        Var = [1/widthx^2 0; 0 1/widthy^2]; % variance matrix (2d)
+    else
+        Var = [1/widthx^2 0; 0 1/widthy^2; 0 1/widthz^2]; % variance matrix (3d)
     Var = R*(Var)*R.';
 
-    z = t + amplitude ...
-         * exp( -( Var(1,1)*(xy{1}-x0).^2 ) ) ...
-        .* exp( -( Var(2,2)*(xy{2}-y0).^2 ) ) ...
-        .* exp( -( (Var(1,2)+Var(2,1)) .* (xy{1}-y0) .* (xy{2}-y0) ) );
+    f = t + amplitude ...
+         * exp( -( Var(1,1)*(XYZ{1}-x0).^2 ) ) ...
+        .* exp( -( Var(2,2)*(XYZ{2}-y0).^2 ) ) ...
+        .* exp( -( (Var(1,2)+Var(2,1)) .* (XYZ{1}-y0) .* (XYZ{2}-y0) ) );
+
+    if dim == 3
+        f = f .* exp( -( Var(3,3)*(XYZ{3}-z0).^2 ) );
+    end
 
 end
 

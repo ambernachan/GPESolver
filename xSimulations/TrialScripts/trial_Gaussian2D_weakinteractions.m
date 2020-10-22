@@ -6,7 +6,7 @@ clear;
 
 %% Determine interaction strength compared to kinetic energy
 
-S = 0.01;
+S = 0;
 
 %% Saving info files
 
@@ -25,19 +25,23 @@ Ncomponents = 1;
 Type = 'BESP';
 Deltat = 0.05;
 Stop_time = [];
-Stop_crit = {'MaxNorm', 1e-8};
+Stop_crit = {'MaxNorm', 1e-3};
 Max_iter = 6e4;
 
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
 % temp save
+% Saving workspace with relevant data for fitting
+Method_ground = Method;
+save(info.get_workspace_path('fittingdata'), 'Method_ground');
+clear Method_ground;
 
 %% Geometry2D
 
-xmin = -5;
-xmax = 5;
-ymin = -5;
-ymax = 5;
+xmin = -2;
+xmax = 2;
+ymin = -2;
+ymax = 2;
 Nx = 2^8 + 1;
 Ny = 2^8 + 1;
 
@@ -57,12 +61,14 @@ Physics2D = Nonlinearity_Var2d(Method, Physics2D); % std cubic nonlinearity
 %% Defining a starting function Phi_0
 
 InitialData_choice = 1; % Gaussian initial data
-w = (1 + Beta / (2*pi) )^(1/4); % interaction strength, w<1 for interactions; w=1 no interactions
+w = (1 + Beta / (2*pi) )^(1/4); % interaction strength, w>1 for interactions; w=1 no interactions
 s = 4; % size of the condensate for the trial function; s=1 is the expected result
-X0 = 2;
-Y0 = 2;
-gamma_x = 1 / (s*w^2);
-gamma_y = 1 / (s*w^2);
+X0 = 0;
+Y0 = 0;
+gamma_x = 1;
+gamma_y = 1;
+%gamma_x = 1 / (s*w^2);
+%gamma_y = 1 / (s*w^2);
 
 Phi_0 = InitialData_Var2d(Method, Geometry2D, Physics2D, InitialData_choice, X0, Y0, gamma_x, gamma_y);
 
@@ -99,6 +105,9 @@ save(info.get_workspace_path('groundstate'));
 
 %% Draw & save solution
 
+close all;
+pause(2) % pauses the program for 2 seconds
+
 Draw_solution2d(Phi_0, Method, Geometry2D, Figure_Var2d());
 
 info.save_figure(1, 'initialdata', 'psi_sq');
@@ -127,9 +136,9 @@ Stop_crit = [];
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit);
 
 % Saving workspace with relevant data for fitting
-Method_ground = Method;
-save(info.get_workspace_path('fittingdata'), 'Method_ground');
-clear Method_ground;
+Method_dynamical = Method;
+save(info.get_workspace_path('fittingdata'), 'Method_dynamical');
+clear Method_dynamical;
 
 %% We keep Geometry2D as-is
 
@@ -158,6 +167,9 @@ info.finish_info();
 save(info.get_workspace_path('dynamics'))
 
 %% Draw & save solution
+
+close all;
+pause(2) % pauses the program for 2 seconds
 
 Draw_solution2d(Phi, Method, Geometry2D, Figure_Var2d());
 

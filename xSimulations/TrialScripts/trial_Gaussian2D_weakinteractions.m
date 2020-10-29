@@ -6,7 +6,7 @@ clear;
 
 %% Determine interaction strength compared to kinetic energy
 
-S = 0;
+S = 1e-7;
 
 %% Saving info files
 
@@ -25,8 +25,8 @@ Ncomponents = 1;
 Type = 'BESP';
 Deltat = 0.05;
 Stop_time = [];
-Stop_crit = {'MaxNorm', 1e-3};
-Max_iter = 6e4;
+Stop_crit = {'MaxNorm', 1e-4};
+Max_iter = 6e5;
 
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -40,8 +40,8 @@ clear Method_ground;
 
 xmin = -2;
 xmax = 2;
-ymin = -2;
-ymax = 2;
+ymin = -1;
+ymax = 1;
 Nx = 2^8 + 1;
 Ny = 2^8 + 1;
 
@@ -53,7 +53,8 @@ Delta = 0.5;
 Beta = 4*pi*S;
 Omega = 0;
 Physics2D = Physics2D_Var2d(Method, Delta, Beta, Omega);
-Physics2D = Potential_Var2d(Method, Physics2D); % std quadratic potential
+%Physics2D = Potential_Var2d(Method, Physics2D); % std quadratic potential
+Physics2D = Potential_Var2d(Method, Physics2D, @(X,Y) quadratic_potential2d(1, 5, X, Y));
 Physics2D = Nonlinearity_Var2d(Method, Physics2D); % std cubic nonlinearity
 %Physics2D = Gradientx_Var2d(Method, Physics2D, @(x,y) -1i*Omega*y);
 %Physics2D = Gradienty_Var2d(Method, Physics2D, @(x,y) 1i*Omega*x);

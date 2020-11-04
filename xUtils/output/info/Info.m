@@ -130,10 +130,22 @@ classdef Info  < handle
         end
 
         % Save a specified figure (num) to the outputs directory of this simulation
-        function save_figure(obj, fignum, state, title)
-            figurePath = [obj.fulldir '/' state '_fig_' title '.fig'];
+        function save_figure(obj, fignum, state, title, path, extension)
+            if nargin < 5 || isempty(extension)
+                extension = '.fig';
+                if nargin < 4 || isempty(path)
+                    path = obj.fulldir;
+                end
+            end
+            figurePath = [path '/' state '_fig_' title extension];
             %savefig(fignum, char(figurePath))
-            savefig(fignum, figurePath);
+            
+            if strcmp('.fig',extension)
+                savefig(fignum, figurePath);
+            else
+                figHandle = findobj( 'Type', 'Figure', 'Number', fignum );
+                saveas(figHandle, figurePath)
+            end
         end
 
         function add_info_separator(obj)

@@ -112,7 +112,7 @@ classdef PhiData  < handle
             geom.dimensions = obj.dimensions;
         end
         
-        function redge(obj, R)
+        function setEdge(obj, R)
             obj.edge = R;
         end
 

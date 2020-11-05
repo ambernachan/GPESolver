@@ -78,12 +78,12 @@ classdef Info  < handle
         end
 
         function add_simulation_info(obj, Geometry)
-            fprintf(obj.fileID, 'Nx:\t%d\t\t%d<x<%d\n', Geometry.Nx, (Geometry.Lx/2));
+            fprintf(obj.fileID, 'Nx:\t%d\t\t-%d<x<%d\n', Geometry.Nx, (Geometry.Lx/2), (Geometry.Ly/2));
             if obj.dimensions > 1
-               fprintf(obj.fileID, 'Ny:\t%d\t\t%d<x<%d\n', Geometry.Ny, (Geometry.Ly/2));
+               fprintf(obj.fileID, 'Ny:\t%d\t\t-%d<y<%d\n', Geometry.Ny, (Geometry.Ly/2), (Geometry.Ly/2));
             end
             if obj.dimensions > 2
-               fprintf(obj.fileID, 'Nz:\t%d\t\t%d<x<%d\n', Geometry.Nz, (Geometry.Lx/2));
+               fprintf(obj.fileID, 'Nz:\t%d\t\t-%d<z<%d\n', Geometry.Nz, (Geometry.Lz/2), (Geometry.Lz/2));
             end
         end
         

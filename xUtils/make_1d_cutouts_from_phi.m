@@ -19,17 +19,17 @@ function [F] = make_1d_cutouts_from_phi(phi)
         F = {fx,fy};
         
     elseif dims == 3
-        fx = sum(sum(phi,2),3);
-        fy = sum(sum(phi,1),3);
+        fx = sum(sum(phi,1),3);
+        fy = sum(sum(phi,2),3);
         fz = sum(sum(phi,2),1);
         
         [~,colx] = max(fx);
         [~,coly] = max(fy);
         [~,colz] = max(fz);
-        
-        fx = phi(:,coly,colz);
-        fy = phi(colx,:,colz);
-        fz = phi(colx,coly,:);
+
+        fx = phi(coly,:,colz);
+        fy = phi(:,colx,colz)';
+        fz = phi(colx,coly,:); fz = fz(:)';
         
         F = {fx,fy,fz};
     else

@@ -112,8 +112,15 @@ classdef PhiData  < handle
             geom.dimensions = obj.dimensions;
         end
         
-        function setEdge(obj, R)
-            obj.edge = R;
+        function setEdge(obj, R, gammas)
+            edge1d = R;
+            edge2d = [R/gammas.x R/gammas.y];
+            edge3d = [R/gammas.x R/gammas.y R/gammas.z];
+            edge = struct();
+            edge.x = edge1d;
+            edge.y = edge2d;
+            edge.z = edge3d;
+            obj.edge = edge;
         end
 
     end

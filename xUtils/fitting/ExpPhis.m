@@ -68,36 +68,46 @@ classdef ExpPhis < handle
             V = 0.5 * obj.gamma.x^2 * obj.X1d.^2;
             TFapprox = (0.5 * (3*obj.beta*obj.gamma.x/2)^(2/3) - V) / obj.beta;
 
-            redge = (6*pi*obj.chi*obj.gamma.x )^(1/3); % find the cloud edge
+            %redge = (6*pi*obj.chi*obj.gamma.x )^(1/3); % find the cloud edge
+            redge = (6*pi*obj.chi/obj.gamma.x^2)^(1/3); % find the cloud edge
             R = obj.X1d;
 
             geom = struct('X', obj.X1d, 'dx', obj.dr.x);
 
-            TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom);
+            TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom, obj.gamma);
         end
 
         function [TFapprox,redge] = TF2d(obj)
             V = 0.5 * obj.gamma.x^2 * obj.X2d.^2 + 0.5 * obj.gamma.y^2 * obj.Y2d.^2;
             TFapprox = (sqrt(obj.beta*obj.gamma.x*obj.gamma.y / pi) - V) / obj.beta;
 
+            %redge = (16*obj.chi * obj.gamma.x * obj.gamma.y)^(1/4); % find the cloud edge
+            %R = sqrt( obj.X2d.^2 + obj.Y2d.^2 );
+            
             redge = (16*obj.chi * obj.gamma.x * obj.gamma.y)^(1/4); % find the cloud edge
-            R = sqrt( obj.X2d.^2 + obj.Y2d.^2 );
+            R = sqrt( obj.gamma.x^2*obj.X2d.^2 + obj.gamma.y^2*obj.Y2d.^2 );
 
             geom = struct('X', obj.X2d, 'Y', obj.Y2d, 'dx', obj.dr.x, 'dy', obj.dr.y);
 
-            TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom);
+            TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom, obj.gamma);
+            redge = TFapprox.edge;
         end
 
         function [TFapprox,redge] = TF3d(obj)
             V = 0.5 * obj.gamma.x^2 * obj.X3d.^2 + 0.5 * obj.gamma.y^2 * obj.Y3d.^2 + 0.5 * obj.gamma.z^2 * obj.Z3d.^2;
             TFapprox = (0.5 * (15*obj.beta*obj.gamma.x*obj.gamma.y*obj.gamma.z / (4*pi))^(2/5) - V) / obj.beta;
 
-            redge = (15*obj.chi * obj.gamma.x * obj.gamma.y * obj.gamma.z)^(1/5); % find the cloud edge
-            R = sqrt( obj.X3d.^2 + obj.Y3d.^2 + obj.Z3d.^2);
+            %redge = (15*obj.chi * obj.gamma.x * obj.gamma.y * obj.gamma.z)^(1/5); % find the cloud edge
+            %R = sqrt( obj.X3d.^2 + obj.Y3d.^2 + obj.Z3d.^2);
+            
+            % find the cloud edge
+            redge = (15*obj.chi)^(1/5);
+            R = sqrt( obj.gamma.x^2 * obj.X3d.^2 + obj.gamma.y^2 * obj.Y3d.^2 + obj.gamma.z^2 * obj.Z3d.^2);
 
             geom = struct('X', obj.X3d, 'Y', obj.Y3d, 'Z', obj.Z3d, 'dx', obj.dr.x, 'dy', obj.dr.y, 'dz', obj.dr.z);
 
-            TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom);
+            TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom, obj.gamma);
+            redge = TFapprox.edge;
         end
 
         function [w] = getW(obj)
@@ -105,6 +115,12 @@ classdef ExpPhis < handle
             w.d1 = obj.find_1d_w();
             w.d2 = obj.find_2d_w();
             w.d3 = obj.find_3d_w();
+        end
+        
+        function [x3d,y3d,z3d] = getRarrays(obj)
+            x3d=obj.X3d;
+            y3d=obj.Y3d;
+            z3d=obj.Z3d;
         end
 
     end % end of methods
@@ -116,6 +132,7 @@ classdef ExpPhis < handle
             eqn = w^4 - w*obj.beta/sqrt(2*pi*obj.gamma.x) - 1 == 0;
             sol = solve(eqn, w, 'Real', true, 'MaxDegree', 4);
             w1d = double(sol);
+            w1d = w1d(w1d>0);
         end
 
         function [w2d] = find_2d_w(obj)
@@ -127,20 +144,21 @@ classdef ExpPhis < handle
             eqn = w^5 - w - 3*obj.beta*sqrt(obj.gamma.x*obj.gamma.y*obj.gamma.z) / ( (2*pi)^(3/2) * (obj.gamma.x+obj.gamma.y+obj.gamma.z) ) == 0;
             w3d = vpasolve(eqn, w, [0 Inf]);
             w3d = double(w3d);
+            w3d = w3d(w3d>0);
         end
     end
 
     % Static (do not require an instance of the class because they do not
     % change or require any properties of the class) and private (only
-    % accesible by this class) methods.
+    % accessible by this class) methods.
     methods (Static, Access = private)
         % Apply boundaries to function F , sets all values of F outside boundary R > redge or R < -redge to zero
         % Creates phidata from result, setting geom and redge
-        function [BoundedApproxPhiData] = ApplyBoundaryAndConvertToPhiData(F, redge, R, geom)
+        function [BoundedApproxPhiData] = ApplyBoundaryAndConvertToPhiData(F, redge, R, geom, gammas)
             BoundedF = ExpPhis.ApplyBoundary(F, redge, R);
             BoundedApproxPhiData = PhiData(BoundedF, geom, 'phisq');
             % Store edge in PhiData struct
-            BoundedApproxPhiData.setEdge(redge);
+            BoundedApproxPhiData.setEdge(redge,gammas);
         end
 
         function [BoundedF] = ApplyBoundary(F, redge, R)
@@ -200,10 +218,10 @@ classdef ExpPhis < handle
             end
             X1d = Xrange;
             [X2d, Y2d] = meshgrid(Xrange, Yrange);
-            %[X3d, Y3d, Z3d] = meshgrid(Xrange, Yrange, Zrange);
-            X3d = 1;
-            Y3d = 1;
-            Z3d = 1;
+            [X3d, Y3d, Z3d] = meshgrid(Xrange, Yrange, Zrange);
+%             X3d = 1;
+%             Y3d = 1;
+%             Z3d = 1;
             dr = struct('x', dx, 'y', dy, 'z', dz);
         end
     end

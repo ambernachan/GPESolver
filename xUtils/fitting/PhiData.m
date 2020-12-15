@@ -117,9 +117,9 @@ classdef PhiData  < handle
             edge2d = [R/gammas.x R/gammas.y];
             edge3d = [R/gammas.x R/gammas.y R/gammas.z];
             edge = struct();
-            edge.x = edge1d;
-            edge.y = edge2d;
-            edge.z = edge3d;
+            edge.dim1 = edge1d;
+            edge.dim2 = edge2d;
+            edge.dim3 = edge3d;
             obj.edge = edge;
         end
 

@@ -90,7 +90,7 @@ classdef ExpPhis < handle
             geom = struct('X', obj.X2d, 'Y', obj.Y2d, 'dx', obj.dr.x, 'dy', obj.dr.y);
 
             TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom, obj.gamma);
-            redge = TFapprox.edge;
+            redge = TFapprox.edge.dim2;
         end
 
         function [TFapprox,redge] = TF3d(obj)
@@ -107,7 +107,7 @@ classdef ExpPhis < handle
             geom = struct('X', obj.X3d, 'Y', obj.Y3d, 'Z', obj.Z3d, 'dx', obj.dr.x, 'dy', obj.dr.y, 'dz', obj.dr.z);
 
             TFapprox = ExpPhis.ApplyBoundaryAndConvertToPhiData(TFapprox, redge, R, geom, obj.gamma);
-            redge = TFapprox.edge;
+            redge = TFapprox.edge.dim3;
         end
 
         function [w] = getW(obj)

@@ -11,7 +11,7 @@
 Computation = 'Ground';
 Ncomponents = 1;
 Type = 'BESP';
-Deltat = 1e-3;
+Deltat = 1e-1;
 Stop_time = [];
 Stop_crit = {'MaxNorm',1e-6};
 Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit);
@@ -21,9 +21,9 @@ ymin = -10;
 ymax = 10;
 zmin = -10;
 zmax = 10;
-Nx = 2^6+1;
-Ny = 2^6+1;
-Nz = 2^6+1;
+Nx = 2^7+1;
+Ny = 2^7+1;
+Nz = 2^7+1;
 Geometry3D = Geometry3D_Var3d(xmin,xmax,ymin,ymax,zmin,zmax,Nx,Ny,Nz);
 
 %% Setting the physical problem

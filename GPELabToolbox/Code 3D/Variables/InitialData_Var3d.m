@@ -72,7 +72,7 @@ Phi_0 = cell(1,Method.Ncomponents); % Initialization of the initial data
     elseif (InitialData_Choice == 2) && (Physics3D.Beta ~= 0)
         %FOR each component
         for n = 1:Method.Ncomponents
-            Phi_0{n} = Thomas_Fermi3d(gamma_x,gamma_y,gamma_z,Physics3D.Beta,Physics3D.Potential_function{n,n}(Geometry3D.X-X0(n),Geometry3D.Y-Y0(n),Geometry3D.Z-Z0(n)) + Physics3D.TimePotential_function{n,n}(0,Geometry3D.X-X0(n),Geometry3D.Y-Y0(n),Geometry3D.Z-Z0(n))); % Computing the Thomas-Fermi approximation
+            Phi_0{n} = Thomas_Fermi3d(gamma_x,gamma_y,gamma_z,Physics3D.Beta,Physics3D.Potential_function{n,n}(Geometry3D.X-X0(n),Geometry3D.Y-Y0(n),Geometry3D.Z-Z0(n))); % Computing the Thomas-Fermi approximation
             Phi_0{n} = Phi_0{n}/L2_norm3d(Phi_0{n},Geometry3D); %Normalization of the initial function 
         end
     % ELSEIF one has chosen to compute directly the Thomas-Fermi

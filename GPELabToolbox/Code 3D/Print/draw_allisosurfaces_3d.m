@@ -27,4 +27,4 @@ xlabel(Figure.y); % Adding text beside the y-axis
 xlabel(Figure.z); % Adding text beside the z-axis
 lighting gouraud; % Setting the lighting to gouraud
 alpha(Figure.alpha); % Setting transparency
-drawnow;
+drawnow

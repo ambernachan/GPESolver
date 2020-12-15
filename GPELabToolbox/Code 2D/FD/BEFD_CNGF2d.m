@@ -70,14 +70,9 @@ while (Method.EvolutionCriterion > Method.Stop_crit{2}*Method.Deltat)&&(Method.I
     end
  
     %% Normalization of the ground states
-    Global_L2norm = 0;
     % FOR each component
     for n = 1:Method.Ncomponents
-        Global_L2norm = Global_L2norm + L2_norm2d(FDPhi{n},FDGeometry2D)^2; % Computing the L2 norm of each wave function
-    end
-    % FOR each component
-    for n = 1:Method.Ncomponents
-        FDPhi{n} = FDPhi{n}/sqrt(Global_L2norm); % Normalization of each wave function
+        FDPhi{n} = FDPhi{n}/L2_norm2d(FDPhi{n},FDGeometry2D); % Normalization of each wave function
         Method.LocalEvol(n) = max(max(abs(FDPhi{n}-FDPhi_tmp{n}))); % Computing the local evolution of each wave function
     end
     

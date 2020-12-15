@@ -71,5 +71,3 @@ else
     Method.EvolutionCriterion = 1; % Initializing the global evolution variable
 end
 Method.Iterations = 0; % Initializing the number of iterations
-Method.Normalization = 'Multi'; % Normalization with respect to all the components
-Method.NParticles = ones(Method.Ncomponents,1); % Number of particles in each components

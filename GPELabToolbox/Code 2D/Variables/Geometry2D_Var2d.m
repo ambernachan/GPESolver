@@ -13,8 +13,8 @@ Analyse_Var.addOptional('xmin',-10,@(x)isscalar(x)); % Optional input 'xmin' wit
 Analyse_Var.addOptional('xmax',10,@(x)isscalar(x)); % Optional input 'xmax' with default value 10
 Analyse_Var.addOptional('ymin',-10,@(x)isscalar(x)); % Optional input 'ymin' with default value -10
 Analyse_Var.addOptional('ymax',10,@(x)isscalar(x)); % Optional input 'ymax' with default value 10
-Analyse_Var.addOptional('Nx',2^7+1,@(x)isposintscalar(x)); % Optional input 'Nx' with default value 2^7+1
-Analyse_Var.addOptional('Ny',2^7+1,@(x)isposintscalar(x)); % Optional input 'Ny' with default value 2^7+1
+Analyse_Var.addOptional('Nx',2e7+1,@(x)isposintscalar(x)); % Optional input 'Nx' with default value 2e7
+Analyse_Var.addOptional('Ny',2e7+1,@(x)isposintscalar(x)); % Optional input 'Ny' with default value 2e7
 
 %% Parsing inputs and creating the Method structure
 % Parsing inputs

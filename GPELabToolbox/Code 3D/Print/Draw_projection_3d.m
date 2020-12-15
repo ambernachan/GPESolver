@@ -19,7 +19,7 @@ for n = 1:Method.Ncomponents
     view(2); % Setting view
     xlabel(Figure.x); % Setting x-axis label
     ylabel(Figure.y); % Setting y-axis label
-    title(strcat('|\phi(x,y,.)|^2 of component ', 32, num2str(n))); % Setting title of the figure
+    title(strcat('|phi(x,y,.)|^2 of component ', 32, num2str(n))); % Setting title of the figure
     drawnow; % Drawing
 end
 

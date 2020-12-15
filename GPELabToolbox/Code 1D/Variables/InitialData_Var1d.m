@@ -55,7 +55,7 @@ Phi_0 = cell(1,Method.Ncomponents); % Initialization of the initial data
     elseif (InitialData_Choice == 2) && (Physics1D.Beta ~= 0)
         %FOR each component
         for n = 1:Method.Ncomponents
-            Phi_0{n} = Thomas_Fermi1d(gamma_x,Physics1D.Beta,Physics1D.Potential_function{n,n}(Geometry1D.X-X0(n)) + Physics1D.TimePotential_function{n,n}(0,Geometry1D.X-X0(n))); % Computing the Thomas-Fermi approximation
+            Phi_0{n} = Thomas_Fermi1d(gamma_x,Physics1D.Beta,Physics1D.Potential_function{n,n}(Geometry1D.X-X0(n))); % Computing the Thomas-Fermi approximation
             Phi_0{n} = Phi_0{n}/L2_norm1d(Phi_0{n},Geometry1D); %Normalization of the initial function 
         end
     % ELSEIF one has chosen to compute directly the Thomas-Fermi

@@ -35,12 +35,10 @@ end
 %% Initializing functions
 Physics3D.Potential_function = cell(Method.Ncomponents);
 Physics3D.Dispersion_function = cell(Method.Ncomponents);
-Physics3D.TimeDispersion_function = cell(Method.Ncomponents);
 Physics3D.TimePotential_function = cell(Method.Ncomponents);
 Physics3D.StochasticPotential_function = cell(Method.Ncomponents);
 Physics3D.StochasticDispersion_function = cell(Method.Ncomponents);
 Physics3D.IntegratedTimePotential_function = cell(Method.Ncomponents);
-Physics3D.IntegratedTimeDispersion_function = cell(Method.Ncomponents);
 Physics3D.Nonlinearity_function = cell(Method.Ncomponents);
 Physics3D.Nonlinearity_energy_function = cell(Method.Ncomponents);
 Physics3D.FFTNonlinearity_function = cell(Method.Ncomponents);
@@ -54,7 +52,6 @@ for n = 1:Method.Ncomponents
     for m = 1:Method.Ncomponents
         Physics3D.Potential_function{n,m} = @(X,Y,Z) 0;
         Physics3D.Dispersion_function{n,m} = @(FFTX,FFTY,FFTZ) 0;
-        Physics3D.TimeDispersion_function{n,m} = @(t,FFTX,FFTY,FFTZ) 0;
         Physics3D.TimePotential_function{n,m} = @(t,X,Y,Z) 0;
         Physics3D.StochasticPotential_function{n,m} = @(W,X,Y,Z) 0;
         Physics3D.StochasticDispersion_function{n,m} = @(W,FFTX,FFTY,FFTZ) 0;
@@ -70,7 +67,6 @@ end
 %% Initializing index functions
 Physics3D.Potential_function_Index = cell(1,Method.Ncomponents);
 Physics3D.Dispersion_function_Index = cell(1,Method.Ncomponents);
-Physics3D.TimeDispersion_function_Index = cell(1,Method.Ncomponents);
 Physics3D.TimePotential_function_Index = cell(1,Method.Ncomponents);
 Physics3D.StochasticPotential_function_Index = cell(1,Method.Ncomponents);
 Physics3D.StochasticDispersion_function_Index = cell(1,Method.Ncomponents);

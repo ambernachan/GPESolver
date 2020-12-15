@@ -14,24 +14,27 @@ Ncomponents = 1;
 Type = 'BESP';
 Deltat = 1e-1;
 Stop_time = [];
-Stop_crit = {'MaxNorm',1e-7};
+Stop_crit = {'MaxNorm',1e-10};
 Max_iter = 5.5e4;
 Method = Method_Var2d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit,Max_iter);
 xmin = -10;
 xmax = 10;
 ymin = -10;
 ymax = 10;
-Nx = 2^6+1;
-Ny = 2^6+1;
+Nx = 2^8+1;
+Ny = 2^8+1;
 Geometry2D = Geometry2D_Var2d(xmin,xmax,ymin,ymax,Nx,Ny);
 
 %% Setting the physical problem
 Delta = 0.5;
 Beta = 1000;
-Physics2D = Physics2D_Var2d(Method, Delta, Beta);
+Omega = 0.52;
+Physics2D = Physics2D_Var2d(Method, Delta, Beta, Omega);
 Physics2D = Dispersion_Var2d(Method, Physics2D);
 Physics2D = Potential_Var2d(Method, Physics2D);
 Physics2D = Nonlinearity_Var2d(Method, Physics2D);
+Physics2D = Gradientx_Var2d(Method, Physics2D);
+Physics2D = Gradienty_Var2d(Method, Physics2D);
 
 %% Setting the initial data
 InitialData_Choice = 2;
@@ -70,11 +73,6 @@ Physics2D = StochasticPotential_Var2d(Method, Physics2D, @(W,X,Y) V_0*exp(-((X-X
 Save_solution = 1;
 Save_evo = 10;
 Outputs = OutputsINI_Var2d(Method,Save_evo,Save_solution);
-Printing = 1;
-Evo = 10;
-Draw = 1;
-Print = Print_Var2d(Printing,Evo,Draw);
-
 
 %-----------------------------------------------------------
 % Launching simulation

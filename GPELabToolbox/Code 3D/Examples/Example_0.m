@@ -21,9 +21,9 @@ ymin = -10;
 ymax = 10;
 zmin = -10;
 zmax = 10;
-Nx = 2^6+1;
-Ny = 2^6+1;
-Nz = 2^6+1;
+Nx = 2^5+1;
+Ny = 2^5+1;
+Nz = 2^5+1;
 Geometry3D = Geometry3D_Var3d(xmin,xmax,ymin,ymax,zmin,zmax,Nx,Ny,Nz);
 
 %% Setting the physical problem

@@ -76,10 +76,6 @@ for n = 1:Method.Ncomponents
     for m = FFTPhysics1D.Dispersion_function_Index{n}
         Dispersion_energy  = Dispersion_energy + real(ifft(FFTPhysics1D.Dispersion_function{n,m}(-1i*FFTOperators1D.Gx).*fft(Phi{m})).*conj(Phi{n})); % Computing and storing the dispersion
     end
-    % FOR each component where the dispersion is non null
-    for m = FFTPhysics1D.TimeDispersion_function_Index{n}
-        Dispersion_energy  = Dispersion_energy + real(ifft(FFTPhysics1D.TimeDispersion_function{n,m}(Method.Iterations*Method.Deltat,-1i*FFTOperators1D.Gx).*fft(Phi{m})).*conj(Phi{n})); % Computing and storing the dispersion
-    end
     % FOR each component where the stochastic dispersion is non null
     for m = FFTPhysics1D.StochasticDispersion_function_Index{n}
         if (iscell(FFTPhysics1D.StochasticProcess_function))

@@ -15,4 +15,3 @@ colorbar; % Adding the colorbar
 xlabel(Figure.x); % Setting x-axis label
 ylabel(Figure.y); % Setting y-axis label
 title(Figure.title); % Setting title of the figure
-drawnow;

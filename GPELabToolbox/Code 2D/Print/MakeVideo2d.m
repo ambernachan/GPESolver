@@ -36,14 +36,10 @@ for n = 1:Method.Ncomponents
 % Setting figure and properties
 figure(1);
 clf(1);
-pcolor(Geometry2D.X,Geometry2D.Y,Function{n}(Outputs.Solution{1}{n},Geometry2D.X,Geometry2D.Y))
-axis equal
-axis tight
-shading interp; % Setting shading
-colormap(Figure.map); % Setting colormap
-colormap_tmp = caxis; % Store colormap setting
-colorbar; % Setting colorbar
-view(2); % Setting view
+% surf(Geometry2D.X,Geometry2D.Y,Function{n}(Outputs.Solution{1}{n},Geometry2D.X,Geometry2D.Y),'EdgeColor','none','Colormap',Figure.map)
+surf(Geometry2D.X,Geometry2D.Y,Function{n}(Outputs.Solution{1}{n},Geometry2D.X,Geometry2D.Y),'EdgeColor','none')
+shading interp;
+view(2)
 drawnow;
 fprintf('Set the figure and then press any key \n')
 pause
@@ -61,10 +57,7 @@ vidObj.FrameRate = 35;
 open(vidObj);
 
 for m = 1:Outputs.Iterations
-   pcolor(Geometry2D.X,Geometry2D.Y,Function{n}(Outputs.Solution{m}{n},Geometry2D.X,Geometry2D.Y))
-   axis equal
-   axis tight
-   caxis(colormap_tmp)
+   surf(Geometry2D.X,Geometry2D.Y,Function{n}(Outputs.Solution{m}{n},Geometry2D.X,Geometry2D.Y),'EdgeColor','none')
    shading interp;
    view(2)
    writeVideo(vidObj, getframe(gcf));
@@ -84,27 +77,21 @@ drawnow;
 fprintf('Set the figure and then press any key \n')
 pause
 set(gcf, 'nextplot','replacechildren', 'Visible','off');
-for n = 1:Method.Ncomponents
 % Create a VideoObject
-if (iscell(Name) == 0) || (Method.Ncomponents ~= 1)
-    vidObj = VideoWriter(strcat(strcat(Name,int2str(n)),'.avi'));
-elseif (iscell(Name) == 0) || (Method.Ncomponents == 1)
+if (iscell(Name) == 0)
     vidObj = VideoWriter(strcat(Name,'.avi'));
-elseif (iscell(Name) == 1) || (Method.Ncomponents ~= 1)
-    vidObj = VideoWriter(strcat(strcat('MyVideo',int2str(n)),'.avi'));
-elseif (iscell(Name) == 1) || (Method.Ncomponents == 1)
-    vidObj = VideoWriter(strcat('MyVideo.avi'));
+elseif (iscell(Name) == 1)
+    vidObj = VideoWriter('MyVideo.avi');
 end
 vidObj.Quality = 100;
 vidObj.FrameRate = 12;
 open(vidObj);
 
 for m = 1:Outputs.Iterations
-   surf(Geometry2D.X,Geometry2D.Y,Function(Outputs.Solution{m}{n},Geometry2D.X,Geometry2D.Y),'EdgeColor','none')
+   surf(Geometry2D.X,Geometry2D.Y,Function(Outputs.Solution{m},Geometry2D.X,Geometry2D.Y),'EdgeColor','none')
    shading interp;
    view(2)
    writeVideo(vidObj, getframe(gcf));
 end
 close(vidObj);
-end
 end

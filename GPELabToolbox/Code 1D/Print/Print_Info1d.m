@@ -14,9 +14,6 @@ for n = 1:Method.Ncomponents
     fprintf('x-radius mean square: %8.14f\n',Outputs.x_rms{n}(Outputs.Iterations)); % Printing the rms in the x direction
     fprintf('Energy:  %8.14f\n',Outputs.Energy{n}(Outputs.Iterations)); % Printing the energy
     fprintf('Chemical potential:  %8.14f\n',Outputs.Chemical_potential{n}(Outputs.Iterations)); % Printing the chemical potential of the wave function
-    if strcmp(Method.Computation,'Ground')
-        fprintf('Stopping criterion (stops at %e):  %e\n',Method.Stop_crit{2}*Method.Deltat,Method.EvolutionCriterion); % Printing the stopping criterion
-    end
     % IF there are user defined local functions
     if (Outputs.User_compute_local)
        % FOR each user defined function
@@ -31,7 +28,7 @@ for n = 1:Method.Ncomponents
     else
         Energy_decay = 0; % Setting the energy decay to zero
     end
-    fprintf('Energy evolution:  %e\n',Energy_decay); % Printing the energy of the wave function
+    fprintf('Energy evolution:  %8.14f\n',Energy_decay); % Printing the energy of the wave function
 end
 fprintf('----------------------------------------\n');
 if (Outputs.User_compute_global)

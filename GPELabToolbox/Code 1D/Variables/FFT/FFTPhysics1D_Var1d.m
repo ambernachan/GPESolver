@@ -17,7 +17,6 @@ for n = 1:Method.Ncomponents
     for m = 1:Method.Ncomponents
         FFTPhysics1D.Potential{n,m} = Physics1D.Potential_function{n,m}(FFTGeometry1D.X); % Computing the potential function in the 1D geometry for the FFT
         FFTPhysics1D.Dispersion{n,m} = Physics1D.Dispersion_function{n,m}(-1i*FFTOperators1D.Gx); % Computing the dispersion function in the 1D geometry for the FFT
-        FFTPhysics1D.TimeDispersion{n,m} = Physics1D.TimeDispersion_function{n,m}(Method.Iterations*Method.Deltat,-1i*FFTOperators1D.Gx); % Computing the time-dependent dispersion function in the 1D geometry for the FFT
         FFTPhysics1D.TimePotential{n,m} = Physics1D.TimePotential_function{n,m}(Method.Iterations*Method.Deltat,FFTGeometry1D.X); % Computing the time dependent potential function in the 1D geometry for the FFT
         FFTPhysics1D.StochasticPotential{n,m} = Physics1D.StochasticPotential_function{n,m}(Physics1D.StochasticProcess_function(Method.Iterations*Method.Deltat,FFTGeometry1D.X),FFTGeometry1D.X) ; % Initializing the stochastic potential function
         FFTPhysics1D.StochasticDispersion{n,m} = Physics1D.StochasticDispersion_function{n,m}(Physics1D.StochasticProcess_function(Method.Iterations*Method.Deltat,FFTGeometry1D.X),-1i*FFTOperators1D.Gx) ; % Initializing the stochastic potential function

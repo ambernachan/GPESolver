@@ -71,7 +71,7 @@ Print = Print_Var1d(Printing,Evo,Draw);
 Draw_Timesolution1d(Outputs,Method,Geometry1D,Figure_Var1d)
 
 figure(3)
-Time = [0:0.1:Stop_time]; 
+Time = [0:0.1:25]; 
 plot(Time, Outputs.User_defined_local{1,1});
 xlabel('Time');
 ylabel('Position of Psi_1');

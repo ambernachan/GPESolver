@@ -90,10 +90,6 @@ for n = 1:Method.Ncomponents
     for m = FFTPhysics2D.Dispersion_function_Index{n}
             Dispersion_energy  = Dispersion_energy + real(ifft2(FFTPhysics2D.Dispersion_function{n,m}(-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy).*fft2(Phi{m})).*conj(Phi{n})); % Computing and storing the stochastic dispersion
     end
-     % FOR each component where the dispersion is non null
-    for m = FFTPhysics2D.TimeDispersion_function_Index{n}
-            Dispersion_energy  = Dispersion_energy + real(ifft2(FFTPhysics2D.TimeDispersion_function{n,m}(Method.Iterations*Method.Deltat,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy).*fft2(Phi{m})).*conj(Phi{n})); % Computing and storing the stochastic dispersion
-    end
     % FOR each component where the stochastic dispersion is non null
     for m = FFTPhysics2D.StochasticDispersion_function_Index{n}
         if (iscell(FFTPhysics2D.StochasticProcess_function))

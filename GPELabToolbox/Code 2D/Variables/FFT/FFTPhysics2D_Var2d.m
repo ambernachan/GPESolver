@@ -17,24 +17,19 @@ for n = 1:Method.Ncomponents
     for m = 1:Method.Ncomponents
         FFTPhysics2D.Potential{n,m} = Physics2D.Potential_function{n,m}(FFTGeometry2D.X,FFTGeometry2D.Y); % Computing the potential function in the 2D geometry for the FFT
         FFTPhysics2D.Dispersion{n,m} = Physics2D.Dispersion_function{n,m}(-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing the dispersion function in the 2D geometry for the FFT
-        FFTPhysics2D.TimeDispersion{n,m} = Physics2D.TimeDispersion_function{n,m}(Method.Iterations*Method.Deltat,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing the time-dependent dispersion function in the 2D geometry for the FFT
         if strcmp(Method.Type,'Splitting')
             FFTPhysics2D.Dispersionx{n,m} = Physics2D.Dispersion_function{n,m}(-1i*FFTOperators2D.Gx,0); % Computing the dispersion function in the 2D geometry for the FFT
             FFTPhysics2D.Dispersiony{n,m} = Physics2D.Dispersion_function{n,m}(0,-1i*FFTOperators2D.Gy); % Computing the dispersion function in the 2D geometry for the FFT
         end
         FFTPhysics2D.Nonlinearity{n,m} = FFTPhysics2D.Nonlinearity_function{n,m}(FFTPhi,FFTGeometry2D.X,FFTGeometry2D.Y); % Computing and storing the coupled nonlinearities between components
         FFTPhysics2D.FFTNonlinearity{n,m} = FFTPhysics2D.FFTNonlinearity_function{n,m}(FFTPhi,FFTGeometry2D.X,FFTGeometry2D.Y,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing and storing the coupled non-local nonlinearities between components
-        FFTPhysics2D.GradientNLx{n,m} = FFTPhysics2D.GradientNLx_function{n,m}(FFTPhi,FFTGeometry2D.X,FFTGeometry2D.Y,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing and storing the coupled non-local gradient nonlinearities between components
-        FFTPhysics2D.GradientNLy{n,m} = FFTPhysics2D.GradientNLy_function{n,m}(FFTPhi,FFTGeometry2D.X,FFTGeometry2D.Y,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing and storing the coupled non-local gradient nonlinearities between components
-        FFTPhysics2D.TimeGradientx{n,m} = FFTPhysics2D.GradientNLx_function{n,m}(Method.Iterations*Method.Deltat,FFTGeometry2D.X,FFTGeometry2D.Y); % Computing and storing the coupled time-dependent gradient between components
-        FFTPhysics2D.TimeGradienty{n,m} = FFTPhysics2D.GradientNLy_function{n,m}(Method.Iterations*Method.Deltat,FFTGeometry2D.X,FFTGeometry2D.Y); % Computing and storing the coupled time-dependent gradient between components
+        FFTPhysics2D.GradientNLx{n,m} = FFTPhysics2D.GradientNLx_function{n,m}(FFTPhi,FFTGeometry2D.X,FFTGeometry2D.Y,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing and storing the coupled non-local nonlinearities between components
+        FFTPhysics2D.GradientNLy{n,m} = FFTPhysics2D.GradientNLy_function{n,m}(FFTPhi,FFTGeometry2D.X,FFTGeometry2D.Y,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing and storing the coupled non-local nonlinearities between components
         FFTPhysics2D.TimePotential{n,m} = FFTPhysics2D.TimePotential_function{n,m}(Method.Iterations*Method.Deltat,FFTGeometry2D.X,FFTGeometry2D.Y); % Computing and storing the coupled time-dependent potential between components
         FFTPhysics2D.StochasticPotential{n,m} = Physics2D.StochasticPotential_function{n,m}(Physics2D.StochasticProcess_function(Method.Iterations*Method.Deltat,FFTGeometry2D.X,FFTGeometry2D.Y),FFTGeometry2D.X,FFTGeometry2D.Y) ; % Initializing the stochastic potential function
         FFTPhysics2D.StochasticDispersion{n,m} = Physics2D.StochasticDispersion_function{n,m}(Physics2D.StochasticProcess_function(Method.Iterations*Method.Deltat,FFTGeometry2D.X,FFTGeometry2D.Y),-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy) ; % Initializing the stochastic dispersion function
         FFTPhysics2D.TimePotentialExp{n,m} = FFTPhysics2D.TimePotential_function{n,m}(Method.Iterations*Method.Deltat,FFTGeometry2D.X,FFTGeometry2D.Y); % Computing and storing the coupled time-dependent potential between components
         FFTPhysics2D.TimePotentialImp{n,m} = FFTPhysics2D.TimePotential_function{n,m}((Method.Iterations + 1)*Method.Deltat,FFTGeometry2D.X,FFTGeometry2D.Y); % Computing and storing the coupled time-dependent potential between components
-        FFTPhysics2D.TimeDispersionExp{n,m} = FFTPhysics2D.TimeDispersion_function{n,m}(Method.Iterations*Method.Deltat,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing and storing the coupled time-dependent dispersion between components
-        FFTPhysics2D.TimeDispersionImp{n,m} = FFTPhysics2D.TimeDispersion_function{n,m}((Method.Iterations + 1)*Method.Deltat,-1i*FFTOperators2D.Gx,-1i*FFTOperators2D.Gy); % Computing and storing the coupled time-dependent dispersion between components
     end
 end
 

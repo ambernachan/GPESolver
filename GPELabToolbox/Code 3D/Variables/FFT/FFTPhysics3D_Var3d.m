@@ -22,9 +22,6 @@ for n = 1:Method.Ncomponents
         FFTPhysics3D.Dispersiony{n,m} = Physics3D.Dispersion_function{n,m}(0,-1i*FFTOperators3D.Gy,0); % Computing the dispersion function in the 3D geometry for the FFT
         FFTPhysics3D.Dispersionz{n,m} = Physics3D.Dispersion_function{n,m}(0,0,-1i*FFTOperators3D.Gz); % Computing the dispersion function in the 3D geometry for the FFT      
         end
-        FFTPhysics3D.TimeDispersion{n,m} = Physics3D.TimeDispersion_function{n,m}(Method.Deltat*Method.Iterations, FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z); % Computing the time dispersion function in the 3D geometry for the FFT
-        FFTPhysics3D.TimeDispersionImp{n,m} = Physics3D.TimeDispersion_function{n,m}(Method.Deltat*Method.Iterations, FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z); % Computing the time dispersion function in the 3D geometry for the FFT
-        FFTPhysics3D.TimeDispersionExp{n,m} = Physics3D.TimeDispersion_function{n,m}(Method.Deltat*Method.Iterations, FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z); % Computing the time dispersion function in the 3D geometry for the FFT
         FFTPhysics3D.TimePotential{n,m} = Physics3D.TimePotential_function{n,m}(Method.Deltat*Method.Iterations, FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z); % Computing the potential function in the 3D geometry for the FFT
         FFTPhysics3D.Nonlinearity{n,m} = Physics3D.Nonlinearity_function{n,m}(Phi, FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z); % Computing the potential function in the 3D geometry for the FFT
         FFTPhysics3D.FFTNonlinearity{n,m} = Physics3D.FFTNonlinearity_function{n,m}(Phi, FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z,-1i*FFTOperators3D.Gx,-1i*FFTOperators3D.Gy,-1i*FFTOperators3D.Gz); % Computing the potential function in the 3D geometry for the FFT

@@ -35,8 +35,8 @@ if (iscell(Function) == 1)
 for n = 1:Method.Ncomponents
 % Setting figure and properties
 Figure.label = n; % Number of the figure
-Figure.title = strcat('|\phi(x,y,z)|^2 of component ', 32, num2str(n)); % Storing title of the figure
-%clf(n);
+Figure.title = strcat('|phi(x,y,z)|^2 of component ', 32, num2str(n)); % Storing title of the figure
+clf(n);
 % surf(Geometry2D.X,Geometry2D.Y,Function{n}(Outputs.Solution{1}{n},Geometry2D.X,Geometry2D.Y),'EdgeColor','none','Colormap',Figure.map)
 draw_isosurface_3d(Function{n}(Outputs.Solution{1}{n},Geometry3D.X,Geometry3D.Y,Geometry3D.Z),Geometry3D,Figure);
 drawnow;
@@ -68,7 +68,7 @@ elseif (iscell(Function) == 0)
 figure(1);
 clf(1);
 Figure.label = 1; % Number of the figure
-Figure.title = strcat('|\phi(x,y,z)|^2 of component ', 32, num2str(1)); % Storing title of the figure
+Figure.title = strcat('|phi(x,y,z)|^2 of component ', 32, num2str(1)); % Storing title of the figure
 draw_isosurface_3d(Function(Outputs.Solution{1},Geometry3D.X,Geometry3D.Y,Geometry3D.Z),Geometry3D,Figure);
 drawnow;
 fprintf('Set the figure and then press any key \n')

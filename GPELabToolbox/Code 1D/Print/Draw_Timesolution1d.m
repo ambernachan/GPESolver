@@ -16,7 +16,7 @@ for n = 1:Method.Ncomponents
     Time = 0 : Method.Deltat*Outputs.Evo_outputs : Method.Stop_time;
     %% Printing the figure of the square of the modulus of wave function
     Figure.label = n; % Number of the figure
-    Figure.title = strcat('|\phi(x)',32,'|^2 of component ', 32, num2str(n)); % Storing title of the figure
+    Figure.title = strcat('|phi(x)',32,'|^2 of component ', 32, num2str(n)); % Storing title of the figure
     figure(Figure.label); % Setting the number of the figure
     clf(Figure.label); % Clear figure
     surf(Time,Geometry1D.X,abs(PHI).^2,'EdgeColor','none'); % Drawing function

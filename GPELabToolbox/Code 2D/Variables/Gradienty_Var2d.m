@@ -12,7 +12,7 @@
 
 function [Physics2D] = Gradienty_Var2d(Method, Physics2D, Gradienty, G)
 %% Initializing the default gradient function
-Default_Gradienty = @(X,Y) -1i*Physics2D.Omega*X; % Setting the default gradient function
+Default_Gradienty = @(X,Y)-1i*Physics2D.Omega*X; % Setting the default gradient function
 
 %% Adding the gradient in the y direction function matrix
 % IF there are 4 inputs and the gradient function is not defined

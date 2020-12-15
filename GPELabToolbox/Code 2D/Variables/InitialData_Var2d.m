@@ -64,7 +64,7 @@ Phi_0 = cell(1,Method.Ncomponents); % Initialization of the initial data
     elseif (InitialData_Choice == 2) && (Physics2D.Beta ~= 0)
         %FOR each component
         for n = 1:Method.Ncomponents
-            Phi_0{n} = Thomas_Fermi2d(gamma_x,gamma_y,Physics2D.Beta,Physics2D.Potential_function{n,n}(Geometry2D.X-X0(n),Geometry2D.Y-Y0(n)) + Physics2D.TimePotential_function{n,n}(0,Geometry2D.X-X0(n),Geometry2D.Y-Y0(n))); % Computing the Thomas-Fermi approximation
+            Phi_0{n} = Thomas_Fermi2d(gamma_x,gamma_y,Physics2D.Beta,Physics2D.Potential_function{n,n}(Geometry2D.X-X0(n),Geometry2D.Y-Y0(n))); % Computing the Thomas-Fermi approximation
             Phi_0{n} = Phi_0{n}/L2_norm2d(Phi_0{n},Geometry2D); %Normalization of the initial function 
         end
     % ELSEIF one has chosen to compute directly the Thomas-Fermi

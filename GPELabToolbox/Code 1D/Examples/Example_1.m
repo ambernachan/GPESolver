@@ -11,8 +11,8 @@ clear all;
 %% Setting the method and geometry
 Computation = 'Ground';
 Ncomponents = 1;
-Type = 'BESP';
-Deltat = 1e-2;
+Type = 'BEFD';
+Deltat = 1;
 Stop_time = [];
 Stop_crit = {'Energy',1e-12};
 Method = Method_Var1d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit);

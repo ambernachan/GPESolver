@@ -49,17 +49,9 @@ for n = 1:Method.Ncomponents
     for m = FFTPhysics3D.Potential_function_Index{n}
         Potential_energy = Potential_energy + real(FFTPhysics3D.Potential_function{n,m}(FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z).*Phi{m}.*conj(Phi{n})); % Computing the local potential energy for the component
     end
-    % FOR each component where the potential is non null
-    for m = FFTPhysics3D.TimePotential_function_Index{n}
-        Potential_energy = Potential_energy + real(FFTPhysics3D.TimePotential_function{n,m}(Method.Iterations*Method.Deltat,FFTGeometry3D.X,FFTGeometry3D.Y,FFTGeometry3D.Z).*Phi{m}.*conj(Phi{n})); % Computing the local potential energy for the component
-    end
     % FOR each component where the dispersion is non null
     for m = FFTPhysics3D.Dispersion_function_Index{n}
         Dispersion_energy = Dispersion_energy + real(ifftn(FFTPhysics3D.Dispersion{n,m}.*fftn(Phi{m})).*conj(Phi{n})); % Computing the wave function with the dispersion operator applied
-    end
-    % FOR each component where the dispersion is non null
-    for m = FFTPhysics3D.TimeDispersion_function_Index{n}
-        Dispersion_energy = Dispersion_energy + real(ifftn(FFTPhysics3D.TimeDispersion_function{n,m}(Method.Iterations*Method.Deltat,-1i*FFTOperators3D.Gx,-1i*FFTOperators3D.Gy,-1i*FFTOperators3D.Gz).*fftn(Phi{m})).*conj(Phi{n})); % Computing the wave function with the dispersion operator applied
     end
     % FOR each component where the stochastic potential is non null
     for m = FFTPhysics3D.StochasticPotential_function_Index{n}

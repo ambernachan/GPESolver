@@ -21,12 +21,10 @@ Physics1D.Beta = Analyse_Var.Results.Beta; % Storing the 'Beta' input
 
 %% Initializing functions
 Physics1D.Potential_function = cell(Method.Ncomponents);
-Physics1D.Dispersion_function = cell(Method.Ncomponents);
-Physics1D.TimeDispersion_function = cell(Method.Ncomponents);
+Physics1D.Disperion_function = cell(Method.Ncomponents);
 Physics1D.TimePotential_function = cell(Method.Ncomponents);
 Physics1D.StochasticPotential_function = cell(Method.Ncomponents);
 Physics1D.IntegratedTimePotential_function = cell(Method.Ncomponents);
-Physics1D.IntegratedTimeDispersion_function = cell(Method.Ncomponents);
 Physics1D.Nonlinearity_function = cell(Method.Ncomponents);
 Physics1D.Nonlinearity_energy_function = cell(Method.Ncomponents);
 Physics1D.FFTNonlinearity_function = cell(Method.Ncomponents);
@@ -38,7 +36,6 @@ for n = 1:Method.Ncomponents
     for m = 1:Method.Ncomponents
         Physics1D.Potential_function{n,m} = @(X) 0;
         Physics1D.Dispersion_function{n,m} = @(FFTX) 0;
-        Physics1D.TimeDispersion_function{n,m} = @(t,FFTX) 0;
         Physics1D.TimePotential_function{n,m} = @(t,X) 0;
         Physics1D.StochasticPotential_function{n,m} = @(W,X) 0;
         Physics1D.StochasticDispersion_function{n,m} = @(W,FFTX) 0;
@@ -52,7 +49,6 @@ end
 %% Initializing index functions
 Physics1D.Potential_function_Index = cell(1,Method.Ncomponents);
 Physics1D.Dispersion_function_Index = cell(1,Method.Ncomponents);
-Physics1D.TimeDispersion_function_Index = cell(1,Method.Ncomponents);
 Physics1D.TimePotential_function_Index = cell(1,Method.Ncomponents);
 Physics1D.StochasticPotential_function_Index = cell(1,Method.Ncomponents);
 Physics1D.StochasticDispersion_function_Index = cell(1,Method.Ncomponents);

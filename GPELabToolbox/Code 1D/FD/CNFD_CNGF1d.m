@@ -50,7 +50,7 @@ Method.Cputime  = Method.Cputime + Method.Cputime_temp;  % Updating the CPUtime 
 %                     time step
 %                     - the number of iterations must not exceed the
 %                     maximum number of iterations  
-while (Method.EvolutionCriterion>Method.Stop_crit{2}*Method.Deltat)&&(Method.Iterations<Method.Max_iter)
+while (Method.GlobalEvol>Method.Stop_crit*Method.Deltat)&&(Method.Iterations<Method.Max_iter)
     %% Updating variables
     FDPhi_tmp = FDPhi; % Storing a temporary variable of the ground states to compute local evolution
     Method.Cputime_temp = cputime; % Reinitialization of the relative CPUtime variable
@@ -70,14 +70,9 @@ while (Method.EvolutionCriterion>Method.Stop_crit{2}*Method.Deltat)&&(Method.Ite
     end
  
     %% Normalization of the ground states
-    Global_L2norm = 0;
     % FOR each component
     for n = 1:Method.Ncomponents
-        Global_L2norm = Global_L2norm + L2_norm1d(FDPhi{n},FDGeometry1D)^2; % Computing the L2 norm of each wave function
-    end
-    % FOR each component
-    for n = 1:Method.Ncomponents
-        FDPhi{n} = FDPhi{n}/sqrt(Global_L2norm); % Normalization of each wave function
+        FDPhi{n} = FDPhi{n}/L2_norm1d(FDPhi{n},FDGeometry1D); % Normalization of each wave function
         Method.LocalEvol(n) = max(abs(FDPhi{n}-FDPhi_tmp{n})); % Computing the local evolution of each wave function
     end
     

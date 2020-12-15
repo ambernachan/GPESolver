@@ -252,12 +252,13 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
     geom = phi_dyn.return_geometry();
     xx = geom.X(1,:,1);
     dx = geom.dx;
-    Redge = (16*S)^(1/4);
+    %Redge = (15*S)^(1/5);
     area = dx*sum(phix);
     phixN = phix/area;
 
     save(wspath, 'PHIS', 'phix', 'phiy', 'phiz', 'geom', 'xx', 'dx', 'datestr', '-append')
-    save(wspath, 'Redge', 'area', 'phixN', '-append')
+    %save(wspath, 'Redge', 'area', 'phixN', '-append')
+    save(wspath, 'area', 'phixN', '-append')
 
     expphis = ExpPhis(S, [gx,gy,gz], [0,0,0], geom);
     [g1d,wg1d] = expphis.Gaussian1d();

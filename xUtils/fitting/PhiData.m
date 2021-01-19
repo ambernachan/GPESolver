@@ -29,14 +29,14 @@ classdef PhiData  < handle
 
             obj.ncomponents = size(obj.phi,2);
 
-            if nargin > 2
+            if nargin > 2 % phi_type is given
                 if strcmp(phi_type, 'phisq')
-                    obj.phisq = obj.phi;
-                    obj.make_phi_and_phase_from_phisq();
+                    obj.phisq = obj.phi; % def |phi|^2
+                    obj.make_phi_and_phase_from_phisq(); % def phi, phase
                 end
             end
 
-            if nargin < 2 % geometry is not given
+            if nargin < 2 % geometry is not given, phi_type will be requested
                 obj.dimensions = ndims(obj.phi{1});
                 geometry = struct();
                 phi_type = input('Type either "phi"/"phisq" to define the data entered\n');

@@ -2,12 +2,13 @@
 ...
 %}
 
-function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,xparticles,yparticles,zparticles,delta,gammas)
+function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,...
+    xparticles,yparticles,zparticles,delta,gammas,branch)
 
 %     clear;
 %     chi = 0.01; xlimit = 3; xparticles = 2^5+1; ylimit = xlimit; yparticles = 2^5+1;
     close all;
-    clearvars -except chi xlimit ylimit zlimit xparticles yparticles zparticles delta gammas
+    clearvars -except chi xlimit ylimit zlimit xparticles yparticles zparticles delta gammas branch
     %clear;
 
     %% Determine interaction strength compared to kinetic energy
@@ -31,7 +32,7 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
     Type = 'BESP';
     Deltat = 0.5;
     Stop_time = [];
-    Stop_crit = {'MaxNorm', 1e-4};
+    Stop_crit = {'MaxNorm', gammas(1)*1e-4};
     Max_iter = 1e3;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
@@ -109,16 +110,24 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
 
     Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice, X0, Y0, Z0, gamma_x, gamma_y, gamma_z);
 
+    %% version mgmt
+    curdir = strsplit(pwd, '/');
+    curdir = strsplit(curdir{end}, '\');
+    curdir = curdir{end};
+    
     %% Printing interaction strength
 
+    info.add_info_separator();
+    info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
+    info.add_custom_info('Branch: \t %s \n', branch); % print current folder
     info.add_info_separator();
     info.add_custom_info('S \t=\t %f \n', S); % print interaction strength
     info.add_custom_info('Beta \t=\t %f \n', Beta); % print interaction parameter Beta
     info.add_custom_info('w \t=\t %f \n', w); % print Gaussian parameter w
-    info.add_custom_info('\\sigma_{x,y,z} \t=\t [%.2f,%.2f,%.2f] \n', ...
+    info.add_custom_info('sigmas \t=\t [%.4f,%.4f,%.4f] \n', ...
         sigma_with_delta.x,sigma_with_delta.y,sigma_with_delta.z); % print Gaussian parameter sigma_xyz with Delta
     info.add_custom_info('Delta \t=\t %f \n', Delta); % print kinetic energy parameter Delta
-    info.add_custom_info('gammas \t=\t [%.1f,%.1f,%.1f] \n', gx,gy,gz); % print gammas
+    info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
     info.add_info_separator();
 
     %% Determining outputs
@@ -129,7 +138,7 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
 
     Printing = 1;
     Evo = 15;
-    Draw = 0;
+    Draw = 1;
     Print = Print_Var3d(Printing, Evo, Draw);
 
     %% RUN THE SIMULATION to find the ground state
@@ -243,7 +252,7 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
     wspath = info.get_workspace_path('fittingdata');
     datestr = info.creationTimeString;
 
-    clearvars -except path wspath datestr
+    clearvars -except path wspath datestr dimensions
 
     load(wspath)
 
@@ -313,7 +322,7 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
     
     %%%%%%%%%%%%%%%%%%%%%
     ylimit_x = max(max(max(gphixN),max(tfphixN)),max(phixN))*1.1;
-    plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim1,ylimit_x,'x',Rx,S,w,dx,datestr,Delta)
+    plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim1,ylimit_x,'x',Rx,S,w,dx,datestr,Delta,dimensions)
     
     figname = ['compare-to-gaussTF-X' sprintf('_-%d;%d',xlim1,xlim1)];
     info.save_figure(1,'analyze',figname,path,'.fig')
@@ -322,7 +331,7 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
     close all;
     %%%%%%%%%%%%%%%%%%%%%
     ylimit_y = max(max(max(gphiyN),max(tfphiyN)),max(phiyN))*1.1;
-    plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim1,ylimit_y,'y',Ry,S,w,dy,datestr,Delta)
+    plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim1,ylimit_y,'y',Ry,S,w,dy,datestr,Delta,dimensions)
 
     info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim1,xlim1)],path,'.fig')
     info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim1,xlim1)],path,'.png')
@@ -330,7 +339,7 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
     close all;
     %%%%%%%%%%%%%%%%%%%%%
     ylimit_z = max(max(max(gphizN),max(tfphizN)),max(phizN))*1.1;
-    plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim1,ylimit_z,'z',Rz,S,w,dz,datestr,Delta)
+    plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim1,ylimit_z,'z',Rz,S,w,dz,datestr,Delta,dimensions)
 
     info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim1,xlim1)],path,'.fig')
     info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim1,xlim1)],path,'.png')
@@ -341,49 +350,49 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,x
     if nplots > 1
         close all;
         %%%%%%%%%%%%%%%%%%%%% % graph(-1,1)
-        plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim2,ylimit_x,'x',Rx,S,w,dx,datestr,Delta)
+        plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim2,ylimit_x,'x',Rx,S,w,dx,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-X' sprintf('_-%d;%d',xlim2,xlim2)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-X' sprintf('_-%d;%d',xlim2,xlim2)],path,'.png')
 
         close all;
-        plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim2,ylimit_y,'y',Ry,S,w,dy,datestr,Delta)
+        plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim2,ylimit_y,'y',Ry,S,w,dy,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim2,xlim2)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim2,xlim2)],path,'.png')
         
         close all;
-        plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim2,ylimit_z,'z',Rz,S,w,dz,datestr,Delta)
+        plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim2,ylimit_z,'z',Rz,S,w,dz,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim2,xlim2)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim2,xlim2)],path,'.png')
 
         close all;
         %%%%%%%%%%%%%%%%%%%%% % graph(-0.1,0.1)
-        plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim3,ylimit_x,'x',Rx,S,w,dx,datestr,Delta)
+        plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim3,ylimit_x,'x',Rx,S,w,dx,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-X' sprintf('_-%d;%d',xlim3,xlim3)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-X' sprintf('_-%d;%d',xlim3,xlim3)],path,'.png')
 
         close all;
-        plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim3,ylimit_y,'y',Ry,S,w,dy,datestr,Delta)
+        plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim3,ylimit_y,'y',Ry,S,w,dy,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim3,xlim3)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim3,xlim3)],path,'.png')
         
         close all;
-        plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim3,ylimit_z,'z',Rz,S,w,dz,datestr,Delta)
+        plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim3,ylimit_z,'z',Rz,S,w,dz,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim3,xlim3)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim3,xlim3)],path,'.png')
         
         close all;
         %%%%%%%%%%%%%%%%%%%%% % graph(-0.2,0.2)
-        plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim4,ylimit_x,'x',Rx,S,w,dx,datestr,Delta)
+        plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim4,ylimit_x,'x',Rx,S,w,dx,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-X' sprintf('_-%d;%d',xlim4,xlim4)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-X' sprintf('_-%d;%d',xlim4,xlim4)],path,'.png')
 
         close all;
-        plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim4,ylimit_y,'y',Ry,S,w,dy,datestr,Delta)
+        plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim4,ylimit_y,'y',Ry,S,w,dy,datestr,Delta,dimensions)
         info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim4,xlim4)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-Y' sprintf('_-%d;%d',xlim4,xlim4)],path,'.png')
         
         close all;
-        plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim4,ylimit_z,'z',Rz,S,w,dz,datestr,Delta)
+        plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim4,ylimit_z,'z',Rz,S,w,dz,datestr,Delta,dimensions)
         
         info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim4,xlim4)],path,'.fig')
         info.save_figure(1,'analyze',['compare-to-gaussTF-Z' sprintf('_-%d;%d',xlim4,xlim4)],path,'.png')

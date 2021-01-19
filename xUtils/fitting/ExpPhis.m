@@ -38,7 +38,7 @@ classdef ExpPhis < handle
             gaussapprox = prefactor * exp(exponent);
 
             geom = struct('X', obj.X1d, 'dx', obj.dr.x);
-            gaussapprox = PhiData(gaussapprox, geom, 'phisq');
+            gaussapprox = PhiData(gaussapprox, geom, 'phi');
         end
 
         function [gaussapprox,w] = Gaussian2d(obj)
@@ -49,7 +49,7 @@ classdef ExpPhis < handle
             gaussapprox = prefactor .* exp(exponentx) .* exp(exponenty);
 
             geom = struct('X', obj.X2d, 'Y', obj.Y2d, 'dx', obj.dr.x, 'dy', obj.dr.y);
-            gaussapprox = PhiData(gaussapprox, geom, 'phisq');
+            gaussapprox = PhiData(gaussapprox, geom, 'phi');
         end
 
         function [gaussapprox, w] = Gaussian3d(obj)
@@ -61,7 +61,7 @@ classdef ExpPhis < handle
             gaussapprox = prefactor .* exp(exponentx) .* exp(exponenty) .* exp(exponentz);
 
             geom = struct('X', obj.X3d, 'Y', obj.Y3d, 'Z', obj.Z3d, 'dx', obj.dr.x, 'dy', obj.dr.y, 'dz', obj.dr.z);
-            gaussapprox = PhiData(gaussapprox, geom, 'phisq');
+            gaussapprox = PhiData(gaussapprox, geom, 'phi');
         end
 
         function [TFapprox,redge] = TF1d(obj)

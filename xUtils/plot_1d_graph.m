@@ -1,4 +1,4 @@
-function [plt] = plot_1d_graph(xlinarray,phi,gphi,tfphi,xlimit,ylimit,type,Redge,S,w,dx,datestr,delta)
+function [plt] = plot_1d_graph(xlinarray,phi,gphi,tfphi,xlimit,ylimit,type,Redge,S,w,dx,datestr,delta,dims)
     plt = plot(xlinarray,phi);
     xlim([-xlimit xlimit]); ylim([0 ylimit]);
     if strcmp(type, 'x')
@@ -10,15 +10,21 @@ function [plt] = plot_1d_graph(xlinarray,phi,gphi,tfphi,xlimit,ylimit,type,Redge
     else
         error('Invalid type chosen. Choose from x, y, z.')
     end
+    
+    if nargin < 14
+        dims = 2;
+        warning('Number of dimensions not given. Set dims=2')
+    end
+    
     hold on;
     plot(xlinarray,tfphi,'LineStyle','--')
     plot(xlinarray,gphi)
     line([Redge Redge], [0 ylimit], 'Color','red','LineStyle','--'); line([-Redge -Redge], [0 ylimit], 'Color','red','LineStyle','--');
     
-    lgd = legend(['result S=' return_stringS(S) sprintf(',\nN=%d^2, grid(%d,%d)^2',...
-        length(xlinarray),min(xlinarray),max(xlinarray))], 'exp TF_{2d} cutout',...
+    lgd = legend(['result S=' return_stringS(S) sprintf(',\nN=%d^%d, grid(%d,%d)^%d',...
+        length(xlinarray),dims, min(xlinarray),max(xlinarray), dims)], sprintf('exp TF_{%dd} cutout',dims),...
         sprintf('exp. Gaussian\n(\\sigma\\sim%.3f,A\\sim%.2f)',w/sqrt(2),max(gphi)),...
-        sprintf('R_{edge}^{2d} = %.5f\n\t(dx = %.4f)',Redge,dx));
+        sprintf('R_{edge}^{%dd} = %.5f\n\t(dx = %.4f)',dims,Redge,dx));
     
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s',datestr))
     

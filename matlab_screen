@@ -1,0 +1,96 @@
+E_INVALID_CMD_LINE_PARAMETERS=-1
+E_NOT_ALL_CMD_LINE_PARAMETERS=-2
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+case $key in
+  --folder)
+  [ "$2" == "" ] && (echo "Invalid cmd line pars for $key"; exit $E_INVALID_CMD_LINE_PARAMETERS)
+  FOLDER="$2"
+  shift 2 || exit $E_INVALID_CMD_LINE_PARAMETERS # past argument & value
+  ;;
+  --chi)
+  [ "$2" == "" ] && (echo "Invalid cmd line pars for $key"; exit $E_INVALID_CMD_LINE_PARAMETERS)
+  chi="$2"
+  shift 2 || exit $E_INVALID_CMD_LINE_PARAMETERS # past argument & value
+  ;;
+  --delta)
+  [ "$2" == "" ] && (echo "Invalid cmd line pars for $key"; exit $E_INVALID_CMD_LINE_PARAMETERS)
+  delta="$2"
+  shift 2 || exit $E_INVALID_CMD_LINE_PARAMETERS # past argument & value
+  ;;
+  --gammas)
+  [ "$2" == "" ] && (echo "Invalid cmd line pars for $key"; exit $E_INVALID_CMD_LINE_PARAMETERS)
+  gammas="$2"
+  shift 2 || exit $E_INVALID_CMD_LINE_PARAMETERS # past argument & value
+  ;;
+  --xyzlimit)
+  [ "$2" == "" ] && (echo "Invalid cmd line pars for $key"; exit $E_INVALID_CMD_LINE_PARAMETERS)
+  xyzlimit="$2"
+  shift 2 || exit $E_INVALID_CMD_LINE_PARAMETERS # past argument & value
+  ;;
+  --Nxyz)
+  [ "$2" == "" ] && (echo "Invalid cmd line pars for $key"; exit $E_INVALID_CMD_LINE_PARAMETERS)
+  Nxyz="$2"
+  shift 2 || exit $E_INVALID_CMD_LINE_PARAMETERS # past argument & value
+  ;;
+  -h|--help)
+  printf "$SCRIPT_NAME [options]\n\
+  --folder		Directory to cd in to and run from
+  --chi			For example: 0.1
+  --delta		For example: 0.05
+  --gammas		For example: \"[5 5 5]\"
+  --xyzlimit		For example: \"[5 5 5]\"
+  --Nxyz		For example: \"2^7+1\"
+  "
+  exit 0
+  ;;
+  *)    # unknown option
+  POSITIONAL+=("$1") # save it in an array for later
+  shift # past argument
+  ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+set -e
+
+echo "FOLDER = $FOLDER"
+echo "chi = $chi"
+echo "delta = $delta"
+echo "gammas = $gammas"
+echo "xyzlimit = $xyzlimit"
+echo "Nxyz = $Nxyz"
+
+if [ "$FOLDER" == "" ] ||  [ "$chi" == "" ] || [ "$delta" == "" ] ||  [ "$gammas" == "" ] ||  [ "$xyzlimit" == "" ] || [ "$Nxyz" == "" ]; then
+	echo "Not all arguments given, exiting."
+	exit $E_NOT_ALL_CMD_LINE_PARAMETERS
+fi
+
+# Get the branch name
+echo "Getting git name from '`pwd`/$FOLDER'..."
+branch=$(pushd $FOLDER > /dev/null  && git rev-parse --abbrev-ref HEAD && popd > /dev/null)
+echo "branch = $branch"
+
+# Mount rue drive stuff
+if [ $(mount | grep tuelocal | wc -l) -eq 0 ]
+then
+  mount /usr/tuelocal
+fi
+
+# Build up variables
+SESSION_NAME="${FOLDER}_${branch////_}_chi[${chi}]_delta[${delta}]_gammas${gammas}_xyzlim${xyzlimit}_Nxyz[${Nxyz}]"
+
+MATLAB='/usr/tuelocal/bin/matlab -nodisplay -nosplash -nodesktop -r'
+MATLAB_BASE="cd '${FOLDER}'; addpath(genpath('GPELabToolbox'),genpath('testokkhen'),genpath('xSimulations'),genpath('xUtils'));"
+MATLAB_RUN="chi=${chi}; xyzlimit=${xyzlimit}; xlimit=xyzlimit(1);ylimit=xyzlimit(2);zlimit=xyzlimit(3); Nx=${Nxyz}; Ny=${Nxyz}; Nz=${Nxyz}; delta=${delta}; gammas=${gammas}; branch='${branch}'; trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,Nx,Ny,Nz,delta,gammas,branch)"
+#MATLAB_RUN="1+1;2+3"
+MATLAB_CMD="$MATLAB_BASE $MATLAB_RUN"
+CMD=$(echo "$MATLAB \"$MATLAB_CMD\"")
+
+# Print and run.
+echo "Running: '$SESSION_NAME': $CMD"
+sleep 1
+screen -S "${SESSION_NAME}" -d -m bash -c "$CMD; exec sh"
+screen -ls

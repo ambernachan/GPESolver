@@ -105,8 +105,6 @@ function [] = trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,.
     gamma_x = 1;
     gamma_y = 1;
     gamma_z = 1;
-    %gamma_x = 1 / (s*w^2);
-    %gamma_y = 1 / (s*w^2);
 
     Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice, X0, Y0, Z0, gamma_x, gamma_y, gamma_z);
 

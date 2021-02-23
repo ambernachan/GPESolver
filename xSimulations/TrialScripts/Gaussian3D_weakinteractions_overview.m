@@ -140,5 +140,11 @@ pause(2) % pauses the program for 2 seconds
 
 Draw_solution3d(Phi, Method, Geometry3D, Figure_Var3d());
 
+%% Save workspace
+chistr = sprintf('chi=%.2f', S);
+gammastr = sprintf('gamma=[%.1f,%.1f,%.1f]', gx, gy, gz);
+gridstr = sprintf('grid[-%d,%d]', xmax, xmax);
+workspacename = ['Gaussian3D_weakinteractions_MWE_' chistr '_' gammastr '_' gridstr '.mat']
+save(workspacename)
 
 %% end

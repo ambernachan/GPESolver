@@ -55,6 +55,7 @@ Delta = 0.5;
 Beta = 4*pi*S;
 Omega = [0 0 0];
 Physics3D = Physics3D_Var3d(Method, Delta, Beta, Omega);
+Physics3D = Dispersion_Var3d(Method, Physics3D);
 Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
 Physics3D = Nonlinearity_Var3d(Method, Physics3D); % std cubic nonlinearity
 %Physics3D = Gradientx_Var3d(Method, Physics3D, @(x,y,z) -1i*Omega*y);(!!!)

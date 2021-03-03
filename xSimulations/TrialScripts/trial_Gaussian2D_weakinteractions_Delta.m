@@ -67,6 +67,7 @@ function [] = trial_Gaussian2D_weakinteractions_Delta(chi,xlimit,ylimit,xparticl
     Beta = 4*pi*S;
     Omega = 0;
     Physics2D = Physics2D_Var2d(Method, Delta, Beta, Omega);
+    Physics2D = Dispersion_Var2d(Method, Physics2D);
     %Physics2D = Potential_Var2d(Method, Physics2D); % std quadratic potential
     %Physics2D = Potential_Var2d(Method, Physics2D, @(X,Y) quadratic_potential2d(1, 5, X, Y));
     Physics2D = Potential_Var2d(Method, Physics2D, @(X,Y) quadratic_potential2d(1, 1, X, Y));

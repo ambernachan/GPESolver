@@ -2,7 +2,7 @@
 Low-interactions system without rotations in 3D
 %}
 
-clear all;
+close all, clear all, clc;
 
 %% Determine interaction strength compared to kinetic energy
 
@@ -52,6 +52,7 @@ Delta = 0.5;
 Beta = 4*pi*S; % S is 'chi' in literature -> N * a_s / a_ho
 Omega = 0;
 Physics3D = Physics3D_Var3d(Method, Delta, Beta, Omega);
+Physics3D = Dispersion_Var3d(Method, Physics3D);
 %Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
 Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z));
 Physics3D = Nonlinearity_Var3d(Method, Physics3D); % std cubic nonlinearity

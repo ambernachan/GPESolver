@@ -2,7 +2,7 @@
 classdef Info  < handle
     properties
         name
-        dimensions
+        params
 
         separatorStr
 
@@ -26,8 +26,8 @@ classdef Info  < handle
     end
     methods
         % Constructor
-        function obj = Info(name, dimensions)
-            if nargin ~= 2
+        function obj = Info(name, creationTime, params)
+            if nargin ~= 3
                 error('Invalid number of arguments given %d, expected 2', nargin);
             end
             if ~(isstring(name) || ischar(name))
@@ -38,11 +38,11 @@ classdef Info  < handle
             end
 
             obj.name = name;
-            obj.dimensions = dimensions;
+            obj.params = params;
 
             obj.separatorStr = '-------------------------------------------';
 
-            obj.creationTime = now;
+            obj.creationTime = creationTime;
             obj.creationTimeString = [datestr(obj.creationTime, 'yyyy-mm-dd') '@' datestr(obj.creationTime, 'HH.MM.SS') ];
             obj.creationCpuTime = cputime;
             obj.timerCreationValue = tic;
@@ -51,7 +51,7 @@ classdef Info  < handle
             obj.outputdir = 'xOutputs';
             obj.subdir = name; % Name of simulation (folder)
             obj.fulldir = [pwd '/' obj.outputdir '/' obj.subdir '/' obj.creationTimeString];
-            obj.filenameInfo = 'INFO.txt';
+            obj.filenameInfo = ['INFO_' obj.suffix() '.txt'];
             obj.pathInfo = [obj.fulldir '/' obj.filenameInfo];
 
             % Create directory
@@ -70,6 +70,10 @@ classdef Info  < handle
             fprintf(obj.fileID, 'Start: %s\n', datestr(obj.creationTime, 'dd mmm yy @ HH:MM:SS')); 
             obj.start_info()
         end
+        
+        function s = suffix(obj)
+            s = ['S=' format_str(obj.params.S)];
+        end
 
         function start_info(obj)
             obj.startTime = now;
@@ -79,10 +83,10 @@ classdef Info  < handle
 
         function add_simulation_info(obj, Geometry)
             fprintf(obj.fileID, 'Nx:\t%d\t\t-%d<x<%d\n', Geometry.Nx, (Geometry.Lx/2), (Geometry.Ly/2));
-            if obj.dimensions > 1
+            if obj.params.dimensions > 1
                fprintf(obj.fileID, 'Ny:\t%d\t\t-%d<y<%d\n', Geometry.Ny, (Geometry.Ly/2), (Geometry.Ly/2));
             end
-            if obj.dimensions > 2
+            if obj.params.dimensions > 2
                fprintf(obj.fileID, 'Nz:\t%d\t\t-%d<z<%d\n', Geometry.Nz, (Geometry.Lz/2), (Geometry.Lz/2));
             end
         end
@@ -92,7 +96,7 @@ classdef Info  < handle
             if obj.fileID == -1
                 error('File not open, did you already finish this Info object?');
             end
-            add_info(obj.fileID, obj.dimensions, Method, Outputs, toc(obj.timerStartValue), obj.startCpuTime, cputime, obj.separatorStr)
+            add_info(obj.fileID, obj.params.dimensions, Method, Outputs, toc(obj.timerStartValue), obj.startCpuTime, cputime, obj.separatorStr)
             fprintf(obj.fileID, 'End simulation stage: %s\n', datestr(now, 'dd mmm yy @ HH:MM:SS')); % end time
         end
         
@@ -125,7 +129,7 @@ classdef Info  < handle
         % Save a named workspace snapshot to disk
         function wspath = get_workspace_path(obj, name)
             % save workspace to workspace folder with name = 'groundstate' or 'dynamics'
-            wspath = [obj.fulldir '/workspace_' name '.mat'];
+            wspath = [obj.fulldir '/workspace_' name '_' obj.suffix() '.mat'];
             % save(workspacePath);
         end
 
@@ -137,7 +141,7 @@ classdef Info  < handle
                     path = obj.fulldir;
                 end
             end
-            figurePath = [path '/' state '_fig_' title extension];
+            figurePath = [path '/' state '_' title '_' obj.suffix() extension];
             %savefig(fignum, char(figurePath))
             
             if strcmp('.fig',extension)

@@ -49,6 +49,7 @@ Delta = 0.5;
 Beta = 4*pi*S;
 
 Physics1D = Physics1D_Var1d(Method, Delta, Beta);
+Physics1D = Dispersion_Var1d(Method, Physics1D);
 Physics1D = Potential_Var1d(Method, Physics1D); % std quadratic potential
 Physics1D = Nonlinearity_Var1d(Method, Physics1D); % std cubic nonlinearity
 

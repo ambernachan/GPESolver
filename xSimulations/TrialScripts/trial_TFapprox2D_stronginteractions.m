@@ -52,6 +52,7 @@ Delta = 0.5;
 Beta = 4*pi*S;
 Omega = 0;
 Physics2D = Physics2D_Var2d(Method, Delta, Beta, Omega);
+Physics2D = Dispersion_Var2d(Method, Physics2D);
 Physics2D = Potential_Var2d(Method, Physics2D); % std quadratic potential
 Physics2D = Nonlinearity_Var2d(Method, Physics2D); % std cubic nonlinearity
 %Physics2D = Gradientx_Var2d(Method, Physics2D, @(x,y) -1i*Omega*y);

@@ -56,14 +56,18 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 set -e
 
+# Hardcoded scriptname:
+scriptname=trial_Gaussian3D_weakinteractions_Delta
+
 echo "FOLDER = $FOLDER"
 echo "chi = $chi"
 echo "delta = $delta"
 echo "gammas = $gammas"
 echo "xyzlimit = $xyzlimit"
 echo "Nxyz = $Nxyz"
+echo "Script = $scriptname"
 
-if [ "$FOLDER" == "" ] ||  [ "$chi" == "" ] || [ "$delta" == "" ] ||  [ "$gammas" == "" ] ||  [ "$xyzlimit" == "" ] || [ "$Nxyz" == "" ]; then
+if [ "$FOLDER" == "" ] ||  [ "$chi" == "" ] || [ "$delta" == "" ] ||  [ "$gammas" == "" ] ||  [ "$xyzlimit" == "" ] || [ "$Nxyz" == "" ] || [ "$scriptname" == "" ]; then
 	echo "Not all arguments given, exiting."
 	exit $E_NOT_ALL_CMD_LINE_PARAMETERS
 fi
@@ -84,7 +88,7 @@ SESSION_NAME="${FOLDER}_${branch////_}_chi[${chi}]_delta[${delta}]_gammas${gamma
 
 MATLAB='/usr/tuelocal/bin/matlab -nodisplay -nosplash -nodesktop -r'
 MATLAB_BASE="cd '${FOLDER}'; addpath(genpath('GPELabToolbox'),genpath('testokkhen'),genpath('xSimulations'),genpath('xUtils'));"
-MATLAB_RUN="chi=${chi}; boxlimits=${xyzlimit}; Ngridpts=${Nxyz}; delta=${delta}; gammas=${gammas}; branch='${branch}'; trial_Gaussian3D_weakinteractions_Delta(chi,boxlimits,Ngridpts,delta,gammas)"
+MATLAB_RUN="chi=${chi}; boxlimits=${xyzlimit}; Ngridpts=${Nxyz}; delta=${delta}; gammas=${gammas}; branch='${branch}'; scriptname=${scriptname}; multi_runner(chi,boxlimits,Ngridpts,delta,gammas,scriptname)"
 #MATLAB_RUN="1+1;2+3"
 MATLAB_CMD="$MATLAB_BASE $MATLAB_RUN"
 CMD=$(echo "$MATLAB \"$MATLAB_CMD\"")

@@ -88,7 +88,7 @@ SESSION_NAME="${FOLDER}_${branch////_}_chi[${chi}]_delta[${delta}]_gammas${gamma
 
 MATLAB='/usr/tuelocal/bin/matlab -nodisplay -nosplash -nodesktop -r'
 MATLAB_BASE="cd '${FOLDER}'; addpath(genpath('GPELabToolbox'),genpath('testokkhen'),genpath('xSimulations'),genpath('xUtils'));"
-MATLAB_RUN="chi=${chi}; boxlimits=${xyzlimit}; Ngridpts=${Nxyz}; delta=${delta}; gammas=${gammas}; branch='${branch}'; scriptname=${scriptname}; multi_runner(chi,boxlimits,Ngridpts,delta,gammas,scriptname)"
+MATLAB_RUN="chi=${chi}; boxlimits=${xyzlimit}; Ngridpts=${Nxyz}; delta=${delta}; gammas=${gammas}; branch='${branch}'; scriptname='${scriptname}'; multi_runner(chi,boxlimits,Ngridpts,delta,gammas,scriptname)"
 #MATLAB_RUN="1+1;2+3"
 MATLAB_CMD="$MATLAB_BASE $MATLAB_RUN"
 CMD=$(echo "$MATLAB \"$MATLAB_CMD\"")

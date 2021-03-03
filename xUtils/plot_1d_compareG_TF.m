@@ -1,4 +1,4 @@
-function [plt] = plot_1d_graph(xlinarray,phi,gphi,tfphi,xlimit,ylimit,type,Redge,S,w,dx,datestr,delta,dims)
+function [plt] = plot_1d_compareG_TF(xlinarray,phi,gphi,tfphi,xlimit,ylimit,type,Redge,S,w,dx,datestr,delta,dims)
     plt = plot(xlinarray,phi);
     xlim([-xlimit xlimit]); ylim([0 ylimit]);
     if strcmp(type, 'x')

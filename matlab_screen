@@ -73,7 +73,7 @@ echo "Getting git name from '`pwd`/$FOLDER'..."
 branch=$(pushd $FOLDER > /dev/null  && git rev-parse --abbrev-ref HEAD && popd > /dev/null)
 echo "branch = $branch"
 
-# Mount rue drive stuff
+# Mount tue drive stuff
 if [ $(mount | grep tuelocal | wc -l) -eq 0 ]
 then
   mount /usr/tuelocal
@@ -84,7 +84,7 @@ SESSION_NAME="${FOLDER}_${branch////_}_chi[${chi}]_delta[${delta}]_gammas${gamma
 
 MATLAB='/usr/tuelocal/bin/matlab -nodisplay -nosplash -nodesktop -r'
 MATLAB_BASE="cd '${FOLDER}'; addpath(genpath('GPELabToolbox'),genpath('testokkhen'),genpath('xSimulations'),genpath('xUtils'));"
-MATLAB_RUN="chi=${chi}; xyzlimit=${xyzlimit}; xlimit=xyzlimit(1);ylimit=xyzlimit(2);zlimit=xyzlimit(3); Nx=${Nxyz}; Ny=${Nxyz}; Nz=${Nxyz}; delta=${delta}; gammas=${gammas}; branch='${branch}'; trial_Gaussian3D_weakinteractions_Delta(chi,xlimit,ylimit,zlimit,Nx,Ny,Nz,delta,gammas,branch)"
+MATLAB_RUN="chi=${chi}; boxlimits=${xyzlimit}; Ngridpts=${Nxyz}; delta=${delta}; gammas=${gammas}; branch='${branch}'; trial_Gaussian3D_weakinteractions_Delta(chi,boxlimits,Ngridpts,delta,gammas)"
 #MATLAB_RUN="1+1;2+3"
 MATLAB_CMD="$MATLAB_BASE $MATLAB_RUN"
 CMD=$(echo "$MATLAB \"$MATLAB_CMD\"")

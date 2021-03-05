@@ -48,7 +48,7 @@ classdef Info  < handle
             obj.timerCreationValue = tic;
 
             % Set dirs and filenames
-            obj.outputdir = 'xOutputs';
+            obj.outputdir = '../xOutputs';
             obj.subdir = name; % Name of simulation (folder)
             obj.fulldir = [pwd '/' obj.outputdir '/' obj.subdir '/' obj.creationTimeString];
             obj.filenameInfo = ['INFO_' obj.suffix() '.txt'];

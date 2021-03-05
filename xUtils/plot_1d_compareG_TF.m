@@ -40,6 +40,5 @@ function [plt] = plot_1d_compareG_TF(xlinarray,phi,gphi,tfphi,xlimit,ylimit,type
         error('Invalid delta entered.')
     end
     
-    annotation('textbox', [0, 0.95, 0, 0], 'string', ['\delta=' deltastr], 'Interpreter', 'tex', 'FitBoxToText', 'on')
-    
+    annotation('textbox', [0, 0.95, 0, 0], 'string', ['\delta=' deltastr], 'Interpreter', 'tex', 'FitBoxToText', 'on')    
 end

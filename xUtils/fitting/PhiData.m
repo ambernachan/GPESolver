@@ -15,11 +15,12 @@ classdef PhiData  < handle
         dy
         dz
 
+        S
         edge
     end
     methods
         % Constructor
-        function obj = PhiData(phi, geometry, phi_type)
+        function obj = PhiData(phi, geometry, phi_type, S)
 
             if ~iscell(phi)
                 obj.phi = {phi};
@@ -34,6 +35,10 @@ classdef PhiData  < handle
                     obj.phisq = obj.phi; % def |phi|^2
                     obj.make_phi_and_phase_from_phisq(); % def phi, phase
                 end
+            end
+            
+            if nargin > 3 % chi (S) is given
+                obj.S = S;
             end
 
             if nargin < 2 % geometry is not given, phi_type will be requested

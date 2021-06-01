@@ -253,12 +253,13 @@ elseif (nargin == 3) && (iscell(Nonlinearity) == 0) && (isempty(Nonlinearity) ==
     end
 % ELSEIF there are 3 inputs and the nonlinearity is a cell array
 elseif (nargin == 3) && (iscell(Nonlinearity) == 1)
-    % FOR each component
+    % FOR each component 
     for n = 1:Method.Ncomponents
         Nonlinearity_function_index = []; % Initializing the temporary nonlinearity index
         % FOR each component
         for m = 1:Method.Ncomponents
-                    Physics3D.Nonlinearity_function{n,m} = @(Phi,X,Y,Z)Nonlinearity{n,m}(Phi,X,Y,Z); % Storing the nonlinearity as the defined nonlinearity
+                    nonlin = Nonlinearity{n,m};
+                    Physics3D.Nonlinearity_function{n,m} = nonlin; % Storing the nonlinearity as the defined nonlinearity
                     Nonlinearity_function_index = [Nonlinearity_function_index,m]; % Add the 'm' index in the temporary nonlinearity index
         end
         Physics3D.Nonlinearity_function_Index{n} = Nonlinearity_function_index; % Store the nonlinearity index for the 'm' index

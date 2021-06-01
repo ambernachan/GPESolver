@@ -28,7 +28,7 @@ classdef Info  < handle
         % Constructor
         function obj = Info(name, creationTime, params)
             if nargin ~= 3
-                error('Invalid number of arguments given %d, expected 2', nargin);
+                error('Invalid number of arguments given %d, expected 3', nargin);
             end
             if ~(isstring(name) || ischar(name))
                 error('Name should be a string or character array');

@@ -4,7 +4,8 @@ function [] = multi_runner(chi, boxlimits,...
     dimensions = 3;
     run_dynamic = false;
 
-    parfor i = 1 : length(chi)
+    for i = 1 : length(chi)
+    %parfor i = 1 : length(chi)
         p = makeparams(chi(i), dimensions, boxlimits, Ngridpts, delta, gammas, run_dynamic);
         info = Info(scriptname, creationTime, p);
         feval(scriptname, info)

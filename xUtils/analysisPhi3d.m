@@ -15,7 +15,12 @@ function [xx, phix, tfphix, gphix] = analysisPhi3d(wspath)
     geom = phi.return_geometry();
     
     % create expectation functions
-    expphis = ExpPhis(S, [gx,gy,gz], [0,0,0], geom);
+    if ~exist('S','var')
+        expphis = ExpPhis(1, [gx,gy,gz], [0,0,0], geom);
+    else 
+        expphis = ExpPhis(S, [gx,gy,gz], [0,0,0], geom);
+    end
+    
     
     [g1d,wg1d] = expphis.Gaussian1d();
     [g2d,wg2d] = expphis.Gaussian2d();

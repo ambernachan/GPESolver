@@ -19,6 +19,14 @@ function saveBunchOfPlots(wspath, limits, opt_chi)
     ylimit_z = max(max(max(gphizN),max(tfphizN)),max(phizN))*1.1;
     save(wspath, 'ylimit_x', 'ylimit_y', 'ylimit_z', '-append')
     
+    % define unknowns
+    if ~exist('S','var')
+        S=[];
+    end
+    if ~exist('w','var')
+        w=[];
+    end
+    
     %%
     % account for multi-valued S, in which case opt_chi is given:
     if length(S) > 1
@@ -40,21 +48,22 @@ function saveBunchOfPlots(wspath, limits, opt_chi)
         
         xlim = limits(i);
         %%%%%%%%%%%%%%%%%%%%%
-        plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim,ylimit_x,'x',Rx,S,w,dx,datestring,Delta,info.params.dimensions)
+        plot_1d_compareG_TF(xx,phixN,gphixN,tfphixN,xlim,ylimit_x,'x',Rx,S,w,dx,datestring,Delta,info.params.dimensions)
+%         plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim,ylimit_x,'x',Rx,S,w,dx,datestring,Delta,info.params.dimensions)
         figname = fnames{3*i-2};
         info.save_figure(1, 'analyze', figname, fulldir, '.fig')
         info.save_figure(1, 'analyze', figname, fulldir, '.png')
         close all;
 
         %%%%%%%%%%%%%%%%%%%%%
-        plot_1d_graph(yy,phiyN,gphiyN,tfphiyN,xlim,ylimit_y,'y',Ry,S,w,dy,datestring,Delta,info.params.dimensions)
+        plot_1d_compareG_TF(yy,phiyN,gphiyN,tfphiyN,xlim,ylimit_y,'y',Ry,S,w,dy,datestring,Delta,info.params.dimensions)
         figname = fnames{3*i-1};
         info.save_figure(1, 'analyze', figname, fulldir, '.fig')
         info.save_figure(1, 'analyze', figname, fulldir, '.png')
         close all;
 
         %%%%%%%%%%%%%%%%%%%%%
-        plot_1d_graph(zz,phizN,gphizN,tfphizN,xlim,ylimit_z,'z',Rz,S,w,dz,datestring,Delta,info.params.dimensions)
+        plot_1d_compareG_TF(zz,phizN,gphizN,tfphizN,xlim,ylimit_z,'z',Rz,S,w,dz,datestring,Delta,info.params.dimensions)
         figname = fnames{3*i};
         info.save_figure(1, 'analyze', figname, fulldir, '.fig')
         info.save_figure(1, 'analyze', figname, fulldir, '.png')

@@ -2,7 +2,7 @@ function [CoupledSpin1Nonlin] = Coupled_Cubic3d_spin1(Betan, Betas)
     
     % In the spin-1 manifold, we have 3 components of the wavefunction.
     % Phi{1} represents mF=1, Phi{2} reps mF=0 and Phi{3} reps mF=-1.
-    CoupledSpin1Nonlin = zerocell(3); % creates 3x3 cell of zeros
+    CoupledSpin1Nonlin = zerocell(3); % creates 3x3 cell of @(Phi,X,Y,Z) 0's
     
     % diagonal terms
     CoupledSpin1Nonlin{1,1} = @(Phi,X,Y,Z) Betan * ...

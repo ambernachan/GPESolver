@@ -51,7 +51,11 @@ classdef Info  < handle
             obj.outputdir = '../xOutputs';
             obj.subdir = name; % Name of simulation (folder)
             obj.fulldir = [pwd '/' obj.outputdir '/' obj.subdir '/' obj.creationTimeString];
-            obj.filenameInfo = ['INFO_' obj.suffix() '.txt'];
+            if isfield(obj.params, 'S')
+                obj.filenameInfo = ['INFO' obj.suffix() '.txt'];
+            else
+                obj.filenameInfo = 'INFO.txt';
+            end
             obj.pathInfo = [obj.fulldir '/' obj.filenameInfo];
 
             % Create directory
@@ -72,7 +76,15 @@ classdef Info  < handle
         end
         
         function s = suffix(obj)
-            s = ['S=' format_str(obj.params.S)];
+            if isfield(obj.params,'S')
+                if ~isempty(obj.params.S)
+                    s = ['_S=' format_str(obj.params.S)];
+                else
+                    s = '';
+                end
+            else
+                s = '';
+            end
         end
 
         function start_info(obj)
@@ -129,7 +141,7 @@ classdef Info  < handle
         % Save a named workspace snapshot to disk
         function wspath = get_workspace_path(obj, name)
             % save workspace to workspace folder with name = 'groundstate' or 'dynamics'
-            wspath = [obj.fulldir '/workspace_' name '_' obj.suffix() '.mat'];
+            wspath = [obj.fulldir '/workspace_' name obj.suffix() '.mat'];
             % save(workspacePath);
         end
 
@@ -141,7 +153,7 @@ classdef Info  < handle
                     path = obj.fulldir;
                 end
             end
-            figurePath = [path '/' state '_' title '_' obj.suffix() extension];
+            figurePath = [path '/' state '_' title obj.suffix() extension];
             %savefig(fignum, char(figurePath))
             
             if strcmp('.fig',extension)

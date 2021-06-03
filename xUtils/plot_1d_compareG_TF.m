@@ -21,7 +21,18 @@ function [plt] = plot_1d_compareG_TF(xlinarray,phi,gphi,tfphi,xlimit,ylimit,type
     plot(xlinarray,gphi)
     line([Redge Redge], [0 ylimit], 'Color','red','LineStyle','--'); line([-Redge -Redge], [0 ylimit], 'Color','red','LineStyle','--');
     
-    lgd = legend(['result S=' return_stringS(S) sprintf(',\nN=%d^%d, grid(%d,%d)^%d',...
+    if isempty(S)
+        resSstr = ['result'];
+        S = 0;
+    else
+        resSstr = ['result S=' return_stringS(S)];
+    end
+    
+    if isempty(w)
+        w = 1;
+    end
+    
+    lgd = legend([resSstr sprintf(',\nN=%d^%d, grid(%d,%d)^%d',...
         length(xlinarray),dims, min(xlinarray),max(xlinarray), dims)], sprintf('exp TF_{%dd} cutout',dims),...
         sprintf('exp. Gaussian\n(\\sigma\\sim%.3f,A\\sim%.2f)',w/sqrt(2),max(gphi)),...
         sprintf('R_{edge}^{%dd} = %.5f\n\t(dx = %.4f)',dims,Redge,dx));

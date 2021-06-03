@@ -7,10 +7,14 @@ function [c] = zerocell(dims)
     for i=1:dims
         if dims > 1
             for j=1:dims
-                c{i,j} = 0;
+                if dims > 2
+                    c{i,j} = @(Phi, X, Y, Z) 0;
+                else
+                    c{i,j} = @(Phi, X, Y) 0;
+                end
             end
         else
-            c{i} = 0;
+            c{i} = @(Phi, X) 0;
         end
     end
     

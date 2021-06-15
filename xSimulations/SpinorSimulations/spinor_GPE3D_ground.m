@@ -68,10 +68,10 @@ function [] = spinor_GPE3D_ground(info)
     Computation = 'Ground';
     Ncomponents = 3;
     Type = 'BESP';
-    Deltat = 0.05;
+    Deltat = 1e-2;
     Stop_time = [];
-    Stop_crit = {'MaxNorm', gx*1e-10};
-    Max_iter = 1e3;
+    Stop_crit = {'MaxNorm', 1e-6};
+    Max_iter = 2000;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -105,10 +105,11 @@ function [] = spinor_GPE3D_ground(info)
     Omega = 0;
     Physics3D = Physics3D_Var3d(Method, Delta, Beta, Omega);
     Physics3D = Dispersion_Var3d(Method, Physics3D); % !!!
-    %Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
-    %Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(1, 5, 1, X, Y, Z));
-    Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z));
+    Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
+%     Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(1, 5, 1, X, Y, Z));
+%     Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z));
     
+%     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas), [], ...
         Coupled_CubicEnergy3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
     
@@ -117,27 +118,21 @@ function [] = spinor_GPE3D_ground(info)
 
     %% Defining a starting function Phi_0
 
-    InitialData_choice = 1; % Gaussian initial data
+%     InitialData_choice = 1; % Gaussian initial data
+    InitialData_choice = 2; % Thomas Fermi initial data
 
-%     % find w3d
-%     exp = ExpPhis(0, [gx,gy,gz], [0,0,0], Geometry3D);
-%     W = exp.getW();
-%     w = W.d3;
-%     clear exp W
-% 
-%     sigma_w_delta = struct();
-%     sigma_w_delta.x = w * (Delta/2)^(0.25) / sqrt(gx); sigma_w_delta.x = sigma_w_delta.x(sigma_w_delta.x>0);
-%     sigma_w_delta.y = w * (Delta/2)^(0.25) / sqrt(gy); sigma_w_delta.y = sigma_w_delta.y(sigma_w_delta.y>0);
-%     sigma_w_delta.z = w * (Delta/2)^(0.25) / sqrt(gz); sigma_w_delta.z = sigma_w_delta.z(sigma_w_delta.z>0);
+%     X0 = 0; Y0 = 0; Z0 = 0;
+%     gamma_x = 1;    gamma_y = 1;    gamma_z = 1;
+    
+    Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice);
+%     Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice, X0, Y0, Z0, gamma_x, gamma_y, gamma_z);
 
-    X0 = 0;
-    Y0 = 0;
-    Z0 = 0;
-    gamma_x = 1;
-    gamma_y = 1;
-    gamma_z = 1;
-
-    Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice, X0, Y0, Z0, gamma_x, gamma_y, gamma_z);
+    % introduce gaussian phase
+    phase = GaussianInitialData3d(Geometry3D, Physics3D, 1, 1, 1, 0, 0, 0);
+    
+    for j = 1:Ncomponents
+        Phi_0{j} = Phi_0{j} .* exp(1i*((j-1)*(2*pi/3) + phase));
+    end
 
     %% version mgmt
     curdir = strsplit(pwd, '/');
@@ -149,25 +144,37 @@ function [] = spinor_GPE3D_ground(info)
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
     info.add_info_separator();
-%     info.add_custom_info('S \t=\t %f \n', 0); % print interaction strength
     info.add_custom_info('Beta_n \t=\t %f \n', Betan); % print interaction parameter Beta_n
     info.add_custom_info('Beta_s \t=\t %f \n', Betas); % print interaction parameter Beta_s
-%     info.add_custom_info('w \t=\t %f \n', w); % print Gaussian parameter w
-%     info.add_custom_info('sigmas \t=\t [%.4f,%.4f,%.4f] \n', ...
-%         sigma_w_delta.x,sigma_w_delta.y,sigma_w_delta.z); % print Gaussian parameter sigma_xyz with Delta
     info.add_custom_info('Delta \t=\t %f \n', Delta); % print kinetic energy parameter Delta
     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
     info.add_info_separator();
 
     %% Determining outputs
     
+    Evo_outputs = 10; % Must be equal to or smaller than Evo from Print
     Save_solution = 1;
-    Outputs = OutputsINI_Var3d(Method, Save_solution);
+    
+    globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Magnetization(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{2} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 1);
+    globaluserdef_outputs{3} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 0);
+    globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
+    globaluserdef_names{1} = 'Magnetization';
+    globaluserdef_names{2} = 'Population psi+';
+    globaluserdef_names{3} = 'Population psi0';
+    globaluserdef_names{4} = 'Population psi-';
+    
+    Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
+        globaluserdef_outputs,globaluserdef_names);
 
     %% Printing preliminary outputs
 
     Printing = 1;
-    Evo = 15;
+    Evo = 50;
     Draw = 1;
     Print = Print_Var3d(Printing, Evo, Draw);
 
@@ -175,7 +182,9 @@ function [] = spinor_GPE3D_ground(info)
 
     info.add_simulation_info(Geometry3D);
     [Phi_1, Outputs] = GPELab3d(Phi_0, Method, Geometry3D, Physics3D, Outputs, [], Print);
-
+    
+    save(info.get_workspace_path('phi_ini'), 'Phi_1')
+    
     %% Save the workspace & simulation info
 
     % save information about final iteration in info file
@@ -183,10 +192,22 @@ function [] = spinor_GPE3D_ground(info)
     % save workspace to workspace folder
     save(info.get_workspace_path('groundstate'));
 
+    %% Draw user-defined functions populations & magnetization
+    
+    close all;
+    pause(2) % pauses the program for 2 seconds
+    
+    its = Outputs.Iterations;
+    
+    % Plot magnetization
+    plot_magnetization(its, Outputs.User_defined_global{1}, info)
+    % Plot population fractions
+    plot_populationfractions(its, Outputs.User_defined_global(2:4), info)
+    
     %% Draw & save solution
 
     close all;
-    pause(2) % pauses the program for 2 seconds
+    pause(1) % pauses the program for 1 second
 
     % Set figure names
     for i = 1 : Ncomponents

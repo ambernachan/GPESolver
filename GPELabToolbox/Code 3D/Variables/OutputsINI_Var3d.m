@@ -71,7 +71,7 @@ if (nargin >= 6) && (isempty(globaluserdef_outputs) == 0)
     Outputs.User_defined_number_global = length(globaluserdef_outputs); % Initialization of the number of user defined functions
     Outputs.User_defined_global = cell(Method.Ncomponents,length(globaluserdef_outputs)); % Initialization of the variable containing the user defined functions
     Outputs.User_defined_function_global = globaluserdef_outputs;
-    Outputs.User_compute = 1; % Setting to compute user defined functions
+    Outputs.User_compute_global = 1; % Setting to compute user defined functions
     % IF there are names for the user defined outputs functions
     if (nargin == 7) && (isempty(globaluserdef_outputs_names) == 0)
         Outputs.User_defined_names_global = globaluserdef_outputs_names; % Storing the names of the user defined functions

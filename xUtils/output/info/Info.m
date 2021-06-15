@@ -147,13 +147,18 @@ classdef Info  < handle
 
         % Save a specified figure (num) to the outputs directory of this simulation
         function save_figure(obj, fignum, state, title, path, extension)
-            if nargin < 5 || isempty(extension)
+            if nargin < 5 || ~exist('extension','var') || isemtpy(extension)
                 extension = '.fig';
-                if nargin < 4 || isempty(path)
+                if nargin < 4 || ~exist('path','var') || isempty(path)
                     path = obj.fulldir;
                 end
             end
-            figurePath = [path '/' state '_' title obj.suffix() extension];
+            
+            if ~exist('title','var') || isempty(title)
+                figurePath = [path '/' state obj.suffix() extension];
+            else
+                figurePath = [path '/' state '_' title obj.suffix() extension];
+            end
             %savefig(fignum, char(figurePath))
             
             if strcmp('.fig',extension)

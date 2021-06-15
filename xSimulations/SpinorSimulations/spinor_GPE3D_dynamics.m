@@ -1,4 +1,4 @@
-%{
+ %{
 23Na in the F=1 manifold
 Spinor BEC in 3D
 No rotations, no magnetic field, quadratic optical trap
@@ -84,19 +84,20 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 
     Computation = 'Dynamic';
     Ncomponents = 3;
-    Type = 'Splitting';
-    Deltat = 1e-2;
-    Stop_time = 10;
-%         Max_iter = 2000;
-%         Stop_crit = [];
+%     Type = 'Splitting';
+    Type = 'Relaxation';
+    Deltat = 1e-3;
+    Stop_time = 1;
+    Stop_crit = [];
+    Max_iter = 1000;
 %         Stop_crit = {'MaxNorm', 1e-12};
 %         Precond_type = 'FLaplace'; % defaults to 'FLaplace'
 %         Precond_type = []; % defaults to 'FLaplace'
-    Precond_type = 'FThomasFermi'; % defaults to 'FLaplace'
-    Output = 1;
+%     Precond_type = 'FThomasFermi'; % defaults to 'FLaplace'
+%     Output = 1;
 
-    %Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
-    Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, [], [], Precond_type, Output);
+    Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
+%     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, [], [], Precond_type, Output);
 
     % Saving workspace with relevant data for fitting
     Method_dynamical = Method;
@@ -157,9 +158,25 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     
     %% Determining outputs
 
+    Evo_outputs = 10; % Must be equal to or smaller than Evo from Print
     Save_solution = 1;
-    Outputs = OutputsINI_Var3d(Method, Save_solution);
-
+    
+    globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Magnetization(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{2} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 1);
+    globaluserdef_outputs{3} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 0);
+    globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
+    globaluserdef_names{1} = 'Magnetization';
+    globaluserdef_names{2} = 'Population psi+';
+    globaluserdef_names{3} = 'Population psi0';
+    globaluserdef_names{4} = 'Population psi-';
+    
+    Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
+        globaluserdef_outputs,globaluserdef_names);
+    
     %% Printing preliminary outputs
     Printing = 1;
     Evo = 10;
@@ -191,6 +208,19 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     info.finish_info();
     save(info.get_workspace_path('dynamics'))
 
+    %% Draw user-defined functions populations & magnetization
+    
+    close all;
+    pause(2) % pauses the program for 2 seconds
+    
+    its = Outputs.Iterations;
+    
+    % Plot magnetization
+    plot_magnetization(its, Outputs.User_defined_global{1}, info)
+    % Plot population fractions
+    plot_populationfractions(its, Outputs.User_defined_global(2:4), info)
+    
+    
     %% Draw & save solution
 
     close all;

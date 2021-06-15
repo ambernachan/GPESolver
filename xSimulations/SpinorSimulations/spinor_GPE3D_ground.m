@@ -71,7 +71,7 @@ function [] = spinor_GPE3D_ground(info)
     Deltat = 1e-2;
     Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
-    Max_iter = 2000;
+    Max_iter = 1250;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 

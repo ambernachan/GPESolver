@@ -189,8 +189,12 @@ function [] = spinor_GPE3D_ground(info)
 
     % save information about final iteration in info file
     info.add_result_info(Method, Outputs);
-    % save workspace to workspace folder
-    save(info.get_workspace_path('groundstate'));
+    
+    % making sure Phi_1 and Outputs will get saved regardless of size
+    save(info.get_workspace_path('groundstate_v7.3'), 'Outputs', '-v7.3');
+    save(info.get_workspace_path('groundstate_v7.3'), 'Phi_1', '-v7.3', '-append');
+    % saving groundstate workspace
+    save(info.get_workspace_path('groundstate'))
 
     %% Draw user-defined functions populations & magnetization
     

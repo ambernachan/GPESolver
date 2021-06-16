@@ -207,6 +207,8 @@ function [] = spinor_GPE3D_ground(info)
     plot_magnetization(its, Outputs.User_defined_global{1}, info)
     % Plot population fractions
     plot_populationfractions(its, Outputs.User_defined_global(2:4), info)
+    % Plot population distribution on x-axis
+    plot_populationdistribution(Geometry3D, Phi_1, info)
     
     %% Draw & save solution
 

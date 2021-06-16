@@ -1,4 +1,5 @@
-% Plot magnetism
+% Plot population distributions of different mF in one figure on one axis
+
 function [] = plot_populationdistribution(geometry, Phi, info, direction)
 
 
@@ -29,6 +30,7 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
         phix{2} = phi{2}(ly, :, lz);
         phix{3} = phi{3}(ly, :, lz);
         phi = phix;
+        xax = 'x';
     elseif strcmp(direction, 'y')
         y = y(:, lx, lz);
         phiy{1} = phi{1}(:, lx, lz);
@@ -36,6 +38,7 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
         phiy{3} = phi{3}(:, lx, lz);
         phi = phiy;
         x = y;
+        xax = 'y';
     elseif strcmp(direction, 'z')
         z = z(ly, lx, :); z = z(:)';
         phiz{1} = phi{1}(ly, lx, :); phiz{1} = phiz{1}(:)';
@@ -43,22 +46,30 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
         phiz{3} = phi{3}(ly, lx, :); phiz{3} = phiz{3}(:)';
         phi = phiz;
         x = z;
+        xax = 'z';
     else
         error('Something went wrong: direction is not recognized.')
     end
     
+    limity = max(max(max(phi{1}),max(phi{2})),max(phi{3}));
+    
     % Creating figure
-    plot(x, phi{1}, '--')
+    plot(x, phi{1}, '--d', 'MarkerIndices',1:10:length(phi{1}), ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.6 0.1])
     hold on
-    plot(x, phi{2}, '-')
-    plot(x, phi{3}, '-.')
+    plot(x, phi{2}, '-.o', 'MarkerIndices',1:10:length(phi{2}), ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.2 0.2])
+    plot(x, phi{3}, '-.^', 'MarkerIndices',5:10:length(phi{3}), ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0])
+    
+    ylim([-limity/100 limity*1.1]);
     
     % Add axes labels and figure text
-    xlabel('x'); 
+    xlabel(xax); 
     ylabel('|\phi_i|');
     title('Population distribution |\phi_i|');
     
-    lgd = legend('\psi_+', '\psi_0', '\psi_-');
+    lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|');
     
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
@@ -111,7 +122,7 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     end
     
     % Add annotation about atom type to graph
-    annotation('textbox', [0.225, 0.75, 0.1, 0.1], ...
+    annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...
         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
     
     % Save figure

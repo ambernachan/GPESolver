@@ -6,9 +6,12 @@ function [value] = getsimconst(simconst)
     a2_Na = 54.54 * getphysconst('abohr'); % scattering length (m)
     a0_Rb = 101.65 * getphysconst('abohr'); % scattering length (m)
     a2_Rb = 100.49 * getphysconst('abohr'); % scattering length (m)
+    a0_ferro = 100 * getphysconst('abohr'); % scattering length (m)
+    a2_ferro = 10 * getphysconst('abohr'); % scattering length (m)
     
     mass_Na = 22.989769 * getphysconst('amu'); % mass (kg)
     mass_Rb = 86.9091835 * getphysconst('amu'); % mass (kg)
+    mass_ferro = mass_Na;
     rvdW_Na = 44.96 * getphysconst('abohr'); % van der Waals radius (m)
     rvdW_Rb = 82.64 * getphysconst('abohr'); % van der Waals radius (m)
     TNa = 3.24420293315 * 10^(-7); % ?

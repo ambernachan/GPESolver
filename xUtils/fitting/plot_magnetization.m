@@ -10,7 +10,10 @@ function [] = plot_magnetization(its, M, info, evo)
     x = evo:evo:its*evo;
     
     % Creating figure
-    plot(x, M, '-.')
+    evomarker = floor(length(x)/20);
+    
+    plot(x, M, '--d', 'MarkerIndices', 1:evomarker:length(M), ...
+        'LineWidth', 1.2, 'MarkerSize', 6)
     
     % Add axes labels and figure text
     xlabel('iterations'); 

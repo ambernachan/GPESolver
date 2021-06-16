@@ -2,6 +2,9 @@
 23Na in the F=1 manifold
 Spinor BEC in 3D
 No rotations, no magnetic field, quadratic optical trap
+One can change the type of atom by changing :
+    - the atom mass
+    - the a0 and a2 parameters
 %}
 
 function [] = spinor_GPE3D_ground(info)
@@ -10,22 +13,23 @@ function [] = spinor_GPE3D_ground(info)
    
     %% Setting variables
     % Determine interaction strength compared to kinetic energy
+    atom = 'ferro';
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
     else
-        a0 = getsimconst('a0_Na');
+        a0 = getsimconst(['a0_' atom]);
         info.params.a0 = a0;
     end
     if isfield(info.params, 'a2')
         a2 = info.params.a2;
     else
-        a2 = getsimconst('a2_Na');
+        a2 = getsimconst(['a2_' atom]);
         info.params.a2 = a2;
     end
     N = getsimconst('N'); % number of particles
     hbar = getphysconst('hbar'); % in kg m^2 / s
     trapfreq = getsimconst('trap_freq'); % Trap strength in Hz (symmetric for now)
-    atom_mass = getsimconst('mass_Na'); % Atom mass in kg
+    atom_mass = getsimconst(['mass_' atom]); % Atom mass in kg
     spin_pair = getsimconst('spin_pair'); % hyperfine spin manifold (=1)
     info.params.spin_pair = spin_pair;
     
@@ -71,8 +75,8 @@ function [] = spinor_GPE3D_ground(info)
     Deltat = 1e-2;
     Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
-%     Max_iter = 1250;
-    Max_iter = 2000;
+    Max_iter = 1250;
+%     Max_iter = 2500;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -191,10 +195,10 @@ function [] = spinor_GPE3D_ground(info)
     % save information about final iteration in info file
     info.add_result_info(Method, Outputs);
     
-    % making sure Phi_1 and Outputs will get saved regardless of size
+    % saving groundstate workspace in v7.3 MAT file
     save(info.get_workspace_path('groundstate_v7.3'), '-v7.3');
     
-    % saving groundstate workspace
+    % saving groundstate workspace in 'normal' file
     save(info.get_workspace_path('groundstate'))
 
     %% Draw user-defined functions populations & magnetization

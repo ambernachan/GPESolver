@@ -216,9 +216,19 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     its = Outputs.Iterations;
     
     % Plot magnetization
-    plot_magnetization(its, Outputs.User_defined_global{1}, info)
+    plot_magnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
     % Plot population fractions
-    plot_populationfractions(its, Outputs.User_defined_global(2:4), info)
+    plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
+    % Plot population distribution on x-axis
+    plot_populationdistribution(Geometry3D, Phi_1, info)
+    % Plot magnetization distribution on x-axis
+    plot_magnetizationdistribution(Geometry3D, Phi_1, info)
+    
+    %% Time plots
+    % magnetization distribution on x-axis
+    timeslider_magnetizationdistribution(Geometry3D, Outputs.Solution, info)
+    % population distribution on x-axis
+    timeslider_populationdistribution(Geometry3D, Outputs.Solution, info)
     
     
     %% Draw & save solution

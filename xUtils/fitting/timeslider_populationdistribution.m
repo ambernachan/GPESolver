@@ -146,7 +146,7 @@ for time = 1:length(x)
     hold off
 end
     % Save figure
-%     info.save_figure(1, 'Population distribution over time', '')
-%     hold off  
+    info.save_figure(1, 'Population distribution over time', '')
+    hold off  
     
 end

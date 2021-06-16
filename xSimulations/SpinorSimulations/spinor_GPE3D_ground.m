@@ -192,8 +192,8 @@ function [] = spinor_GPE3D_ground(info)
     info.add_result_info(Method, Outputs);
     
     % making sure Phi_1 and Outputs will get saved regardless of size
-    save(info.get_workspace_path('groundstate_v7.3'), 'Outputs', '-v7.3');
-    save(info.get_workspace_path('groundstate_v7.3'), 'Phi_1', '-append');
+    save(info.get_workspace_path('groundstate_v7.3'), '-v7.3');
+    
     % saving groundstate workspace
     save(info.get_workspace_path('groundstate'))
 
@@ -212,6 +212,12 @@ function [] = spinor_GPE3D_ground(info)
     plot_populationdistribution(Geometry3D, Phi_1, info)
     % Plot magnetization distribution on x-axis
     plot_magnetizationdistribution(Geometry3D, Phi_1, info)
+    
+    %% Time plots
+    % magnetization distribution on x-axis
+    timeslider_magnetizationdistribution(Geometry3D, Outputs.Solution, info)
+    % population distribution on x-axis
+    timeslider_populationdistribution(Geometry3D, Outputs.Solution, info)
     
     %% Draw & save solution
 

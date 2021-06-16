@@ -1,9 +1,13 @@
 % Plot magnetism
-function [] = plot_magnetization(its, M, info)
+function [] = plot_magnetization(its, M, info, evo)
 
     close all;
     datestring = info.creationTimeString;
-    x = 1:its;
+    if ~exist('evo','var') || isempty(evo)
+        evo = 1;
+    end
+    
+    x = evo:evo:its*evo;
     
     % Creating figure
     plot(x, M, '-.')

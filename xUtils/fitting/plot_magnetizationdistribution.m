@@ -1,10 +1,12 @@
 % Plot population distributions of different mF in one figure on one axis
 
-function [] = plot_populationdistribution(geometry, Phi, info, direction)
+function [] = plot_magnetizationdistribution(geometry, Phi, info, direction)
 
-
+    flag = []; % to specify whether direction was explicitly chosen
     if ~exist('direction','var') || isempty(direction)
         direction = 'x';
+    else
+        flag = 1; %direction explicitly given
     end
     
     close all;
@@ -19,58 +21,56 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     lx = floor(size(y,2)/2);
     lz = floor(size(z,3)/2);
     
-    phi{1} = abs(Phi{1});
-    phi{2} = abs(Phi{2});
-    phi{3} = abs(Phi{3});
+    M = abs(Phi{1}).^2 - abs(Phi{3}).^2;
+    
+    Mx = M(ly, :, lz);
+    My = M(:, lx, lz);
+    Mz = M(ly, lx, :); Mz = Mz(:)';
     
     % Find appropriate arrays
     if strcmp(direction, 'x')
         x = x(ly, :, lz);
-        phix{1} = phi{1}(ly, :, lz);
-        phix{2} = phi{2}(ly, :, lz);
-        phix{3} = phi{3}(ly, :, lz);
-        phi = phix;
-        xax = 'x';
+        M = Mx;
+        xax = 'x (centered in y,z) (a_{ho})';
     elseif strcmp(direction, 'y')
         y = y(:, lx, lz);
-        phiy{1} = phi{1}(:, lx, lz);
-        phiy{2} = phi{2}(:, lx, lz);
-        phiy{3} = phi{3}(:, lx, lz);
-        phi = phiy;
+        M = My;
         x = y;
-        xax = 'y';
+        xax = 'y (centered in x,z) (a_{ho})';
     elseif strcmp(direction, 'z')
         z = z(ly, lx, :); z = z(:)';
-        phiz{1} = phi{1}(ly, lx, :); phiz{1} = phiz{1}(:)';
-        phiz{2} = phi{2}(ly, lx, :); phiz{2} = phiz{2}(:)';
-        phiz{3} = phi{3}(ly, lx, :); phiz{3} = phiz{3}(:)';
-        phi = phiz;
+        M = Mz;
         x = z;
-        xax = 'z';
+        xax = 'z (centered in x,y) (a_{ho})';
     else
         error('Something went wrong: direction is not recognized.')
     end
     
-    limity = max(max(max(phi{1}),max(phi{2})),max(phi{3}));
+    limity = max(M);
+    if limity < 10^(-10)
+        limity = limity * 2/1.1;
+    end
     
+%     evomarker = floor(length(x)/30);
+    evomarker = 1;
     % Creating figure
-    evomarker = floor(length(x)/20);
-    plot(x, phi{1}, '--d', 'MarkerIndices', 1:evomarker:length(phi{1}), ...
-        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.6 0.1])
-    hold on
-    plot(x, phi{2}, '-.o', 'MarkerIndices', 1:evomarker:length(phi{2}), ...
-        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.2 0.2])
-    plot(x, phi{3}, '-.^', 'MarkerIndices', ceil(evomarker/2):evomarker:length(phi{3}), ...
-        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0])
+    plot(x, M, '--d', 'MarkerIndices', 1:evomarker:length(M), ...
+        'LineWidth', 1.2, 'MarkerSize', 6)
+    
+    
+%     plot(x, phi{1}, '--d', 'MarkerIndices', 1:evomarker:length(phi{1}), ...
+%         'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.6 0.1])
+%     plot(x, phi{2}, '-.o', 'MarkerIndices', 1:evomarker:length(phi{2}), ...
+%         'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.2 0.2])
+%     plot(x, phi{3}, '-.^', 'MarkerIndices', ceil(evomarker/2):evomarker:length(phi{3}), ...
+%         'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0])
     
     ylim([-limity/100 limity*1.1]);
     
     % Add axes labels and figure text
     xlabel(xax); 
-    ylabel('|\phi_i|');
-    title('Population distribution |\phi_i|');
-    
-    lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|');
+    ylabel('m = M/N');
+    title('Magnetization distribution |\psi_+|^2-|\psi_-|^2');
     
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
@@ -126,8 +126,12 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...
         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
     
+    savename = 'Magnetization distribution';
+    if flag
+        savename = [savename '_' direction];
+    end
     % Save figure
-    info.save_figure(1, 'Population distribution', '')
+    info.save_figure(1, savename, '')
     hold off  
     
 end

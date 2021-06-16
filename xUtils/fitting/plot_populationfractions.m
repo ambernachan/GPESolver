@@ -1,15 +1,28 @@
 % Plot magnetism
-function [] = plot_populationfractions(its, rho, info)
+function [] = plot_populationfractions(its, rho, info, evo)
 
     close all;
     datestring = info.creationTimeString;
-    x = 1:its;
+    if ~exist('evo','var') || isempty(evo)
+        evo = 1;
+    end
+    
+    x = evo:evo:its*evo;
+    
+    limity = max(max(max(rho{1}),max(rho{2})),max(rho{3}));
+    lowery = min(min(min(rho{1}),min(rho{2})),min(rho{3}));
     
     % Creating figure
-    plot(x, rho{1}, '--')
+    evomarker = floor(length(x)/10);
+    plot(x, rho{1}, '--d', 'MarkerIndices', 1:evomarker:length(rho{1}), ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.6 0.1])
     hold on
-    plot(x, rho{2}, '-')
-    plot(x, rho{3}, '-.')
+    plot(x, rho{2}, '-.o', 'MarkerIndices', 1:evomarker:length(rho{2}), ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.2 0.2])
+    plot(x, rho{3}, '-.^', 'MarkerIndices', ceil(evomarker/2):evomarker:length(rho{3}), ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0])
+    
+    ylim([lowery-limity/100 limity*1.1]);
     
     % Add axes labels and figure text
     xlabel('iterations'); 

@@ -71,7 +71,8 @@ function [] = spinor_GPE3D_ground(info)
     Deltat = 1e-2;
     Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
-    Max_iter = 1250;
+%     Max_iter = 1250;
+    Max_iter = 2000;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -175,7 +176,7 @@ function [] = spinor_GPE3D_ground(info)
 
     Printing = 1;
     Evo = 50;
-    Draw = 1;
+    Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);
 
     %% RUN THE SIMULATION to find the ground state
@@ -192,7 +193,7 @@ function [] = spinor_GPE3D_ground(info)
     
     % making sure Phi_1 and Outputs will get saved regardless of size
     save(info.get_workspace_path('groundstate_v7.3'), 'Outputs', '-v7.3');
-    save(info.get_workspace_path('groundstate_v7.3'), 'Phi_1', '-v7.3', '-append');
+    save(info.get_workspace_path('groundstate_v7.3'), 'Phi_1', '-append');
     % saving groundstate workspace
     save(info.get_workspace_path('groundstate'))
 
@@ -204,11 +205,13 @@ function [] = spinor_GPE3D_ground(info)
     its = Outputs.Iterations;
     
     % Plot magnetization
-    plot_magnetization(its, Outputs.User_defined_global{1}, info)
+    plot_magnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
     % Plot population fractions
-    plot_populationfractions(its, Outputs.User_defined_global(2:4), info)
+    plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
     % Plot population distribution on x-axis
     plot_populationdistribution(Geometry3D, Phi_1, info)
+    % Plot magnetization distribution on x-axis
+    plot_magnetizationdistribution(Geometry3D, Phi_1, info)
     
     %% Draw & save solution
 

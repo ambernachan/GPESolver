@@ -25,8 +25,18 @@ function [] = plot_magnetization(its, M, info, evo)
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
     
+    % gives wspath, which equals 0 when it hasn't been found.
+    wspath = whichwspath(info); % gives wspath and parameter
+    
     %add atom type text to figure
-    wspath = info.get_workspace_path('groundstate');
+    % Use the workspace path to load the atom mass, derive type of atom
+    if wspath == 0 % meaning the wspath hasn't been found.
+        info.save_figure(1, 'Magnetization', '')
+        info.save_figure(1, 'Magnetization', '', info.fulldir, '.png')
+        hold off
+        return;
+    end
+    
     S = load(wspath, 'atom_mass'); atom_mass = S.atom_mass;
     atom_weight = atom_mass / getphysconst('amu');
     if atom_weight > 22 && atom_weight < 24
@@ -43,5 +53,6 @@ function [] = plot_magnetization(its, M, info, evo)
     
     % Saving figure
     info.save_figure(1, 'Magnetization', '')
+    info.save_figure(1, 'Magnetization', '', info.fulldir, '.png')
  
 end

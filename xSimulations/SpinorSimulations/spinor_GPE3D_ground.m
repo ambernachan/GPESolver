@@ -13,7 +13,7 @@ function [] = spinor_GPE3D_ground(info)
    
     %% Setting variables
     % Determine interaction strength compared to kinetic energy
-    atom = 'ferro';
+    atom = 'Na';
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
     else
@@ -34,8 +34,11 @@ function [] = spinor_GPE3D_ground(info)
     info.params.spin_pair = spin_pair;
     
     aho = sqrt(hbar / (atom_mass * trapfreq));
-    chin = N*(2*a2+a0)/(3*aho);
-    chis = N*(a2-a0)/(3*aho);
+    an = (2*a2+a0)/3;
+    as = (a2-a0)/3;
+    chin = N*an/aho;
+    chis = N*as/aho;
+    
     % Setting simulation space
     xlim = info.params.boxlimits(1); ylim = info.params.boxlimits(2); zlim = info.params.boxlimits(3);
     Nx = info.params.Ngridpts; Ny = info.params.Ngridpts; Nz = info.params.Ngridpts;
@@ -61,6 +64,12 @@ function [] = spinor_GPE3D_ground(info)
         dimensions = 3;
         info.params.dimensions = dimensions;
     end
+    
+    % xi is the healing length; we derive a xi-n and a xi-s for self- and
+    % spin-mixing interactions
+    allthechis = [chin chis];
+    alltheAs = [an as];
+    XI = findhealinglengths(allthechis, alltheAs, atom);
     
     %%
     %{
@@ -268,5 +277,7 @@ function [] = spinor_GPE3D_ground(info)
     simulation_finished = 'Ground state simulation finished';
 
     save(info.get_workspace_path('fittingdata'),'simulation_finished', '-append')
+    
+    info.finish_info();
     
 end

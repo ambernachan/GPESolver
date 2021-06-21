@@ -10,28 +10,31 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
    
     %% Setting variables
     % Determine interaction strength compared to kinetic energy
+    atom = 'Na';
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
     else
-        a0 = getsimconst('a0_Na');
+        a0 = getsimconst(['a0_' atom]);
         info.params.a0 = a0;
     end
     if isfield(info.params, 'a2')
         a2 = info.params.a2;
     else
-        a2 = getsimconst('a2_Na');
+        a2 = getsimconst(['a2_' atom]);
         info.params.a2 = a2;
     end
     N = getsimconst('N'); % number of particles
     hbar = getphysconst('hbar'); % in kg m^2 / s
     trapfreq = getsimconst('trap_freq'); % Trap strength in Hz (symmetric for now)
-    atom_mass = getsimconst('mass_Na'); % Atom mass in kg
+    atom_mass = getsimconst(['mass_' atom]); % Atom mass in kg
     spin_pair = getsimconst('spin_pair'); % hyperfine spin manifold (=1)
     info.params.spin_pair = spin_pair;
     
     aho = sqrt(hbar / (atom_mass * trapfreq));
-    chin = N*(2*a2+a0)/(3*aho);
-    chis = N*(a2-a0)/(3*aho);
+    an = (2*a2+a0)/3;
+    as = (a2-a0)/3;
+    chin = N*an/aho;
+    chis = N*as/aho;
     
     % Setting simulation space
     xlim = info.params.boxlimits(1); ylim = info.params.boxlimits(2); zlim = info.params.boxlimits(3);
@@ -59,6 +62,12 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
         info.params.dimensions = dimensions;
     end
     
+    % xi is the healing length; we derive a xi-n and a xi-s for self- and
+    % spin-mixing interactions
+    allthechis = [chin chis];
+    alltheAs = [an as];
+    XI = findhealinglengths(allthechis, alltheAs, atom);
+    
     %% Run a ground state simulation if Phi_in is not yet given.
     if ~exist('Phi_in', 'var')
         groundst_simulation = 'spinor_GPE3D_ground';
@@ -84,12 +93,12 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 
     Computation = 'Dynamic';
     Ncomponents = 3;
-%     Type = 'Splitting';
+    % Type = 'Splitting';
     Type = 'Relaxation';
     Deltat = 1e-3;
-    Stop_time = 1;
+    Stop_time = 10;
     Stop_crit = [];
-    Max_iter = 1000;
+    Max_iter = 10000;
 %         Stop_crit = {'MaxNorm', 1e-12};
 %         Precond_type = 'FLaplace'; % defaults to 'FLaplace'
 %         Precond_type = []; % defaults to 'FLaplace'
@@ -126,19 +135,16 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     Omega = 0;
     Physics3D = Physics3D_Var3d(Method, Delta, Beta, Omega);
     Physics3D = Dispersion_Var3d(Method, Physics3D); % !!!
+    Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
+%     Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(1, 5, 1, X, Y, Z));
 %     Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z));
-%         Physics3D = TimePotential_Var3d(Method, Physics3D, @(t,X,Y,Z) exp(-t)*quadratic_potential3d(gx, gy, gz, X, Y, Z));
-    Physics3D = TimePotential_Var3d(Method, Physics3D, @(t,X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z));
     
+%     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas), [], ...
         Coupled_CubicEnergy3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
-%     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
     
     %Physics3D = Gradientx_Var3d(Method, Physics3D, @(x,y) -1i*Omega*y);
     %Physics3D = Gradienty_Var3d(Method, Physics3D, @(x,y) 1i*Omega*x);
-
-    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
-
     
     %% version mgmt
     curdir = strsplit(pwd, '/');
@@ -179,7 +185,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     
     %% Printing preliminary outputs
     Printing = 1;
-    Evo = 10;
+    Evo = 25;
     Draw = 1;
     Print = Print_Var3d(Printing, Evo, Draw);
 
@@ -197,17 +203,24 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 %         Phi_i{3} = Phi_1{3} ./ sqrt(2);
 %         Phi_i{2} = Phi_1{3} ./ sqrt(2);
 %         Phi_i{1} = Phi_1{1};
-% 
+
+    info.add_simulation_info(Geometry3D);
 %         [Phi, Outputs] = GPELab3d(Phi_i, Method, Geometry3D, Physics3D, Outputs, [], Print);
     [Phi, Outputs] = GPELab3d(Phi_in, Method, Geometry3D, Physics3D, Outputs, [], Print);
+    
+    save(info.get_workspace_path('phi_ini'), 'Phi_in', 'Phi', 'Outputs', '-v7.3')
 
     %% Save the workspace & simulation info
 
     % save information about final simulation iteration in info file
     info.add_result_info(Method, Outputs);
-    info.finish_info();
-    save(info.get_workspace_path('dynamics'))
 
+    % saving dynamics workspace in v7.3 MAT file
+    save(info.get_workspace_path('dynamics_v7.3'), '-v7.3');
+    
+    % saving dynamics workspace in 'normal' file
+    save(info.get_workspace_path('dynamics'))
+        
     %% Draw user-defined functions populations & magnetization
     
     close all;
@@ -220,9 +233,9 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     % Plot population fractions
     plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
     % Plot population distribution on x-axis
-    plot_populationdistribution(Geometry3D, Phi_1, info)
+    plot_populationdistribution(Geometry3D, Phi, info)
     % Plot magnetization distribution on x-axis
-    plot_magnetizationdistribution(Geometry3D, Phi_1, info)
+    plot_magnetizationdistribution(Geometry3D, Phi, info)
     
     %% Time plots
     % magnetization distribution on x-axis
@@ -304,5 +317,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     simulation_finished = 'yes!';
     save(wspath,'simulation_finished', '-append')
 
+    info.finish_info();
+    
     %% end
 end

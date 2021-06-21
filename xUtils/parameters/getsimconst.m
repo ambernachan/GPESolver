@@ -11,7 +11,7 @@ function [value] = getsimconst(simconst)
     
     mass_Na = 22.989769 * getphysconst('amu'); % mass (kg)
     mass_Rb = 86.9091835 * getphysconst('amu'); % mass (kg)
-    mass_ferro = mass_Na;
+    mass_ferro = 0.5*mass_Na + 0.5*mass_Rb;
     rvdW_Na = 44.96 * getphysconst('abohr'); % van der Waals radius (m)
     rvdW_Rb = 82.64 * getphysconst('abohr'); % van der Waals radius (m)
     TNa = 3.24420293315 * 10^(-7); % ?
@@ -20,6 +20,7 @@ function [value] = getsimconst(simconst)
     N = 10^5; % number of particles
     trap_freq = 100 * 2*pi; % in Hz
     spin_pair = 1; % hyperfine spin manifold
+    density = 10^20; % density n in 1/m^3
     
     ws_variables = whos;
     wsnames = cell(1,length(ws_variables));

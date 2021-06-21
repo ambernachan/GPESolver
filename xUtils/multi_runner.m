@@ -2,7 +2,7 @@ function [info] = multi_runner(scriptname, boxlimits,...
     Ngridpts, chi, delta, gammas)
     creationTime = now;
     dimensions = 3;
-    run_dynamic = false;
+    run_dynamic = true;
     
     % if only the scriptname is given
     if nargin < 2
@@ -29,6 +29,15 @@ function [info] = multi_runner(scriptname, boxlimits,...
             p = makeparams(dimensions, boxlimits, Ngridpts, run_dynamic, S, delta, gammas);
         end
         info = Info(scriptname, creationTime, p);
-        feval(scriptname, info)
+        if ~run_dynamic
+            feval(scriptname, info)
+        else
+            phi_ground = input('Please enter the ground state function Phi.\n');
+            if isempty(phi_ground)
+                feval(scriptname, info)
+            else
+                feval(scriptname, info, phi_ground)
+            end
+        end
     end
 end

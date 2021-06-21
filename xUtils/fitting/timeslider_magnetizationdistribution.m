@@ -73,6 +73,7 @@ function [] = timeslider_magnetizationdistribution(geometry, solution, info, dir
     evomarker = floor(length(x)/20);
     L_yarray = length(M{1});
 %     time = 1;
+
 for time = 1:length(x)
     
     plot(x, M{time}, '--d', 'MarkerIndices', 1:evomarker:L_yarray, ...
@@ -103,39 +104,18 @@ for time = 1:length(x)
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
     
-    %add atom type text to figure
-    wspath = info.get_workspace_path('groundstate');
-    if ~exist(wspath, 'file')
-        laptopstr = 'D:\surfdrive\UNI\MSc Project spinor condensates\';
-        computerstr = 'C:\AMBER\surfdrive\UNI\MSc Project spinor condensates\';
-        pathfromxOut = [];
-        p = split(wspath, [string('/'), string('\')]);
-        a = 0;
-        for i=1:length(p)
-            if strcmp(p(i), 'xOutputs')
-                a = i;
-            end
-        end
-        
-        % In this case, the workspace is not defined on either PC/Laptop Amber,
-        % you should save the figure manually.
-        if a == 0
-            sprintf('The atom type was not given because the workspace path was not recognized.')
-            info.save_figure(1, 'Population distribution', '')
-            hold off
-            return;
-        end
-        
-        p = p(a:end);
-        for i=1:length(p)
-            pathfromxOut = [pathfromxOut '\' char(p(i))];
-        end
-        
-        if strcmp(wspath(1), 'C')
-            wspath = [laptopstr pathfromxOut];
-        elseif strcmp(wspath(1), 'D')
-            wspath = [computerstr pathfromxOut];
-        end
+    % gives wspath, which equals 0 when it hasn't been found.
+    wspath = whichwspath(info); % gives wspath and parameter
+    
+    savename = 'Magnetization distribution over time';
+    
+    % add atom type text to figure
+    % Use the workspace path to load the atom mass, derive type of atom
+    if wspath == 0 % meaning the wspath hasn't been found.
+        info.save_figure(1, savename, '')
+        info.save_figure(1, savename, '', info.fulldir, '.png')
+        hold off
+        return;
     end
     
     % Use the workspace path to load the atom mass, derive type of atom
@@ -158,7 +138,6 @@ for time = 1:length(x)
 end
 
     % Save figure
-    savename = 'Magnetization distribution over time';
     if flag
         savename = [savename '_' direction];
     end

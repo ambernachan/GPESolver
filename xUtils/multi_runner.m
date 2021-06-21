@@ -3,6 +3,7 @@ function [info] = multi_runner(scriptname, boxlimits,...
     creationTime = now;
     dimensions = 3;
     run_dynamic = true;
+    atom = 'Na';
     
     % if only the scriptname is given
     if nargin < 2
@@ -12,7 +13,7 @@ function [info] = multi_runner(scriptname, boxlimits,...
     
     if nargin > 3
         for i = 1 : length(chi)
-            q(i) = makeparams(dimensions, boxlimits, Ngridpts, run_dynamic, chi(i), delta, gammas);
+            q(i) = makeparams(dimensions, boxlimits, Ngridpts, run_dynamic, atom, chi(i), delta, gammas);
         end
     else
         chi = 1;
@@ -26,7 +27,7 @@ function [info] = multi_runner(scriptname, boxlimits,...
             p = q(i);
         else
             S = [];
-            p = makeparams(dimensions, boxlimits, Ngridpts, run_dynamic, S, delta, gammas);
+            p = makeparams(dimensions, boxlimits, Ngridpts, run_dynamic, atom, S, delta, gammas);
         end
         info = Info(scriptname, creationTime, p);
         if ~run_dynamic

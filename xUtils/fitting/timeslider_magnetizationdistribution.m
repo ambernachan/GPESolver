@@ -44,6 +44,8 @@ function [] = timeslider_magnetizationdistribution(geometry, solution, info, dir
         end
     end
     
+    % Create 1d plot data: ydata M set to appropriate direction & xaxis
+    % title selected
     if strcmp(direction, 'x')
         xax = 'x (centered in y,z) (a_{ho})';
         M = Mx;
@@ -56,89 +58,56 @@ function [] = timeslider_magnetizationdistribution(geometry, solution, info, dir
         x = z;
         M = Mz;
     end
-    
-    limity = -Inf;
-    lowerlim = Inf;
-    for i = 1:length(solution)
-        % for long solution vectors we can disregard the first few in the
-        % setting of the y-axis limits.
-        if length(solution) > 50 && i < 20
-            continue;
-        end
-        limity = max(limity, max(M{i}));
-        lowerlim = min(lowerlim, min(M{i}));
-    end
-    
+     
     % Creating figure
     evomarker = floor(length(x)/20);
     L_yarray = length(M{1});
-%     time = 1;
+    
+    % Create the slider control
+    theRange = length(solution) - 1;
+    h = uicontrol('style','slider','units','pixel','position',[20 20 300 20],...
+                  'min',1,'max',length(solution),'val',1,...
+                  'sliderstep',[1/theRange 10/theRange]);
+    
+    % Create the plot
+    hplot = plot(x, M{1}, '--d', 'MarkerIndices', 1:evomarker:L_yarray, ...
+            'LineWidth', 1.2, 'MarkerSize', 6);
+        
+    % Register slider callback
+    addlistener(h, 'ContinuousValueChange', @(hObject, event) updatePlot(hObject, event, M, hplot));
 
-for time = 1:length(x)
-    
-    plot(x, M{time}, '--d', 'MarkerIndices', 1:evomarker:L_yarray, ...
-        'LineWidth', 1.2, 'MarkerSize', 6)
-    
-    maxlim = max(limity, max(M{time}));
-    minlim = min(lowerlim, min(M{time}));
-    if maxlim < 10^(-10)
-        maxlim = maxlim * 2/1.1;
-    end
-    if minlim < 0 && minlim > -10^(-10)
-        minlim = minlim * 2/1.1;
-        if abs(maxlim/minlim) < 0.01
-            maxlim = abs(minlim)/100;
-        end
-    else
-        minlim = -maxlim/100;
-    end
-    ylim([minlim maxlim*1.1]);
-    
     % Add axes labels and figure text
     xlabel(xax); 
     ylabel('m = M/N');
     title('Magnetization distribution |\psi_+|^2-|\psi_-|^2');
-    
-%     lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|');
-    
-    %add datestring to figure
-    annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
-    
-    % gives wspath, which equals 0 when it hasn't been found.
-    wspath = whichwspath(info); % gives wspath and parameter
-    
+
     savename = 'Magnetization distribution over time';
-    
-    % add atom type text to figure
-    % Use the workspace path to load the atom mass, derive type of atom
-    if wspath == 0 % meaning the wspath hasn't been found.
+
+    if ~isfield(info.params, 'atom')
         info.save_figure(1, savename, '')
         info.save_figure(1, savename, '', info.fulldir, '.png')
+        sprintf('Warning: atom type was not specified')
         hold off
         return;
     end
-    
-    % Use the workspace path to load the atom mass, derive type of atom
-    S = load(wspath, 'atom_mass'); atom_mass = S.atom_mass;
-    atom_weight = atom_mass / getphysconst('amu');
-    if atom_weight > 22 && atom_weight < 24
+
+    if strcmp(info.params.atom, 'Na')
         atom_str = '^{23}Na';
-    elseif atom_weight > 86 && atom_weight < 88
+    elseif strcmp(info.params.atom, 'Rb')
         atom_str = '^{87}Rb';
     else
-        error('Please manually input atom type in plotting file.');
-        atom_str = '';
+        atom_str = info.params.atom;
     end
-    
+
     % Add annotation about atom type to graph
     annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...
         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
-    drawnow;
-    hold off
-end
+
+    % Add datestring to figure
+    annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
 
     % Save figure
-    if flag
+    if flag % if the horizontal axis was explicitly chosen, put in savename
         savename = [savename '_' direction];
     end
     

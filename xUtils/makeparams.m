@@ -1,5 +1,9 @@
-function params = makeparams (dimensions, boxlimits, Ngridpts, false, chi, delta, gammas)
-    if nargin > 4
+function params = makeparams (dimensions, boxlimits, Ngridpts, rundyn, atom, chi, delta, gammas)
+    
+    if nargin < 5
+        params.atom = 'Na';
+    end
+    if nargin > 5
         params.S = chi;
         params.delta = delta;
         params.gammas = gammas;
@@ -7,5 +11,7 @@ function params = makeparams (dimensions, boxlimits, Ngridpts, false, chi, delta
     params.dimensions = dimensions;
     params.boxlimits = boxlimits;
     params.Ngridpts = Ngridpts;
-    params.dyn_simu = false;
+    params.dyn_simu = rundyn;
+    params.atom = atom;
+    
 end

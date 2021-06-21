@@ -13,7 +13,14 @@ function [] = spinor_GPE3D_ground(info)
    
     %% Setting variables
     % Determine interaction strength compared to kinetic energy
-    atom = 'Na';
+%     atom = 'Na';
+    if isfield(info.params, 'atom')
+        atom = info.params.atom;
+    else
+        atom = 'Na';
+        info.params.atom = atom;
+        sprintf('Warning: atom set to default (23Na) as atom type was not specified')
+    end
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
     else

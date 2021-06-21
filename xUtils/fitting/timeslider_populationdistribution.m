@@ -5,8 +5,11 @@ function [] = timeslider_populationdistribution(geometry, solution, info, direct
     close all;
     datestring = info.creationTimeString;
     
+    flag = []; % to specify whether direction was explicitly chosen
     if ~exist('direction','var') || isempty(direction)
         direction = 'x';
+    else
+        flag = 1; %direction explicitly given
     end
 
     % 3d spatial meshgrids

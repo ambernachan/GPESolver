@@ -63,19 +63,17 @@ function [] = timeslider_magnetizationdistribution(geometry, solution, info, dir
     evomarker = floor(length(x)/20);
     L_yarray = length(M{1});
     
-    % Create the slider control
-    theRange = length(solution) - 1;
-    h = uicontrol('style','slider','units','pixel','position',[20 20 300 20],...
-                  'min',1,'max',length(solution),'val',1,...
-                  'sliderstep',[1/theRange 10/theRange]);
-    
-    % Create the plot
-    hplot = plot(x, M{1}, '--d', 'MarkerIndices', 1:evomarker:L_yarray, ...
+    % Create the slider and plot lines
+    sliderHandle = createTimeSliderPlot(length(solution));
+    lh = plot(gca, x, M{1}, '--d', 'MarkerIndices', 1:evomarker:L_yarray, ...
             'LineWidth', 1.2, 'MarkerSize', 6);
         
     % Register slider callback
-    addlistener(h, 'ContinuousValueChange', @(hObject, event) updatePlot(hObject, event, M, hplot));
+    addlistener(sliderHandle, 'ContinuousValueChange', @(hObject, event) updatePlot(hObject, event, {M}, {lh}));
 
+    % Default axes: [left bottom width height] -> [0.1300 0.1100 0.7750 0.8150]
+    set(gca, 'Position', [0.1300 0.1150 0.7750 0.8100]) 
+    
     % Add axes labels and figure text
     xlabel(xax); 
     ylabel('m = M/N');
@@ -106,12 +104,14 @@ function [] = timeslider_magnetizationdistribution(geometry, solution, info, dir
     % Add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
 
-    % Save figure
-    if flag % if the horizontal axis was explicitly chosen, put in savename
+    % if the horizontal axis was explicitly chosen, put in savename
+    if flag 
         savename = [savename '_' direction];
     end
     
+    % Save figure
     info.save_figure(1, savename, '')
+    info.save_figure(1, savename, '', info.fulldir, '.png')
     hold off
     
 end

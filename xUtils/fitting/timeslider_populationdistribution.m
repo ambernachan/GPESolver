@@ -71,19 +71,24 @@ function [] = timeslider_populationdistribution(geometry, solution, info, direct
     % Creating figure
     evomarker = floor(length(x)/20);
     L_yarray = length(phiplus{1});
-%     time = 1;
-for time = 1:length(x)
-    
-    plot(x, phiplus{time}, '--d', 'MarkerIndices', 1:evomarker:L_yarray, ...
-        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.6 0.1])
+%     time = 1;  
+
+    % Create the slider and plot lines
+    sliderHandle = createTimeSliderPlot(length(solution));
     hold on
-    plot(x, phizero{time}, '-.o', 'MarkerIndices', 1:evomarker:L_yarray, ...
-        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.2 0.2])
-    plot(x, phimin{time}, '-.^', 'MarkerIndices', ceil(evomarker/2):evomarker:L_yarray, ...
-        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0])
+    lh1 = plot(gca, x, phiplus{1}, '--d', 'MarkerIndices', 1:evomarker:L_yarray, ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.6 0.1]);
+    lh2 = plot(gca, x, phizero{1}, '-.o', 'MarkerIndices', 1:evomarker:L_yarray, ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.2 0.2]);
+    lh3 = plot(gca, x, phimin{1}, '-.^', 'MarkerIndices', ceil(evomarker/2):evomarker:L_yarray, ...
+        'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0]);
     
-    maxlim = max(limity, max(max(max(phiplus{time}), max(phizero{time})), max(phimin{time})));
-    ylim([-maxlim/100 maxlim*1.1]);
+    % Register slider callback
+    addlistener(sliderHandle, 'ContinuousValueChange', @(hObject, event) updatePlot(hObject, event, {phiplus, phizero, phimin}, {lh1, lh2, lh3}));
+%     t = timer('TimerFcn',@(x,y)disp('Hello World!'),'StartDelay',5);
+    
+    % Default axes: [left bottom width height] -> [0.1300 0.1100 0.7750 0.8150]
+    set(gca, 'Position', [0.1300 0.1150 0.7750 0.8100]) 
     
     % Add axes labels and figure text
     xlabel(xax); 
@@ -92,44 +97,42 @@ for time = 1:length(x)
     
     lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|');
     
-    %add datestring to figure
-    annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
-    
-    % gives wspath, which equals 0 when it hasn't been found.
-    wspath = whichwspath(info); % gives wspath and parameter
-    
     savename = 'Population distribution over time';
     
-    % add atom type text to figure
-    % Use the workspace path to load the atom mass, derive type of atom
-    if wspath == 0 % meaning the wspath hasn't been found.
+    if ~isfield(info.params, 'atom')
         info.save_figure(1, savename, '')
         info.save_figure(1, savename, '', info.fulldir, '.png')
+        sprintf('Warning: atom type was not specified')
         hold off
         return;
     end
     
-    % Use the workspace path to load the atom mass, derive type of atom
-    S = load(wspath, 'atom_mass'); atom_mass = S.atom_mass;
-    atom_weight = atom_mass / getphysconst('amu');
-    if atom_weight > 22 && atom_weight < 24
+    if strcmp(info.params.atom, 'Na')
         atom_str = '^{23}Na';
-    elseif atom_weight > 86 && atom_weight < 88
+    elseif strcmp(info.params.atom, 'Rb')
         atom_str = '^{87}Rb';
     else
-        error('Please manually input atom type in plotting file.');
-        atom_str = '';
+        atom_str = info.params.atom;
     end
     
     % Add annotation about atom type to graph
     annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...
         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
-    drawnow;
-    hold off
-end
+    
+    % Add datestring to figure
+    annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
+
+    % Add datestring to figure
+    annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
+
+    % if the horizontal axis was explicitly chosen, put in savename
+    if flag 
+        savename = [savename '_' direction];
+    end
+    
     % Save figure
     info.save_figure(1, savename, '')
     info.save_figure(1, savename, '', info.fulldir, '.png')
-    hold off  
+    hold off
     
 end

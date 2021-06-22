@@ -39,24 +39,20 @@ function [] = plot_populationfractions(its, rho, info, evo)
     
     savename = 'Population fractions';
     
-    % add atom type text to figure
-    % Use the workspace path to load the atom mass, derive type of atom
-    if wspath == 0 % meaning the wspath hasn't been found.
+    if ~isfield(info.params, 'atom')
         info.save_figure(1, savename, '')
         info.save_figure(1, savename, '', info.fulldir, '.png')
+        sprintf('Warning: atom type was not specified')
         hold off
         return;
     end
-    
-    S = load(wspath, 'atom_mass'); atom_mass = S.atom_mass;
-    atom_weight = atom_mass / getphysconst('amu');
-    if atom_weight > 22 && atom_weight < 24
+
+    if strcmp(info.params.atom, 'Na')
         atom_str = '^{23}Na';
-    elseif atom_weight > 86 && atom_weight < 88
+    elseif strcmp(info.params.atom, 'Rb')
         atom_str = '^{87}Rb';
     else
-        error('Please manually input atom type in plotting file.');
-        atom_str = '';
+        atom_str = info.params.atom;
     end
     
     annotation('textbox', [0.225, 0.2, 0.1, 0.1], ...

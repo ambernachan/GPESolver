@@ -17,9 +17,9 @@ function [] = spinor_GPE3D_ground(info)
     if isfield(info.params, 'atom')
         atom = info.params.atom;
     else
-        atom = 'Na';
+        atom = 'Rb';
         info.params.atom = atom;
-        sprintf('Warning: atom set to default (23Na) as atom type was not specified')
+        sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
     end
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
@@ -88,10 +88,10 @@ function [] = spinor_GPE3D_ground(info)
     Computation = 'Ground';
     Ncomponents = 3;
     Type = 'BESP';
-    Deltat = 1e-2;
+    Deltat = 0.0015625;
     Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
-    Max_iter = 1250;
+    Max_iter = 2000;
 %     Max_iter = 2500;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);

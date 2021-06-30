@@ -8,10 +8,10 @@ function [rho] = Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 
         Phi{n} = Phi{n} / sqrt(Global_L2norm); % Computing the norm of each wave function
     end
     
-    TotalPhi = sum(sum(sum(abs(Phi{1})))).^2+sum(sum(sum(abs(Phi{2})))).^2+sum(sum(sum(abs(Phi{3})))).^2;
-    rho_up = sum(sum(sum(abs(Phi{1})))).^2 / TotalPhi;
-    rho_zero = sum(sum(sum(abs(Phi{2})))).^2 / TotalPhi;
-    rho_down = sum(sum(sum(abs(Phi{3})))).^2 / TotalPhi;
+    TotalPhi = sum(sum(sum(abs(Phi{1}.^2))))+sum(sum(sum(abs(Phi{2}.^2))))+sum(sum(sum(abs(Phi{3}.^2))));
+    rho_up = sum(sum(sum(abs(Phi{1}.^2)))) / TotalPhi;
+    rho_zero = sum(sum(sum(abs(Phi{2}.^2)))) / TotalPhi;
+    rho_down = sum(sum(sum(abs(Phi{3}.^2)))) / TotalPhi;
     
     if m == 1
         rho = rho_up;

@@ -1,5 +1,6 @@
-% Plot magnetism
-function [] = plot_populationfractions(its, rho, info, evo)
+% Plot magnetization, M = [Mx; My; Mz]
+
+function [] = plot_magnetizations(its, M, info, evo)
 
     close all;
     datestring = info.creationTimeString;
@@ -9,32 +10,28 @@ function [] = plot_populationfractions(its, rho, info, evo)
     
     x = evo:evo:its*evo;
     
-    limity = max(max(max(rho{1}),max(rho{2})),max(rho{3}));
-    lowery = min(min(min(rho{1}),min(rho{2})),min(rho{3}));
-    
+    % marker setting step size
+    evomarker = floor(length(x)/20);
     % Creating figure
-    evomarker = floor(length(x)/10);
-    plot(x, rho{1}, '--d', 'MarkerIndices', 1:evomarker:length(rho{1}), ...
+    plot(x, M(1, :), '--x', 'MarkerIndices', 1:evomarker:length(M(1)), ...
         'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.6 0.1])
     hold on
-    plot(x, rho{2}, '-.o', 'MarkerIndices', 1:evomarker:length(rho{2}), ...
+    plot(x, M(2, :), '-.+', 'MarkerIndices', 1:evomarker:length(M(2)), ...
         'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0 0.2 0.2])
-    plot(x, rho{3}, '-.^', 'MarkerIndices', ceil(evomarker/2):evomarker:length(rho{3}), ...
+    plot(x, M(3, :), '-.o', 'MarkerIndices', ceil(evomarker/2):evomarker:length(M(3)), ...
         'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0])
-    
-    ylim([lowery-limity/100 limity*1.1]);
     
     % Add axes labels and figure text
     xlabel('iterations'); 
-    ylabel('|\phi_i|^2 / |\Psi|^2');
-    title('Population fractions \rho_i');
+    ylabel('m = M/N');
+    title('Magnetization <Fx>, <Fy>, <Fz>');
     
-    lgd = legend('\rho_+', '\rho_0', '\rho_-');
+    lgd = legend('<Fx>', '<Fy>', '<Fz>');
     
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
     
-    savename = 'Population fractions';
+    savename = 'Magnetization in x,y,z';
     
     if ~isfield(info.params, 'atom')
         info.save_figure(1, savename, '')
@@ -43,8 +40,8 @@ function [] = plot_populationfractions(its, rho, info, evo)
         hold off
         return;
     end
-
-    if strcmp(info.params.atom, 'Na')
+    
+   if strcmp(info.params.atom, 'Na')
         atom_str = '^{23}Na';
     elseif strcmp(info.params.atom, 'Rb')
         atom_str = '^{87}Rb';
@@ -52,12 +49,14 @@ function [] = plot_populationfractions(its, rho, info, evo)
         atom_str = info.params.atom;
     end
     
+%     annotation('textbox', [0.725, 0.2, 0.1, 0.1], ...
+%         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
     annotation('textbox', [0.225, 0.2, 0.1, 0.1], ...
         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
     
     % Save figure
     info.save_figure(1, savename, '')
     info.save_figure(1, savename, '', info.fulldir, '.png')
-    hold off  
-    
+    hold off
+ 
 end

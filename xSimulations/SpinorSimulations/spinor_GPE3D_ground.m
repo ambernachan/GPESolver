@@ -17,9 +17,10 @@ function [] = spinor_GPE3D_ground(info)
     if isfield(info.params, 'atom')
         atom = info.params.atom;
     else
-        atom = 'Rb';
+        atom = 'Na';
         info.params.atom = atom;
-        sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
+%         sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
+        sprintf('Warning: atom set to default (23Na) as atom type was not specified')
     end
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
@@ -88,7 +89,7 @@ function [] = spinor_GPE3D_ground(info)
     Computation = 'Ground';
     Ncomponents = 3;
     Type = 'BESP';
-    Deltat = 0.0015625;
+    Deltat = 0.0625/2;
     Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
     Max_iter = 2000;
@@ -184,10 +185,19 @@ function [] = spinor_GPE3D_ground(info)
         Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 0);
     globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
-    globaluserdef_names{1} = 'Magnetization';
+    globaluserdef_outputs{5} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{6} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'z', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_names{1} = 'Longitudinal magnetization';
     globaluserdef_names{2} = 'Population psi+';
     globaluserdef_names{3} = 'Population psi0';
     globaluserdef_names{4} = 'Population psi-';
+    globaluserdef_names{5} = 'Magnetization Mx';
+    globaluserdef_names{6} = 'Magnetization My';
+    globaluserdef_names{7} = 'Magnetization Mz';
     
     Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
         globaluserdef_outputs,globaluserdef_names);
@@ -224,14 +234,18 @@ function [] = spinor_GPE3D_ground(info)
     
     its = Outputs.Iterations;
     
-    % Plot magnetization
-    plot_magnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
+    M = Outputs.User_defined_global(5:7);
+    
+    % Plot longitudinal magnetization
+    plot_longmagnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
     % Plot population fractions
     plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
     % Plot population distribution on x-axis
     plot_populationdistribution(Geometry3D, Phi_1, info)
     % Plot magnetization distribution on x-axis
     plot_magnetizationdistribution(Geometry3D, Phi_1, info)
+    % Plot transverse & longitudinal magnetization
+%     plot_magnetizations(its, Outputs.User_defined_global{5}, info, Outputs.Evo_outputs)
     
     %% Time plots
     % magnetization distribution on x-axis

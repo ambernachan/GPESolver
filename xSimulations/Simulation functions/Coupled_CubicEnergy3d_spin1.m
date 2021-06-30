@@ -17,14 +17,19 @@ function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas)
     
     % spin-mixing terms
     % note that B = A' is the complex conjugate transpose of A
-%     CoupledSpin1NonlinEnergy{1,2} = @(Phi,X,Y,Z) Betas * Phi{3}' .* Phi{2};
-%     CoupledSpin1NonlinEnergy{2,1} = @(Phi,X,Y,Z) Betas * Phi{2}' .* Phi{3};
-%     CoupledSpin1NonlinEnergy{2,3} = @(Phi,X,Y,Z) Betas * Phi{2}' .* Phi{1};
-%     CoupledSpin1NonlinEnergy{3,2} = @(Phi,X,Y,Z) Betas * Phi{1}' .* Phi{2};
-    CoupledSpin1NonlinEnergy{1,2} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{3}) .* Phi{2});
-    CoupledSpin1NonlinEnergy{2,1} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{2}) .* Phi{3});
-    CoupledSpin1NonlinEnergy{2,3} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{2}) .* Phi{1});
-    CoupledSpin1NonlinEnergy{3,2} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{1}) .* Phi{2});
+% %     CoupledSpin1NonlinEnergy{1,2} = @(Phi,X,Y,Z) Betas * Phi{3}' .* Phi{2};
+% %     CoupledSpin1NonlinEnergy{2,1} = @(Phi,X,Y,Z) Betas * Phi{2}' .* Phi{3};
+% %     CoupledSpin1NonlinEnergy{2,3} = @(Phi,X,Y,Z) Betas * Phi{2}' .* Phi{1};
+% %     CoupledSpin1NonlinEnergy{3,2} = @(Phi,X,Y,Z) Betas * Phi{1}' .* Phi{2};
+
+%     CoupledSpin1NonlinEnergy{1,2} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{3}) .* Phi{2});
+%     CoupledSpin1NonlinEnergy{2,1} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{2}) .* Phi{3});
+%     CoupledSpin1NonlinEnergy{2,3} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{2}) .* Phi{1});
+%     CoupledSpin1NonlinEnergy{3,2} = @(Phi,X,Y,Z) 0.5 * Betas * real(conj(Phi{1}) .* Phi{2});    
+    CoupledSpin1NonlinEnergy{1,2} = @(Phi,X,Y,Z) 0.5 * Betas * (conj(Phi{3}) .* Phi{2});
+    CoupledSpin1NonlinEnergy{2,1} = @(Phi,X,Y,Z) 0.5 * Betas * (conj(Phi{2}) .* Phi{3});
+    CoupledSpin1NonlinEnergy{2,3} = @(Phi,X,Y,Z) 0.5 * Betas * (conj(Phi{2}) .* Phi{1});
+    CoupledSpin1NonlinEnergy{3,2} = @(Phi,X,Y,Z) 0.5 * Betas * (conj(Phi{1}) .* Phi{2});
     
     CoupledSpin1NonlinEnergy{3,1} = @(Phi,X,Y,Z) 0;
     CoupledSpin1NonlinEnergy{1,3} = @(Phi,X,Y,Z) 0;

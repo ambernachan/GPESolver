@@ -10,7 +10,16 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
    
     %% Setting variables
     % Determine interaction strength compared to kinetic energy
-    atom = 'Na';
+%     atom = 'Na';
+    if isfield(info.params, 'atom')
+        atom = info.params.atom;
+    else
+        atom = 'Rb';
+%         atom = 'Na';
+        info.params.atom = atom;
+        sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
+%         sprintf('Warning: atom set to default (23Na) as atom type was not specified')
+    end
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
     else
@@ -69,6 +78,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     XI = findhealinglengths(allthechis, alltheAs, atom);
     
     %% Run a ground state simulation if Phi_in is not yet given.
+    
     if ~exist('Phi_in', 'var')
         groundst_simulation = 'spinor_GPE3D_ground';
         ground_info = multi_runner(groundst_simulation, info.params.boxlimits, info.params.Ngridpts);
@@ -93,10 +103,12 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 
     Computation = 'Dynamic';
     Ncomponents = 3;
-    % Type = 'Splitting';
-    Type = 'Relaxation';
-    Deltat = 1e-3;
-    Stop_time = 10;
+    Type = 'Splitting'; % defaults to Strang splitting
+%     Type = 'Relaxation';
+    dx = (2*xlim / (Nx-1));
+%     Deltat = 0.1*dx^2;
+    Deltat = 0.1*dx^2;
+    Stop_time = 100;
     Stop_crit = [];
     Max_iter = 10000;
 %         Stop_crit = {'MaxNorm', 1e-12};
@@ -106,7 +118,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 %     Output = 1;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
-%     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, [], [], Precond_type, Output);
+%     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, [], [], Precond_type, Output, Splitting);
 
     % Saving workspace with relevant data for fitting
     Method_dynamical = Method;
@@ -129,6 +141,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
         
     %% Physics3D
 
+    % Delta is already defined
     Beta = 1; % multiplication factor for Beta_n and Beta_s
     Betan = 4*pi*chin;
     Betas = 4*pi*chis;
@@ -175,18 +188,28 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
         Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 0);
     globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
-    globaluserdef_names{1} = 'Magnetization';
+    globaluserdef_outputs{5} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{6} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'z', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_names{1} = 'Longitudinal magnetization';
     globaluserdef_names{2} = 'Population psi+';
     globaluserdef_names{3} = 'Population psi0';
     globaluserdef_names{4} = 'Population psi-';
+    globaluserdef_names{5} = 'Magnetization Mx';
+    globaluserdef_names{6} = 'Magnetization My';
+    globaluserdef_names{7} = 'Magnetization Mz';
     
     Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
         globaluserdef_outputs,globaluserdef_names);
     
     %% Printing preliminary outputs
+    
     Printing = 1;
     Evo = 25;
-    Draw = 1;
+    Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);
 
     %% RUN THE SIMULATION to find the ground state
@@ -228,14 +251,16 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     
     its = Outputs.Iterations;
     
-    % Plot magnetization
-    plot_magnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
+    % Plot longitudinal magnetization
+    plot_longmagnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
     % Plot population fractions
     plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
     % Plot population distribution on x-axis
     plot_populationdistribution(Geometry3D, Phi, info)
     % Plot magnetization distribution on x-axis
     plot_magnetizationdistribution(Geometry3D, Phi, info)
+    % Plot transverse & longitudinal magnetization
+%     plot_magnetizations(its, Outputs.User_defined_global{5}, info, Outputs.Evo_outputs)
     
     %% Time plots
     % magnetization distribution on x-axis

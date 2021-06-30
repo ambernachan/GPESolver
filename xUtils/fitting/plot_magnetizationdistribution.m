@@ -65,7 +65,16 @@ function [] = plot_magnetizationdistribution(geometry, Phi, info, direction)
 %     plot(x, phi{3}, '-.^', 'MarkerIndices', ceil(evomarker/2):evomarker:length(phi{3}), ...
 %         'LineWidth', 1.2, 'MarkerSize', 6, 'Color', [0.8 0 0])
     
-    ylim([-limity/100 limity*1.1]);
+    if limity < 0
+        lowerlim = min(M);
+        if abs(lowerlim) > abs(limity)
+            ylim([lowerlim*1.1 2*limity*1.1]);
+        else
+            ylim([lowerlim*1.1 limity*1.1]);
+        end
+    else
+        ylim([-limity/100 limity*1.1]);
+    end
     
     % Add axes labels and figure text
     xlabel(xax); 

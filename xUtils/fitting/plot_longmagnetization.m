@@ -1,5 +1,5 @@
-% Plot magnetism
-function [] = plot_magnetization(its, M, info, evo)
+% Plot longitudinal magnetization
+function [] = plot_longmagnetization(its, M, info, evo)
 
     close all;
     datestring = info.creationTimeString;

@@ -3,7 +3,7 @@ function [info] = multi_runner(scriptname, boxlimits,...
     creationTime = now;
     dimensions = 3;
     run_dynamic = true;
-    atom = 'Na';
+    atom = 'Rb';
     
     % if only the scriptname is given
     if nargin < 2

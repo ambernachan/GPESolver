@@ -14,11 +14,11 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     if isfield(info.params, 'atom')
         atom = info.params.atom;
     else
-%         atom = 'Rb';
-        atom = 'Na';
+        atom = 'Rb';
+%         atom = 'Na';
         info.params.atom = atom;
-%         sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
-        sprintf('Warning: atom set to default (23Na) as atom type was not specified')
+        sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
+%         sprintf('Warning: atom set to default (23Na) as atom type was not specified')
     end
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
@@ -108,7 +108,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     dx = (2*xlim / (Nx-1));
 %     Deltat = 0.1*dx^2;
 %     Deltat = 0.1*dx^2;
-    Deltat = 0.5*dx;
+    Deltat = (dx)^2;
     Stop_time = 100;
     Stop_crit = [];
     Max_iter = 10000;

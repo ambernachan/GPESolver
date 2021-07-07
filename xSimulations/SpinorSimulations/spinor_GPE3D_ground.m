@@ -227,6 +227,12 @@ function [] = spinor_GPE3D_ground(info)
     % saving groundstate workspace in 'normal' file
     save(info.get_workspace_path('groundstate'))
 
+    %% create file that shows type of atom and simulation stats
+    fname = createTextFileName(info, Geometry3D, Method, Outputs.Iterations*Outputs.Evo_outputs);
+    fname = [info.fulldir '/' fname '.txt'];
+    fileID = fopen(fname,'w');
+    fclose(fileID);
+    
     %% Draw user-defined functions populations & magnetization
     
     close all;

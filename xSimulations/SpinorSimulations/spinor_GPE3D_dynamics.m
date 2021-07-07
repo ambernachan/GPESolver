@@ -14,11 +14,11 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     if isfield(info.params, 'atom')
         atom = info.params.atom;
     else
-        atom = 'Rb';
-%         atom = 'Na';
+%         atom = 'Rb';
+        atom = 'Na';
         info.params.atom = atom;
-        sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
-%         sprintf('Warning: atom set to default (23Na) as atom type was not specified')
+%         sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
+        sprintf('Warning: atom set to default (23Na) as atom type was not specified')
     end
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
@@ -107,7 +107,8 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 %     Type = 'Relaxation';
     dx = (2*xlim / (Nx-1));
 %     Deltat = 0.1*dx^2;
-    Deltat = 0.1*dx^2;
+%     Deltat = 0.1*dx^2;
+    Deltat = 0.5*dx;
     Stop_time = 100;
     Stop_crit = [];
     Max_iter = 10000;
@@ -232,7 +233,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     [Phi, Outputs] = GPELab3d(Phi_in, Method, Geometry3D, Physics3D, Outputs, [], Print);
     
     save(info.get_workspace_path('phi_ini'), 'Phi_in', 'Phi', 'Outputs', '-v7.3')
-
+    
     %% Save the workspace & simulation info
 
     % save information about final simulation iteration in info file
@@ -243,7 +244,18 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     
     % saving dynamics workspace in 'normal' file
     save(info.get_workspace_path('dynamics'))
-        
+    
+    %% create file that shows type of atom and simulation stats
+    fname = createTextFileName(info, Geometry3D, Method, Outputs.Iterations*Outputs.Evo_outputs);
+    input_str = 'XXX';
+    if exist('inputFunctionDate', 'var')
+        input_str = inputFunctionDate;
+    end
+    fname = [fname '_fromstateXXX'  '_usinginputf' input_str];
+    fname = [info.fulldir '/' fname '.txt'];
+    fileID = fopen(fname,'w');
+    fclose(fileID);
+    
     %% Draw user-defined functions populations & magnetization
     
     close all;

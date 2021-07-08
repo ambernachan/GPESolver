@@ -75,29 +75,20 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
     
-    % gives wspath, which equals 0 when it hasn't been found.
-    wspath = whichwspath(info); % gives wspath and parameter
-    
-    savename = 'Population distribution';
-    
-    % add atom type text to figure
-    % Use the workspace path to load the atom mass, derive type of atom
-    if wspath == 0 % meaning the wspath hasn't been found.
+    if ~isfield(info.params, 'atom')
         info.save_figure(1, savename, '')
         info.save_figure(1, savename, '', info.fulldir, '.png')
+        sprintf('Warning: atom type was not specified')
         hold off
         return;
     end
-    
-    S = load(wspath, 'atom_mass'); atom_mass = S.atom_mass;
-    atom_weight = atom_mass / getphysconst('amu');
-    if atom_weight > 22 && atom_weight < 24
+
+    if strcmp(info.params.atom, 'Na')
         atom_str = '^{23}Na';
-    elseif atom_weight > 86 && atom_weight < 88
+    elseif strcmp(info.params.atom, 'Rb')
         atom_str = '^{87}Rb';
     else
-        error('Please manually input atom type in plotting file.');
-        atom_str = '';
+        atom_str = info.params.atom;
     end
     
     % Add annotation about atom type to graph
@@ -107,6 +98,6 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     % Save figure
     info.save_figure(1, savename, '')
     info.save_figure(1, savename, '', info.fulldir, '.png')
-    hold off  
+    hold off
     
 end

@@ -1,9 +1,15 @@
-function [sliderHandle] = createTimeSliderPlot(dataLength)
+function [sliderHandle] = createTimeSliderPlot(dataLength, figNumber)
 %CREATETIMESLIDERPLOT Summary of this function goes here
 %   Detailed explanation goes here
 
 % Default: [0.3542 0.5167 0.2917 0.3889]
-    figure('units','normalized', 'Position', [0.3542 0.5167 0.2917 0.3989])
+    if exist('figNumber', 'var')
+        fig = figure(figNumber);
+    else
+        fig = figure();
+    end
+    fig.Units = 'normalized';
+    fig.Position = [0.3542 0.5167 0.2917 0.3989];
     
     % Create the slider control
     dataRange = dataLength - 1;

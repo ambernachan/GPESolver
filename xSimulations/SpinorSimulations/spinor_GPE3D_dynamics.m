@@ -190,10 +190,16 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
     globaluserdef_outputs{5} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
+        Directional_Magnetization(Method, Geometry3D, Phi, 'Mx', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_outputs{6} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
+        Directional_Magnetization(Method, Geometry3D, Phi, 'My', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'Mz', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{8} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{9} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{10} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Directional_Magnetization(Method, Geometry3D, Phi, 'z', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_names{1} = 'Longitudinal magnetization';
     globaluserdef_names{2} = 'Population psi+';
@@ -202,6 +208,9 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     globaluserdef_names{5} = 'Magnetization Mx';
     globaluserdef_names{6} = 'Magnetization My';
     globaluserdef_names{7} = 'Magnetization Mz';
+    globaluserdef_names{8} = 'Magnetization Fx';
+    globaluserdef_names{9} = 'Magnetization Fy';
+    globaluserdef_names{10} = 'Magnetization Fz';
     
     Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
         globaluserdef_outputs,globaluserdef_names);
@@ -279,6 +288,8 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     timeslider_magnetizationdistribution(Geometry3D, Outputs.Solution, info)
     % population distribution on x-axis
     timeslider_populationdistribution(Geometry3D, Outputs.Solution, info)
+    % phase distribution as a sliced 3d function
+    timeslider_phase(Geometry3D, Outputs.Solution, info)
     
     
     %% Draw & save solution

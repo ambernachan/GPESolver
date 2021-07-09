@@ -2,7 +2,7 @@ function [info] = multi_runner(scriptname, boxlimits,...
     Ngridpts, chi, delta, gammas)
     creationTime = now;
     dimensions = 3;
-    run_dynamic = true;
+    run_dynamic = false;
     atom = 'Na';
     
     % if only the scriptname is given

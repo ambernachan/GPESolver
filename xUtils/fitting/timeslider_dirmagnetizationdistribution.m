@@ -27,9 +27,16 @@ function [] = timeslider_dirmagnetizationdistribution(geometry, solution, info, 
     y = y(:, lx, lz);
     z = z(ly, lx, :); z = z(:)';
     
-    Ncomponents = 3;
+    Ncomponents = 3; method.Ncomponents = Ncomponents;
     % Find appropriate arrays: phi{time} 1d arrays
     for iter = 1:length(solution)
+        Fdistr = findExpFdistr(method, geometry, solution{iter});
+        for n = 1:Ncomponents
+            xF{iter}{n} = sum(sum(Fdistr{n}, 1), 3);
+            yF{iter}{n} = sum(sum(Fdistr{n}, 2), 3);
+            zF{iter}{n} = sum(sum(Fdistr{n}, 1), 2);
+        end
+        
         for n = 1:Ncomponents
             phisq_x{iter}{n} = 0;
             phisq_y{iter}{n} = 0;

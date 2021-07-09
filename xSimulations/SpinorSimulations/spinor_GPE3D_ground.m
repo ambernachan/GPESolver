@@ -89,11 +89,11 @@ function [] = spinor_GPE3D_ground(info)
     Computation = 'Ground';
     Ncomponents = 3;
     Type = 'BESP';
-    Deltat = 0.0625/2;
+    Deltat = 0.1*(2*xlim / (Nx-1))^2;
     Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
-    Max_iter = 2000;
-%     Max_iter = 2500;
+%     Max_iter = 2000;
+    Max_iter = 2500;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -150,7 +150,8 @@ function [] = spinor_GPE3D_ground(info)
 %     Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice, X0, Y0, Z0, gamma_x, gamma_y, gamma_z);
 
     % introduce gaussian phase
-    phase = GaussianInitialData3d(Geometry3D, Physics3D, 1, 1, 1, 0, 0, 0);
+    phase = 0;
+%     phase = GaussianInitialData3d(Geometry3D, Physics3D, 1, 1, 1, 0, 0, 0);
     
     for j = 1:Ncomponents
         Phi_0{j} = Phi_0{j} .* exp(1i*((j-1)*(2*pi/3) + phase));
@@ -186,10 +187,16 @@ function [] = spinor_GPE3D_ground(info)
     globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
     globaluserdef_outputs{5} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
+        Directional_Magnetization(Method, Geometry3D, Phi, 'Mx', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_outputs{6} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
+        Directional_Magnetization(Method, Geometry3D, Phi, 'My', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'Mz', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{8} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{9} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{10} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Directional_Magnetization(Method, Geometry3D, Phi, 'z', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_names{1} = 'Longitudinal magnetization';
     globaluserdef_names{2} = 'Population psi+';
@@ -198,6 +205,9 @@ function [] = spinor_GPE3D_ground(info)
     globaluserdef_names{5} = 'Magnetization Mx';
     globaluserdef_names{6} = 'Magnetization My';
     globaluserdef_names{7} = 'Magnetization Mz';
+    globaluserdef_names{8} = 'Magnetization Fx';
+    globaluserdef_names{9} = 'Magnetization Fy';
+    globaluserdef_names{10} = 'Magnetization Fz';
     
     Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
         globaluserdef_outputs,globaluserdef_names);
@@ -241,6 +251,7 @@ function [] = spinor_GPE3D_ground(info)
     its = Outputs.Iterations;
     
     M = Outputs.User_defined_global(5:7);
+    F = Outputs.User_defined_global(8:10);
     
     % Plot longitudinal magnetization
     plot_longmagnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
@@ -258,6 +269,11 @@ function [] = spinor_GPE3D_ground(info)
     timeslider_magnetizationdistribution(Geometry3D, Outputs.Solution, info)
     % population distribution on x-axis
     timeslider_populationdistribution(Geometry3D, Outputs.Solution, info)
+    % phase distribution as a sliced 3d function
+    timeslider_phase(Geometry3D, Outputs.Solution, info)
+    
+    % saving groundstate workspace in v7.3 MAT file
+    save(info.get_workspace_path('groundstate_v7.3'), 'M', 'F', 'its', '-append');
     
     %% Draw & save solution
 

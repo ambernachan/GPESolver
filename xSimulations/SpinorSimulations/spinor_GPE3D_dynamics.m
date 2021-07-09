@@ -272,6 +272,9 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     
     its = Outputs.Iterations;
     
+    M = Outputs.User_defined_global(5:7);
+    F = Outputs.User_defined_global(8:10);
+    
     % Plot longitudinal magnetization
     plot_longmagnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
     % Plot population fractions
@@ -281,7 +284,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     % Plot magnetization distribution on x-axis
     plot_magnetizationdistribution(Geometry3D, Phi, info)
     % Plot transverse & longitudinal magnetization
-%     plot_magnetizations(its, Outputs.User_defined_global{5}, info, Outputs.Evo_outputs)
+    plot_magnetizations(its, F, info, Outputs.Evo_outputs, Method)
     
     %% Time plots
     % magnetization distribution on x-axis
@@ -291,6 +294,8 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     % phase distribution as a sliced 3d function
     timeslider_phase(Geometry3D, Outputs.Solution, info)
     
+    % adding extra parameters to workspace
+    save(info.get_workspace_path('groundstate_v7.3'), 'M', 'F', 'its', '-append');
     
     %% Draw & save solution
 

@@ -17,10 +17,11 @@ function [] = spinor_GPE3D_ground(info)
     if isfield(info.params, 'atom')
         atom = info.params.atom;
     else
-        atom = 'Na';
+        atom = 'Rb';
+%         atom = 'Na';
         info.params.atom = atom;
-%         sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
-        sprintf('Warning: atom set to default (23Na) as atom type was not specified')
+        sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
+%         sprintf('Warning: atom set to default (23Na) as atom type was not specified')
     end
     if isfield(info.params, 'a0')
         a0 = info.params.a0;
@@ -93,7 +94,7 @@ function [] = spinor_GPE3D_ground(info)
     Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
 %     Max_iter = 2000;
-    Max_iter = 2500;
+    Max_iter = 7500;
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -262,7 +263,7 @@ function [] = spinor_GPE3D_ground(info)
     % Plot magnetization distribution on x-axis
     plot_magnetizationdistribution(Geometry3D, Phi_1, info)
     % Plot transverse & longitudinal magnetization
-%     plot_magnetizations(its, Outputs.User_defined_global{5}, info, Outputs.Evo_outputs)
+    plot_magnetizations(its, F, info, Outputs.Evo_outputs, Method)
     
     %% Time plots
     % magnetization distribution on x-axis

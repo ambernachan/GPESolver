@@ -72,6 +72,8 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     
     lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|');
     
+    savename = 'Population distribution';
+    
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
     
@@ -83,13 +85,7 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
         return;
     end
 
-    if strcmp(info.params.atom, 'Na')
-        atom_str = '^{23}Na';
-    elseif strcmp(info.params.atom, 'Rb')
-        atom_str = '^{87}Rb';
-    else
-        atom_str = info.params.atom;
-    end
+    atom_str = getAtomStr(info.params.atom);
     
     % Add annotation about atom type to graph
     annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...

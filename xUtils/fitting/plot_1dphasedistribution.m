@@ -1,5 +1,8 @@
-function [figHandles] = plot_phase(geometry, Phi, info, componentsPlotted)
+function [figHandles] = plot_1dphasedistribution(Phi, info, direction, componentsPlotted)
     
+    if ~exist('direction', 'var')
+        direction = 'x';
+    end
     if ~exist('componentsPlotted', 'var')
         componentsPlotted = 1:length(Phi);
     end
@@ -18,7 +21,10 @@ function [figHandles] = plot_phase(geometry, Phi, info, componentsPlotted)
         figHandle = figure(idx);
         figureName = ['Phase of Phi{mF=' str_mF{idx} '}'];
         figHandle.Name = figureName;
+        
+        array 
         slice(geometry.X, geometry.Y, geometry.Z, angle(Phi{idx}), 0, 0, 0)
+        
         colormap('jet')
         colorbar
         xlabel('x')
@@ -44,13 +50,7 @@ function [figHandles] = plot_phase(geometry, Phi, info, componentsPlotted)
             return;
         end
 
-        if strcmp(info.params.atom, 'Na')
-            atom_str = '^{23}Na';
-        elseif strcmp(info.params.atom, 'Rb')
-            atom_str = '^{87}Rb';
-        else
-            atom_str = info.params.atom;
-        end
+        atom_str = findAtomStr(info.params.atom);
 
         annotation('textbox', [0.1375, 0.825, 0.1, 0.1], ...
             'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')

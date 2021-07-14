@@ -106,9 +106,8 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     Type = 'Splitting'; % defaults to Strang splitting
 %     Type = 'Relaxation';
     dx = (2*xlim / (Nx-1));
-%     Deltat = 0.1*dx^2;
-%     Deltat = 0.1*dx^2;
-    Deltat = (dx)^2;
+    Deltat = dx^2;
+%     Deltat = 0.1*(dx)^2;
     Stop_time = 100;
     Stop_crit = [];
     Max_iter = 10000;
@@ -241,7 +240,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 %         [Phi, Outputs] = GPELab3d(Phi_i, Method, Geometry3D, Physics3D, Outputs, [], Print);
     [Phi, Outputs] = GPELab3d(Phi_in, Method, Geometry3D, Physics3D, Outputs, [], Print);
     
-    save(info.get_workspace_path('phi_ini'), 'Phi_in', 'Phi', 'Outputs', '-v7.3')
+    save(info.get_workspace_path('phi_ini'), 'Phi_in', 'Phi', 'Outputs', 'info', '-v7.3')
     
     %% Save the workspace & simulation info
 
@@ -278,7 +277,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     % Plot longitudinal magnetization
     plot_longmagnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
     % Plot population fractions
-    plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
+    plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs, Method)
     % Plot population distribution on x-axis
     plot_populationdistribution(Geometry3D, Phi, info)
     % Plot magnetization distribution on x-axis
@@ -295,7 +294,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     timeslider_phase(Geometry3D, Outputs.Solution, info)
     
     % adding extra parameters to workspace
-    save(info.get_workspace_path('groundstate_v7.3'), 'M', 'F', 'its', '-append');
+    save(info.get_workspace_path('dynamics_v7.3'), 'M', 'F', 'its', '-append');
     
     %% Draw & save solution
 

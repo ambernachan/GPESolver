@@ -18,7 +18,7 @@ function [] = plot_magnetizations(its, M, info, evo, method)
     % if 'ground' doesn't exist in the path name but 'dynamic' does
     if isempty(strfind(info.name, 'ground'))
         if ~isempty(strfind(info.name, 'dynamic'))
-            labelx = 'time ((\omega_{osc}^{-1}))';
+            labelx = 'time (\omega_{osc}^{-1})';
             if exist('method', 'var')
                 dt = method.Deltat;
             else

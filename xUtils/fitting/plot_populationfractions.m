@@ -1,5 +1,5 @@
 % Plot magnetism
-function [] = plot_populationfractions(its, rho, info, evo)
+function [] = plot_populationfractions(its, rho, info, evo, method)
 
     close all;
     datestring = info.creationTimeString;
@@ -7,7 +7,27 @@ function [] = plot_populationfractions(its, rho, info, evo)
         evo = 1;
     end
     
-    x = evo:evo:its*evo;
+    % Determine whether this was a ground state or dynamic simulation
+    % if 'ground' exists in the path name; OR neither 'ground' nor 'dynamic' does
+    if ~isempty(strfind(info.name, 'ground')) || ...
+            (isempty(strfind(info.name, 'ground')) && isempty(strfind(info.name, 'dynamic')))
+        labelx = 'iterations';
+        x = evo:evo:its*evo;
+    end
+    % if 'ground' doesn't exist in the path name but 'dynamic' does
+    if isempty(strfind(info.name, 'ground'))
+        if ~isempty(strfind(info.name, 'dynamic'))
+            labelx = 'time (\omega_{osc}^{-1})';
+            if exist('method', 'var')
+                dt = method.Deltat;
+            else
+                dt = 1;
+            end
+            x = evo*dt:evo*dt:its*evo*dt;
+        end
+    end
+    
+%     x = evo:evo:its*evo;
     
     limity = max(max(max(rho{1}),max(rho{2})),max(rho{3}));
     lowery = min(min(min(rho{1}),min(rho{2})),min(rho{3}));
@@ -25,7 +45,7 @@ function [] = plot_populationfractions(its, rho, info, evo)
     ylim([lowery-limity/100 limity*1.1]);
     
     % Add axes labels and figure text
-    xlabel('iterations'); 
+    xlabel(labelx); 
     ylabel('|\phi_i|^2 / |\Psi|^2');
     title('Population fractions \rho_i');
     

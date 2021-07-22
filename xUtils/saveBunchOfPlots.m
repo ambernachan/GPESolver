@@ -47,8 +47,11 @@ function saveBunchOfPlots(wspath, limits, opt_chi)
         close all;
         
         xlim = limits(i);
+        dx = info.params.dx;
+        dy = info.params.dx;
+        dz = info.params.dx;
         %%%%%%%%%%%%%%%%%%%%%
-        plot_1d_compareG_TF(xx,phixN,gphixN,tfphixN,xlim,ylimit_x,'x',Rx,S,w,dx,datestring,Delta,info.params.dimensions)
+        plot_1d_compareG_TF(xx,phixN,gphixN,tfphixN,xlim,ylimit_x,'x',Rx,S,w,dx,datestring,info.params.delta,info.params.dimensions)
 %         plot_1d_graph(xx,phixN,gphixN,tfphixN,xlim,ylimit_x,'x',Rx,S,w,dx,datestring,Delta,info.params.dimensions)
         figname = fnames{3*i-2};
         info.save_figure(1, 'analyze', figname, fulldir, '.fig')
@@ -56,14 +59,14 @@ function saveBunchOfPlots(wspath, limits, opt_chi)
         close all;
 
         %%%%%%%%%%%%%%%%%%%%%
-        plot_1d_compareG_TF(yy,phiyN,gphiyN,tfphiyN,xlim,ylimit_y,'y',Ry,S,w,dy,datestring,Delta,info.params.dimensions)
+        plot_1d_compareG_TF(yy,phiyN,gphiyN,tfphiyN,xlim,ylimit_y,'y',Ry,S,w,dy,datestring,info.params.delta,info.params.dimensions)
         figname = fnames{3*i-1};
         info.save_figure(1, 'analyze', figname, fulldir, '.fig')
         info.save_figure(1, 'analyze', figname, fulldir, '.png')
         close all;
 
         %%%%%%%%%%%%%%%%%%%%%
-        plot_1d_compareG_TF(zz,phizN,gphizN,tfphizN,xlim,ylimit_z,'z',Rz,S,w,dz,datestring,Delta,info.params.dimensions)
+        plot_1d_compareG_TF(zz,phizN,gphizN,tfphizN,xlim,ylimit_z,'z',Rz,S,w,dz,datestring,info.params.delta,info.params.dimensions)
         figname = fnames{3*i};
         info.save_figure(1, 'analyze', figname, fulldir, '.fig')
         info.save_figure(1, 'analyze', figname, fulldir, '.png')

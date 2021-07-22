@@ -4,59 +4,25 @@ Spinor BEC in 3D
 No rotations, no magnetic field, quadratic optical trap
 %}
 
-function [] = spinor_GPE3D_dynamics(info, Phi_in)
+function [] = spinor_GPE3D_dynamics(info, params)
     
     close all;
+    Phi_in = params.Phi_input;
    
     %% Setting variables
-    % Determine interaction strength compared to kinetic energy
-%     atom = 'Na';
-    if isfield(info.params, 'atom')
-        atom = info.params.atom;
-    else
-%         atom = 'Rb';
-        atom = 'Na';
-        info.params.atom = atom;
-%         sprintf('Warning: atom set to default (87Rb) as atom type was not specified')
-        sprintf('Warning: atom set to default (23Na) as atom type was not specified')
-    end
-    if isfield(info.params, 'a0')
-        a0 = info.params.a0;
-    else
-        a0 = getsimconst(['a0_' atom]);
-        info.params.a0 = a0;
-    end
-    if isfield(info.params, 'a2')
-        a2 = info.params.a2;
-    else
-        a2 = getsimconst(['a2_' atom]);
-        info.params.a2 = a2;
-    end
-    N = getsimconst('N'); % number of particles
-    hbar = getphysconst('hbar'); % in kg m^2 / s
-    trapfreq = getsimconst('trap_freq'); % Trap strength in Hz (symmetric for now)
-    atom_mass = getsimconst(['mass_' atom]); % Atom mass in kg
-    spin_pair = getsimconst('spin_pair'); % hyperfine spin manifold (=1)
-    info.params.spin_pair = spin_pair;
-    
-    aho = sqrt(hbar / (atom_mass * trapfreq));
-    an = (2*a2+a0)/3;
-    as = (a2-a0)/3;
-    chin = N*an/aho;
-    chis = N*as/aho;
     
     % Setting simulation space
     xlim = info.params.boxlimits(1); ylim = info.params.boxlimits(2); zlim = info.params.boxlimits(3);
     Nx = info.params.Ngridpts; Ny = info.params.Ngridpts; Nz = info.params.Ngridpts;
     
     % Setting physical parameters
-    if isfield(info.params, 'delta')
+    if isprop(info.params, 'delta')
         Delta = info.params.delta;
     else
         Delta = 0.5;
         info.params.delta = Delta;
     end
-    if isfield(info.params, 'gammas')
+    if isprop(info.params, 'gammas')
         gx = info.params.gammas(1); gy = info.params.gammas(2); gz = info.params.gammas(3);
     else
         gx = 1; gy = 1; gz = 1;
@@ -64,7 +30,7 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
         info.params.gammas(1) = gy;
         info.params.gammas(1) = gz;
     end
-    if isfield(info.params, 'dimensions')
+    if isprop(info.params, 'dimensions')
         dimensions = info.params.dimensions;
     else
         dimensions = 3;
@@ -73,9 +39,9 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     
     % xi is the healing length; we derive a xi-n and a xi-s for self- and
     % spin-mixing interactions
-    allthechis = [chin chis];
-    alltheAs = [an as];
-    XI = findhealinglengths(allthechis, alltheAs, atom);
+    allthechis = [info.params.chin info.params.chis];
+    alltheAs = [info.params.an info.params.as];
+    XI = findhealinglengths(allthechis, alltheAs, info.params.atom);
     
     %% Run a ground state simulation if Phi_in is not yet given.
     
@@ -142,9 +108,9 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     %% Physics3D
 
     % Delta is already defined
-    Beta = 1; % multiplication factor for Beta_n and Beta_s
-    Betan = 4*pi*chin;
-    Betas = 4*pi*chis;
+    Beta = info.params.beta; % multiplication factor for Beta_n and Beta_s
+    Betan = info.params.betan;
+    Betas = info.params.betas;
     Omega = 0;
     Physics3D = Physics3D_Var3d(Method, Delta, Beta, Omega);
     Physics3D = Dispersion_Var3d(Method, Physics3D); % !!!
@@ -169,8 +135,8 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
     info.add_info_separator();
-    info.add_custom_info('Beta_n \t=\t %f \n', Betan); % print interaction parameter Beta_n
-    info.add_custom_info('Beta_s \t=\t %f \n', Betas); % print interaction parameter Beta_s
+    info.add_custom_info('Beta_n \t=\t %f \n', info.params.betan); % print interaction parameter Beta_n
+    info.add_custom_info('Beta_s \t=\t %f \n', info.params.betas); % print interaction parameter Beta_s
     info.add_custom_info('Delta \t=\t %f \n', Delta); % print kinetic energy parameter Delta
     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
     info.add_info_separator();
@@ -337,13 +303,11 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
 %     phi_initial = PhiData(Phi_0, Geometry3D);
     phi_input = PhiData(Phi_in, Geometry3D);
     phi_ground = PhiData(Phi_in, Geometry3D);
-    timeunits = 1/trapfreq;
+    timeunits = 1/info.params.trapfreq;
    
     % Saving workspace with relevant data for fitting
     save(info.get_workspace_path('fittingdata'), 'gx', 'gy', 'gz', ...
-        'phi_ground', 'phi_input', 'info', 'Method', ... % necessary data
-        'Beta', 'Betan', 'Betas', 'Delta', 'Ncomponents', ... % additional data
-        'chin', 'chis', 'trapfreq', 'timeunits', ... % additional data
+        'phi_ground', 'phi_input', 'info', 'Method', 'timeunits',... % necessary data
         '-append'); % to not overwrite Method_ground
 
     simulation_finished = 'yes, but no plots yet!';
@@ -358,17 +322,16 @@ function [] = spinor_GPE3D_dynamics(info, Phi_in)
     
     clearvars -except wspath
     analysisPhi3d(wspath);
-    load(wspath)
 
     close all;
     
-    limits = [5,3,1];
-    
+    limits = [8];
     saveBunchOfPlots(wspath, limits)
     
     simulation_finished = 'yes!';
     save(wspath,'simulation_finished', '-append')
-
+    
+    load(wspath, 'info')
     info.finish_info();
     
     %% end

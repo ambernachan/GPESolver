@@ -80,14 +80,7 @@ function [] = plot_magnetizations(its, M, info, evo, method)
     
     savename = 'Magnetization Fx,Fy,Fz over time';
     
-    if ~isfield(info.params, 'atom')
-        info.save_figure(1, savename, '')
-        info.save_figure(1, savename, '', info.fulldir, '.png')
-        sprintf('Warning: atom type was not specified')
-        hold off
-        return;
-    end
-    
+    %add atom type text to figure
     atom_str = getAtomStr(info.params.atom);
     
 %     annotation('textbox', [0.225, 0.2, 0.1, 0.1], ...

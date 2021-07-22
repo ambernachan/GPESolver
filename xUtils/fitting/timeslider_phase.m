@@ -55,14 +55,6 @@ function [figHandles] = timeslider_phase(geometry, solution, info, componentsPlo
         datestring = info.creationTimeString;
         annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
         
-        if ~isfield(info.params, 'atom')
-            info.save_figure(1, figureName, '')
-            info.save_figure(1, figureName, '', info.fulldir, '.png')
-            sprintf('Warning: atom type was not specified')
-            hold off
-            return;
-        end
-        
         atom_str = getAtomStr(info.params.atom);
 
         annotation('textbox', [0.1375, 0.825, 0.1, 0.1], ...

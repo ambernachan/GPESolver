@@ -1,44 +1,49 @@
-function [info] = multi_runner(scriptname, boxlimits,...
-    Ngridpts, chi, delta, gammas)
-    creationTime = now;
-    dimensions = 3;
-    run_dynamic = true;
-    atom = 'Na';
+% for multi-parameter runs
+function [info] = multi_runner(parameters)
     
-    % if only the scriptname is given
-    if nargin < 2
-        boxlimits = [5,5,5];
-        Ngridpts = 2^6+1;
-    end
+    fn = fieldnames(parameters);
+    loopnames = [];
+    nLoop = 0;
     
-    if nargin > 3
-        for i = 1 : length(chi)
-            q(i) = makeparams(dimensions, boxlimits, Ngridpts, run_dynamic, atom, chi(i), delta, gammas);
-        end
-    else
-        chi = 1;
-        delta = 0.5;
-        gammas = [1, 1, 1];
-    end
-    
-    for i = 1 : length(chi)
-    %parfor i = 1 : length(chi)
-        if nargin > 3
-            p = q(i);
+    % fieldnames that are allowed to be tuples
+    tuples = struct('gammas', [], 'boxlimits', [], 'Phi_input', [], ...
+        'scriptname', [], 'atom', []);
+    for k = 1:numel(fn)
+        if ~isfield(tuples, fn{k}) && length(parameters.(fn{k})) > 1
+                % create a new loop
+                nLoop = nLoop + 1;
+                loopnames = [loopnames, {fn{k}}];
         else
-            S = [];
-            p = makeparams(dimensions, boxlimits, Ngridpts, run_dynamic, atom, S, delta, gammas);
+            continue;
         end
-        info = Info(scriptname, creationTime, p);
-        if ~run_dynamic
-            feval(scriptname, info)
-        else
-            phi_ground = input('Please enter the ground state function Phi.\n');
-            if isempty(phi_ground)
-                feval(scriptname, info)
-            else
-                feval(scriptname, info, phi_ground)
+    end
+    % params = Parameters(parameters);
+    
+    % condition for multirun
+    if ~isempty(loopnames)
+        for loop = 1:numel(loopnames)
+            for i = 1:numel(parameters.(loopnames{loop}))
+                iter = i*loop; creationTime = now;
+                changedpar = parameters.(loopnames{loop})(i);
+                params = parameters;
+                params.(loopnames{loop}) = changedpar;
+                params = Parameters(params);
+                info{iter} = Info(params.scriptname, creationTime, params);
+                
+                % printing information about the simulation
+                creationTimeString = [datestr(creationTime, 'yyyy-mm-dd') '@' datestr(creationTime, 'HH.MM.SS') ];
+                sprintf('Running dynamic simulation at %s \n', creationTimeString)
+                sprintf('Variable %s is set to %.5g \n', loopnames{loop}, changedpar)
+                
+                % run the simulation
+                run_script(info{iter}, params)
             end
         end
+    else
+        creationTime = now;
+        params = Parameters(parameters);
+        info = Info(params.scriptname, creationTime, params);
+        run_script(info, params)
     end
+    
 end

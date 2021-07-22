@@ -56,24 +56,14 @@ function [] = plot_populationfractions(its, rho, info, evo, method)
     
     savename = 'Population fractions';
     
-    if ~isfield(info.params, 'atom')
-        info.save_figure(1, savename, '')
-        info.save_figure(1, savename, '', info.fulldir, '.png')
-        sprintf('Warning: atom type was not specified')
-        hold off
-        return;
-    end
-
-    if strcmp(info.params.atom, 'Na')
-        atom_str = '^{23}Na';
-    elseif strcmp(info.params.atom, 'Rb')
-        atom_str = '^{87}Rb';
-    else
-        atom_str = info.params.atom;
-    end
+    %add atom type text to figure
+    atom_str = getAtomStr(info.params.atom);
     
-    annotation('textbox', [0.225, 0.2, 0.1, 0.1], ...
-        'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
+%     annotation('textbox', [0.225, 0.2, 0.1, 0.1], ...
+%         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
+    annotation('textbox', [0.4, 0.2, 0.1, 0.1], ...
+        'string', sprintf('%s', atom_str), 'FitBoxToText', 'on', ...
+        'BackgroundColor', [1, 1, 1], 'FaceAlpha', 0.8)
     
     % Save figure
     info.save_figure(1, savename, '')

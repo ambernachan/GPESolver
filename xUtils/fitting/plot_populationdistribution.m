@@ -77,14 +77,7 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     %add datestring to figure
     annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', datestring))
     
-    if ~isfield(info.params, 'atom')
-        info.save_figure(1, savename, '')
-        info.save_figure(1, savename, '', info.fulldir, '.png')
-        sprintf('Warning: atom type was not specified')
-        hold off
-        return;
-    end
-
+    %add atom type text to figure
     atom_str = getAtomStr(info.params.atom);
     
     % Add annotation about atom type to graph

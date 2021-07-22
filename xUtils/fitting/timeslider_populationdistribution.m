@@ -99,21 +99,8 @@ function [] = timeslider_populationdistribution(geometry, solution, info, direct
     
     savename = 'Population distribution over time';
     
-    if ~isfield(info.params, 'atom')
-        info.save_figure(1, savename, '')
-        info.save_figure(1, savename, '', info.fulldir, '.png')
-        sprintf('Warning: atom type was not specified')
-        hold off
-        return;
-    end
-    
-    if strcmp(info.params.atom, 'Na')
-        atom_str = '^{23}Na';
-    elseif strcmp(info.params.atom, 'Rb')
-        atom_str = '^{87}Rb';
-    else
-        atom_str = info.params.atom;
-    end
+    %add atom type text to figure
+    atom_str = getAtomStr(info.params.atom);
     
     % Add annotation about atom type to graph
     annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...

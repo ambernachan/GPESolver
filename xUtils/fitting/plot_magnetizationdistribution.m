@@ -89,7 +89,6 @@ function [] = plot_magnetizationdistribution(geometry, Phi, info, direction)
     
     savename = 'Magnetization distribution';
     
-    % add atom type text to figure
     % Use the workspace path to load the atom mass, derive type of atom
     if wspath == 0 % meaning the wspath hasn't been found.
         info.save_figure(1, savename, '')
@@ -98,21 +97,15 @@ function [] = plot_magnetizationdistribution(geometry, Phi, info, direction)
         return;
     end
     
-    % Use the workspace path to load the atom mass, derive type of atom
-    S = load(wspath, 'atom_mass'); atom_mass = S.atom_mass;
-    atom_weight = atom_mass / getphysconst('amu');
-    if atom_weight > 22 && atom_weight < 24
-        atom_str = '^{23}Na';
-    elseif atom_weight > 86 && atom_weight < 88
-        atom_str = '^{87}Rb';
-    else
-        error('Please manually input atom type in plotting file.');
-        atom_str = '';
-    end
+    %add atom type text to figure
+    atom_str = getAtomStr(info.params.atom);
     
     % Add annotation about atom type to graph
-    annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...
-        'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
+%     annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...
+%         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
+    annotation('textbox', [0.4, 0.2, 0.1, 0.1], ...
+        'string', sprintf('%s', atom_str), 'FitBoxToText', 'on', ...
+        'BackgroundColor', [1, 1, 1], 'FaceAlpha', 0.8)
     
     if flag
         savename = [savename '_' direction];

@@ -72,9 +72,10 @@ function [] = spinor_GPE3D_dynamics(info, params)
     Type = 'Splitting'; % defaults to Strang splitting
 %     Type = 'Relaxation';
     dx = (2*xlim / (Nx-1));
-    Deltat = dx^2;
+    Deltat = info.params.dt;
 %     Deltat = 0.1*(dx)^2;
-    Stop_time = 100;
+    LimitingIter = 120000; % A limitation to the iterations bc time
+    Stop_time = floor(min(100, (LimitingIter*Deltat)));
     Stop_crit = [];
     Max_iter = 10000;
 %         Stop_crit = {'MaxNorm', 1e-12};
@@ -135,15 +136,20 @@ function [] = spinor_GPE3D_dynamics(info, params)
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
     info.add_info_separator();
+    info.add_custom_info('atom \t=\t %s \n', info.params.atom);
     info.add_custom_info('Beta_n \t=\t %f \n', info.params.betan); % print interaction parameter Beta_n
     info.add_custom_info('Beta_s \t=\t %f \n', info.params.betas); % print interaction parameter Beta_s
-    info.add_custom_info('Delta \t=\t %f \n', Delta); % print kinetic energy parameter Delta
-    info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
+%     info.add_custom_info('Delta \t=\t %f \n', Delta); % print kinetic energy parameter Delta
+%     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
+    info.add_custom_info('dt \t=\t %f \n', info.params.dt);
+    info.add_custom_info('dx \t=\t %f \n', dx);
     info.add_info_separator();
     
     %% Determining outputs
 
-    Evo_outputs = 10; % Must be equal to or smaller than Evo from Print
+    % Must be equal to or smaller than Evo from Print
+    Evolim = round((3*(Nx)^3*Stop_time / (info.params.dt*7e7))/5)*5;
+    Evo_outputs = max(10, Evolim);
     Save_solution = 1;
     
     globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
@@ -183,7 +189,8 @@ function [] = spinor_GPE3D_dynamics(info, params)
     %% Printing preliminary outputs
     
     Printing = 1;
-    Evo = 25;
+    % Must be equal to or bigger than Evo_outputs
+    Evo = max(25, Evo_outputs);
     Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);
 

@@ -21,23 +21,43 @@ function [info] = multi_runner(parameters)
     
     % condition for multirun
     if ~isempty(loopnames)
-        for loop = 1:numel(loopnames)
-            for i = 1:numel(parameters.(loopnames{loop}))
-                iter = i*loop; creationTime = now;
-                changedpar = parameters.(loopnames{loop})(i);
-                params = parameters;
-                params.(loopnames{loop}) = changedpar;
+        
+        % Create a list of all combinations of parameters
+        runlist = []; multiplicity = [];
+        for k = 1:numel(loopnames)
+            runlist = [runlist {parameters.(loopnames{k})}];
+            multiplicity = [multiplicity {numel(parameters.(loopnames{k}))}];
+        end
+        multiplicity = [multiplicity{:}];
+        runlist = allcomb(runlist{:}); % all combinations
+        
+        % loop over the combination list
+        for loop = 1:length(runlist)
+            sprintf('Run #%d/%d\n', loop, length(runlist))
+            params = parameters;
+            creationTime = now;
+            for k = 1:numel(loopnames)
+                elementIdx = elementIndex(k, loopnames, multiplicity, loop);
+                changedpar = parameters.(loopnames{k})(elementIdx);
+                params.(loopnames{k}) = changedpar;
                 params = Parameters(params);
-                info{iter} = Info(params.scriptname, creationTime, params);
-                
-                % printing information about the simulation
-                creationTimeString = [datestr(creationTime, 'yyyy-mm-dd') '@' datestr(creationTime, 'HH.MM.SS') ];
-                sprintf('Running dynamic simulation at %s \n', creationTimeString)
-                sprintf('Variable %s is set to %.5g \n', loopnames{loop}, changedpar)
-                
-                % run the simulation
-                run_script(info{iter}, params)
+                info{loop} = Info(params.scriptname, creationTime, params);
+                sprintf('Variable %s is set to %.5g \n', loopnames{k}, changedpar)
             end
+%             for i = 1:numel(parameters.(loopnames{loop}))
+%                 iter = i*loop; creationTime = now;
+%                 changedpar = parameters.(loopnames{loop})(i);
+%                 params = parameters;
+%                 params.(loopnames{loop}) = changedpar;
+%                 params = Parameters(params);
+%                 info{iter} = Info(params.scriptname, creationTime, params);
+                
+            % printing information about the simulation
+            creationTimeString = [datestr(creationTime, 'yyyy-mm-dd') '@' datestr(creationTime, 'HH.MM.SS') ];
+            sprintf('Running dynamic simulation at %s \n', creationTimeString)
+            
+            % run the simulation
+            run_script(info{loop}, params)
         end
     else
         creationTime = now;

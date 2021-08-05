@@ -66,6 +66,10 @@ function [M] = Directional_Magnetization(Method, Geometry3D, Phi, direction, X, 
         M = M{2};
     elseif strcmp(direction, 'Mz')
         M = M{3};
+    elseif strcmp(direction, 'F2')
+        M = (M{1} + M{2} + M{3})^2;
+    elseif strcmp(direction, 'M2')
+        M = (M{1}^2 + M{2}^2 + M{3}^2);
     elseif strcmp(direction, 'x')
         M = F{1};
     elseif strcmp(direction, 'y')

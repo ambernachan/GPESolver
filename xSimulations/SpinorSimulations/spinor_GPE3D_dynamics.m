@@ -1,7 +1,7 @@
  %{
-23Na in the F=1 manifold
+23Na/87Rb atom in the F=1 manifold
 Spinor BEC in 3D
-No rotations, no magnetic field, quadratic optical trap
+No rotations, no magnetic field, optical dipole + harmonic osc trap
 %}
 
 function [] = spinor_GPE3D_dynamics(info, params)
@@ -72,8 +72,8 @@ function [] = spinor_GPE3D_dynamics(info, params)
     Type = 'Splitting'; % defaults to Strang splitting
 %     Type = 'Relaxation';
     dx = (2*xlim / (Nx-1));
-    Deltat = info.params.dt;
-%     Deltat = 0.1*(dx)^2;
+%     Deltat = info.params.dt;
+    Deltat = 0.1*(dx)^2;
     LimitingIter = 120000; % A limitation to the iterations bc time
     Stop_time = floor(min(100, (LimitingIter*Deltat)));
     Stop_crit = [];
@@ -115,16 +115,34 @@ function [] = spinor_GPE3D_dynamics(info, params)
     Omega = 0;
     Physics3D = Physics3D_Var3d(Method, Delta, Beta, Omega);
     Physics3D = Dispersion_Var3d(Method, Physics3D); % !!!
-    Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
-%     Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(1, 5, 1, X, Y, Z));
-%     Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z));
     
+    % Potential function
+    if strcmp(parameters.atom, 'Na')
+        Udp0 = getsimconst('dipoleTrap0_Na');
+    elseif strcmp(parameters.atom, 'Rb')
+        Udp0 = getsimconst('dipoleTrap0_Rb');
+    elseif strcmp(parameters.atom, 'ferro')
+        Udp0 = getsimconst('dipoleTrap0_Na');
+    else
+        error('atom type is not recognized with this input of parameters.')
+    end
+    Wx = sqrt(-4*Udp0 / (info.params.atom_mass*getsimconst('dipole_waist_x')^2));
+    Wy = hbar / (info.params.atom_mass * getsimconst('axicon_radius')^2);
+    Wz = Wy;
+    Wmin = min(min(Wx, Wy), Wz);
+    gx = Wx/Wmin; gy = Wy/Wmin; gz = Wz/Wmin; % scaled parameters gamma => 1
+    
+    dipolebeam = @(X,Y,Z) dipoleTrap(info.params);
+    quadraticTrap = @(X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z);
+    % Optical dipole trap + harmonic oscillator (small-x approx) + axicon
+    % in yz plane approximated as a harmonic oscillator with axicon radius
+    Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadraticTrap(X,Y,Z) + dipolebeam(X,Y,Z));
+%     Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
+
+    % Nonlinearity
 %     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas), [], ...
         Coupled_CubicEnergy3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
-    
-    %Physics3D = Gradientx_Var3d(Method, Physics3D, @(x,y) -1i*Omega*y);
-    %Physics3D = Gradienty_Var3d(Method, Physics3D, @(x,y) 1i*Omega*x);
     
     %% version mgmt
     curdir = strsplit(pwd, '/');
@@ -133,16 +151,22 @@ function [] = spinor_GPE3D_dynamics(info, params)
 
     %% Printing interaction strength
 
+    aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * Wmin));
+    
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
     info.add_info_separator();
     info.add_custom_info('atom \t=\t %s \n', info.params.atom);
     info.add_custom_info('Beta_n \t=\t %f \n', info.params.betan); % print interaction parameter Beta_n
     info.add_custom_info('Beta_s \t=\t %f \n', info.params.betas); % print interaction parameter Beta_s
-%     info.add_custom_info('Delta \t=\t %f \n', Delta); % print kinetic energy parameter Delta
-%     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
     info.add_custom_info('dt \t=\t %f \n', info.params.dt);
     info.add_custom_info('dx \t=\t %f \n', dx);
+    info.add_info_separator();
+    info.add_custom_info('a_ho \t=\t %f um\n', aho*10^(6)); % harmonic oscillator length in um
+    info.add_custom_info('a_ho(xyz) \t=\t [%.2g,%.2g,%.2g] aho, or:\n', ...
+        1/sqrt(gx),1/sqrt(gy),1/sqrt(gz)); % normalized harm osc length (x,y,z)
+    info.add_custom_info('a_ho(xyz) \t=\t [%.2g,%.2g,%.2g] um, or:\n', ...
+        aho*10^(6)/sqrt(gx), aho*10^(6)/sqrt(gy), aho*10^(6)/sqrt(gz)); % harm osc length (x,y,z)
     info.add_info_separator();
     
     %% Determining outputs

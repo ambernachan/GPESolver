@@ -1,6 +1,13 @@
 function [value] = getsimconst(simconst)
     % Returns simulations constants. Included are: a0 and a2 for Na and Rb;
     % mass_Na and Rb; number of particles N; trap frequency, spin pair no.
+    
+    axicon_radius = 288.75 * 10^(-6); % axicon radius (m)
+    laser_power = 1.5; % laser power (W)
+    laser_freq = 563.53 * 2*pi * 10^(9); % laser frequency (Hz)
+    laser_wavelength = 532 * 10^(-9); % laser wavelength (m)
+    dipole_waist_x = 31.26 * 10^(-6); % dipole beam waist in x (m)
+    dipole_waist_y = 406.42 * 10^(-6); % dipole beam waist in x (m)
 
     a0_Na = 48.90 * getphysconst('abohr'); % scattering length (m)
     a2_Na = 54.54 * getphysconst('abohr'); % scattering length (m)
@@ -11,16 +18,39 @@ function [value] = getsimconst(simconst)
     
     mass_Na = 22.989769 * getphysconst('amu'); % mass (kg)
     mass_Rb = 86.9091835 * getphysconst('amu'); % mass (kg)
+    transitionfreq_Na = 508.85 * 2*pi * 10^(9); % transition frequency (Hz)
+    linewidth_Na = 9.79 *2*pi * 10^6; % natural linewith (Hz)
+    transitionfreq_Rb = transitionfreq_Na;
+    linewidth_Rb = linewidth_Na;
+    Ehfs_Na = 1772 * 2*pi * 10^(6) * getphysconst('hbar'); % hyperfine energy splitting (J)
+    Ehfs_Rb = 6835 * 2*pi * 10^(6) * getphysconst('hbar'); % hyperfine energy splitting (J)
+    
     mass_ferro = 0.5*mass_Na + 0.5*mass_Rb;
     rvdW_Na = 44.96 * getphysconst('abohr'); % van der Waals radius (m)
     rvdW_Rb = 82.64 * getphysconst('abohr'); % van der Waals radius (m)
     TNa = 3.24420293315 * 10^(-7); % ?
     TRb = 8.58177228994 * 10^(-8); % ?
     
-    N = 10^5; % number of particles
+    N = 17.45 * 10^6; % number of particles
     trap_freq = 100 * 2*pi; % in Hz
     spin_pair = 1; % hyperfine spin manifold
     density = 10^20; % density n in 1/m^3
+    
+    detuning_Na = - abs(laser_freq - transitionfreq_Na);
+    detuning_Rb = - abs(laser_freq - transitionfreq_Rb);
+    zRx = dipole_waist_x^2 * pi / laser_wavelength;
+    zRy = dipole_waist_y^2 * pi / laser_wavelength;
+    
+    dipoleTrap0_Na = 6*pi*getphysconst('c')^2 * laser_power * linewidth_Na ...
+        / (transitionfreq_Na^2 * laser_wavelength * detuning_Na * (transitionfreq_Na + laser_freq)) ...
+        / sqrt(zRx*zRy);
+    dipoleTrap0_Rb = 6*pi*getphysconst('c')^2 * laser_power * linewidth_Rb ...
+        / (transitionfreq_Rb^2 * laser_wavelength * detuning_Rb * (transitionfreq_Rb + laser_freq)) ...
+        / sqrt(zRx*zRy);
+    
+    %% Something is going wrong with the dipole trap; it is much stronger than should be...
+    dipoleTrap0_Na = dipoleTrap0_Na^2;
+    dipoleTrap0_Rb = dipoleTrap0_Rb^2;
     
     ws_variables = whos;
     wsnames = cell(1,length(ws_variables));

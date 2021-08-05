@@ -28,6 +28,16 @@ classdef Parameters  < handle
         dx
         dt
         nComponents
+        
+        transitionfreq
+        linewidth
+        Ehfs
+        detuning
+        dipoleTrap0
+        dipoleWaist_x
+        dipoleWaist_y
+        zRx
+        zRy
     end
     methods
         % Constructor
@@ -38,7 +48,10 @@ classdef Parameters  < handle
                 {'run_dynamic'}, {'Phi_input'}, {'beta'}, {'a0'}, {'a2'},...
                 {'N'}, {'trapfreq'}, {'atom_mass'}, {'spin_pair'}, {'aho'},...
                 {'an'}, {'as'}, {'chin'}, {'chis'}, {'betan'}, {'betas'},...
-                {'dx'}, {'dt'}, {'nComponents'}];
+                {'dx'}, {'dt'}, {'nComponents'} ...
+                {'transitionfreq'}, {'linewidth'}, {'Ehfs'}, {'detuning'}, ...
+                {'dipoleTrap0'}, {'dipoleWaist_x'}, {'dipoleWaist_y'}, ...
+                {'zRx'}, {'zRy'}];
             
             if isfield(inputparams, 'atom')
                 inputparams = obj.createAtomRelatedFields(inputparams);
@@ -81,6 +94,11 @@ classdef Parameters  < handle
             default.atom = 'Na';
             default = obj.createAtomRelatedFields(default);
             
+            default.dipoleWaist_x = getsimconst('dipole_waist_x');
+            default.dipoleWaist_y = getsimconst('dipole_waist_y');
+            default.zRx = getsimconst('zRx');
+            default.zRy = getsimconst('zRy');
+            
             default.dx = (2*boxlim) / (gridpts-1);
             default.dt = (default.dx)^2;
             
@@ -115,6 +133,12 @@ classdef Parameters  < handle
             paramstruct.chis = paramstruct.N*paramstruct.as/paramstruct.aho;
             paramstruct.betan = 4*pi*paramstruct.chin;
             paramstruct.betas = 4*pi*paramstruct.chis;
+            
+            paramstruct.transitionfreq = getsimconst(['transitionfreq_' atom]);
+            paramstruct.linewidth = getsimconst(['linewidth_' atom]);
+            paramstruct.Ehfs = getsimconst(['Ehfs_' atom]);
+            paramstruct.detuning = getsimconst(['detuning_' atom]);
+            paramstruct.dipoleTrap0 = getsimconst(['dipoleTrap0_' atom]);
         end
     end
 end

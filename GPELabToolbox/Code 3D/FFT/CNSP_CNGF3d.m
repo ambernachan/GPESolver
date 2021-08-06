@@ -60,13 +60,22 @@ while (Method.EvolutionCriterion > Method.Stop_crit{2}*Method.Deltat) && (Method
     %% Normalization of the ground states
     if strcmp(Method.Normalization,'Multi')
     Global_L2norm = 0;
+    projection = zeros(3,1); projection = num2cell(projection);
+    M = 0;
+    projection{2} = sqrt(1 - M^2) / (sqrt( FFTPhi{2}.^2 + sqrt( 4*(1-M^2)*FFTPhi{1}.^2 .* FFTPhi{3}.^2 + M^2 * FFTPhi{2}.^4 ) ));
+    projection{1} = sqrt( 1 + M - (projection{2}.^2) .* FFTPhi{2}.^2 ) / (sqrt(2) * FFTPhi{1}.^2);
+    projection{3} = sqrt( 1 - M - (projection{2}.^2) .* FFTPhi{2}.^2 ) / (sqrt(2) * FFTPhi{3}.^2);
+    
     for n = 1:Method.Ncomponents
         Global_L2norm = Global_L2norm + L2_norm3d(FFTPhi{n},FFTGeometry3D)^2; % Computing the norm of each wave function
     end
+    
     for n = 1:Method.Ncomponents
-        FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(1)); % Normalization of each wave function
+%         FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(1)); % Normalization of each wave function
+        FFTPhi{n} = projection{n} .* FFTPhi{n} * sqrt(Method.NParticles(n));
         Method.LocalEvol(n) = max(max(max(abs(FFTPhi{n}-FFTPhi_tmp{n})))); % Computing the local evolution of each wave function
     end
+    
     elseif strcmp(Method.Normalization,'Single')
     for n = 1:Method.Ncomponents
         FFTPhi{n} = FFTPhi{n}/L2_norm3d(FFTPhi{n},FFTGeometry3D)*sqrt(Method.NParticles(n)); % Normalization of each wave function
@@ -114,7 +123,7 @@ while (Method.EvolutionCriterion > Method.Stop_crit{2}*Method.Deltat) && (Method
         % IF one has chosen to draw the ground states
         if (Print.Draw == 1)
             Draw_solution3d(FFTPhi,Method,FFTGeometry3D,Figure) % Drawing the wave functions' modulus square and angle
-        end;
+        end
     end
 end
 

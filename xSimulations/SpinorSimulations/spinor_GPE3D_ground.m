@@ -57,10 +57,9 @@ function [] = spinor_GPE3D_ground(info, params)
     Type = 'BESP';
     dx = (2*xlim / (Nx-1));
     Deltat = 0.1*dx^3;
-    Stop_time = [];
     Stop_crit = {'MaxNorm', 1e-6};
-    Max_iter = 5;
-%     Max_iter = 7500;
+    Max_iter = 10000;
+    Stop_time = floor(min(100, (Max_iter*Deltat)));
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -110,16 +109,24 @@ function [] = spinor_GPE3D_ground(info, params)
     i = num2cell(eye(3));
     fz = eye(Nc) .* [1, 0, -1]; fz2 = (fz).^2;
     Fz = num2cell(fz); Fz2 = num2cell(fz2);
-    [p,q] = getMagneticFieldPars(Bz, Wmin, info.params.Ehfs);
-    potential = cell(3,3);
-    for n = 1:Nc
-        for m = 1:Nc
-            if n == m
-                potential{n,m} = @(X,Y,Z) ( i{n,m} * quadratic_potential3d(gx,gy,gz, X,Y,Z) ...
-                    + dipoleTrap(info.params, X,Y,Z) - Fz{n,m} * p + Fz2{n,m} * q);
-            end
-        end
-    end
+    
+    % temp fix
+    gx = 1; gy = 1; gz = 1;
+    Wmin = 1 * 2*pi; % Hz
+%     [p,q] = getMagneticFieldPars(Bz, Wmin, info.params.Ehfs);
+%     
+%     potential = cell(3,3);
+%     for n = 1:Nc
+%         for m = 1:Nc
+%             if n == m
+%                 potential{n,m} = @(X,Y,Z) ( i{n,m} * quadratic_potential3d(gx,gy,gz, X,Y,Z) ...
+%                     + Fz2{n,m} * q);
+% %                     + dipoleTrap(info.params, X,Y,Z) - Fz{n,m} * p + Fz2{n,m} * q);
+%             end
+%         end
+%     end
+    % making a simple potential
+    potential = @(X,Y,Z) ( quadratic_potential3d(gx,gy,gz, X,Y,Z) );
                 
 %     pot = @(X,Y,Z) (eye(3) .* quadratic_potential3d(gx,gy,gz, X,Y,Z) + eye(3) .* dipoleTrap(info.params, X,Y,Z) ...
 %         + (fx) * p + (fx).^2 * q );
@@ -128,7 +135,8 @@ function [] = spinor_GPE3D_ground(info, params)
 %         @(l) magneticFieldPotential(info.params, Bz, Wmin, l));
     
 %     Physics3D = Potential_Var3d(Method, Physics3D, potential_with_Bfield, ones(Nc,Nc));
-    Physics3D = Potential_Var3d(Method, Physics3D, potential, ones(Nc,Nc));
+%     Physics3D = Potential_Var3d(Method, Physics3D, potential, ones(Nc,Nc));
+    Physics3D = Potential_Var3d(Method, Physics3D, potential);
 
     % Nonlinearity
 %     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
@@ -155,6 +163,16 @@ function [] = spinor_GPE3D_ground(info, params)
     end
     
     Phi_0 = params.Phi_input;
+% %     Phi_0{2} = 0.75 * Phi_0{2};
+%     Phi_0{1} = 0.5 * Phi_0{1};
+%     Phi_0{3} = 0.5 * Phi_0{3};
+%     globalnorm = 0;
+%     for j = 1:Ncomponents
+%         globalnorm = globalnorm + L2_norm3d(Phi_0{j}, Geometry3D);
+%     end
+%     for j = 1:Ncomponents
+%         Phi_0{j} = Phi_0{j} / sqrt(globalnorm);
+%     end
 
     %% version mgmt
     curdir = strsplit(pwd, '/');
@@ -184,7 +202,9 @@ function [] = spinor_GPE3D_ground(info, params)
 
     %% Determining outputs
     
-    Evo_outputs = 1; % Must be equal to or smaller than Evo from Print
+    % Must be equal to or smaller than Evo from Print
+    Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
+    Evo_outputs = max(10, Evolim);
     Save_solution = 1;
     
     globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
@@ -221,7 +241,8 @@ function [] = spinor_GPE3D_ground(info, params)
     %% Printing preliminary outputs
 
     Printing = 1;
-    Evo = 1;
+    % Must be equal to or bigger than Evo_outputs
+    Evo = max(25, Evo_outputs);
     Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);
 
@@ -255,7 +276,7 @@ function [] = spinor_GPE3D_ground(info, params)
     pause(2) % pauses the program for 2 seconds
     
     its = Outputs.Iterations;
-    F = Outputs.User_defined_global(8:10);
+    F = Outputs.User_defined_global(5:7);
     
     % Plot longitudinal magnetization
     plot_longmagnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
@@ -282,44 +303,45 @@ function [] = spinor_GPE3D_ground(info, params)
     %% Draw & save solution
 
     close all;
-    pause(1) % pauses the program for 1 second
+    sprintf('%s', info.get_workspace_path('groundstate_v7.3'))
+%     pause(1) % pauses the program for 1 second
 
-    % Set figure names
-    for i = 1 : Ncomponents
-        phistr = 'phi_sq';
-        anglestr = 'angle';
-        if Ncomponents > 1
-            component_str = componentstr(Ncomponents); % ['+0-']
-            phisqname{i} = [phistr '_' component_str(i)];
-            anglename{i} = [anglestr '_' component_str(i)];
-            if i == Ncomponents
-                phisqname{i+1} = [phistr '_tot'];
-            end
-        else
-            phisqname = {phistr};
-            anglename = {anglestr};
-        end
-    end
-            
-    Draw_solution3d(Phi_0, Method, Geometry3D, Figure_Var3d());
-    for i = 1 : Ncomponents
-        info.save_figure(2*i-1, 'initialdata', phisqname{i},[],[]);
-        info.save_figure(2*i, 'initialdata', anglename{i},[],[]);
-        
-        if ((Ncomponents > 1) && (i == Ncomponents))
-            info.save_figure(2*i+1, 'initialdata', phisqname{i+1},[],[]);
-        end
-    end
-    
-    Draw_solution3d(Phi_1, Method, Geometry3D, Figure_Var3d());
-    for i = 1 : Ncomponents
-        info.save_figure(2*i-1, 'groundstate', phisqname{i},[],[]);
-        info.save_figure(2*i, 'groundstate', anglename{i},[],[]);
-        
-        if ((Ncomponents > 1) && (i == Ncomponents))
-            info.save_figure(2*i+1, 'groundstate', phisqname{i+1},[],[]);
-        end
-    end
+%     % Set figure names
+%     for i = 1 : Ncomponents
+%         phistr = 'phi_sq';
+%         anglestr = 'angle';
+%         if Ncomponents > 1
+%             component_str = componentstr(Ncomponents); % ['+0-']
+%             phisqname{i} = [phistr '_' component_str(i)];
+%             anglename{i} = [anglestr '_' component_str(i)];
+%             if i == Ncomponents
+%                 phisqname{i+1} = [phistr '_tot'];
+%             end
+%         else
+%             phisqname = {phistr};
+%             anglename = {anglestr};
+%         end
+%     end
+%             
+%     Draw_solution3d(Phi_0, Method, Geometry3D, Figure_Var3d());
+%     for i = 1 : Ncomponents
+%         info.save_figure(2*i-1, 'initialdata', phisqname{i},[],[]);
+%         info.save_figure(2*i, 'initialdata', anglename{i},[],[]);
+%         
+%         if ((Ncomponents > 1) && (i == Ncomponents))
+%             info.save_figure(2*i+1, 'initialdata', phisqname{i+1},[],[]);
+%         end
+%     end
+%     
+%     Draw_solution3d(Phi_1, Method, Geometry3D, Figure_Var3d());
+%     for i = 1 : Ncomponents
+%         info.save_figure(2*i-1, 'groundstate', phisqname{i},[],[]);
+%         info.save_figure(2*i, 'groundstate', anglename{i},[],[]);
+%         
+%         if ((Ncomponents > 1) && (i == Ncomponents))
+%             info.save_figure(2*i+1, 'groundstate', phisqname{i+1},[],[]);
+%         end
+%     end
 
     simulation_finished = 'Ground state simulation finished';
 

@@ -172,7 +172,7 @@ function [] = spinor_GPE3D_dynamics(info, params)
     %% Determining outputs
 
     % Must be equal to or smaller than Evo from Print
-    Evolim = round((3*(Nx)^3*Stop_time / (info.params.dt*7e7))/5)*5;
+    Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
     Evo_outputs = max(10, Evolim);
     Save_solution = 1;
     

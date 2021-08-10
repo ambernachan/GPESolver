@@ -58,7 +58,7 @@ function [] = spinor_GPE3D_ground(info, params)
     dx = (2*xlim / (Nx-1));
     Deltat = 0.1*dx^3;
     Stop_crit = {'MaxNorm', 1e-6};
-    Max_iter = 10000;
+    Max_iter = 7500;
     Stop_time = floor(min(100, (Max_iter*Deltat)));
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
@@ -113,7 +113,7 @@ function [] = spinor_GPE3D_ground(info, params)
     % temp fix
     gx = 1; gy = 1; gz = 1;
     Wmin = 1 * 2*pi; % Hz
-%     [p,q] = getMagneticFieldPars(Bz, Wmin, info.params.Ehfs);
+    [p,q] = getMagneticFieldPars(Bz, Wmin, info.params.Ehfs);
 %     
 %     potential = cell(3,3);
 %     for n = 1:Nc
@@ -140,8 +140,8 @@ function [] = spinor_GPE3D_ground(info, params)
 
     % Nonlinearity
 %     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
-    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas), [], ...
-        Coupled_CubicEnergy3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
+    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas, p,q), [], ...
+        Coupled_CubicEnergy3d_spin1(Betan,Betas, p,q)); % cubic nonlinearity with off-diagonal coupling
 
     %% Defining a starting function Phi_0
 
@@ -205,6 +205,7 @@ function [] = spinor_GPE3D_ground(info, params)
     % Must be equal to or smaller than Evo from Print
     Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
     Evo_outputs = max(10, Evolim);
+    Evo_outputs = 1;
     Save_solution = 1;
     
     globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
@@ -243,6 +244,7 @@ function [] = spinor_GPE3D_ground(info, params)
     Printing = 1;
     % Must be equal to or bigger than Evo_outputs
     Evo = max(25, Evo_outputs);
+    Evo = 1;
     Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);
 

@@ -1,4 +1,9 @@
-function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas)
+function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas, p, q)
+    
+    if ~(nargin > 2)
+        p = 0;
+        q = 0;
+    end
     
     % In the spin-1 manifold, we have 3 components of the wavefunction.
     % Phi{1} represents mF=1, Phi{2} reps mF=0 and Phi{3} reps mF=-1.
@@ -7,13 +12,17 @@ function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas)
     % diagonal terms
     CoupledSpin1NonlinEnergy{1,1} = @(Phi,X,Y,Z) 0.5 * Betan * ...
         ( abs(Phi{1}).^2 + abs(Phi{2}).^2 + abs(Phi{3}).^2 ) + ...
-        0.5 * Betas * ( abs(Phi{1}).^2 + abs(Phi{2}).^2 - abs(Phi{3}).^2 );
+        0.5 * Betas * ( abs(Phi{1}).^2 + abs(Phi{2}).^2 - abs(Phi{3}).^2 ) ...
+        + (q-p) * abs(Phi{1}).^2;
+%         + (q-p) * sum(sum(sum(abs(Phi{1}).^2)));
     CoupledSpin1NonlinEnergy{2,2} = @(Phi,X,Y,Z) 0.5 * Betan * ...
         ( abs(Phi{1}).^2 + abs(Phi{2}).^2 + abs(Phi{3}).^2 ) + ...
         0.5 * Betas * ( abs(Phi{1}).^2 + abs(Phi{3}).^2 );
     CoupledSpin1NonlinEnergy{3,3} = @(Phi,X,Y,Z) 0.5 * Betan * ...
         ( abs(Phi{1}).^2 + abs(Phi{2}).^2 + abs(Phi{3}).^2 ) + ...
-        0.5 * Betas * ( abs(Phi{3}).^2 + abs(Phi{2}).^2 - abs(Phi{1} ).^2);
+        0.5 * Betas * ( abs(Phi{3}).^2 + abs(Phi{2}).^2 - abs(Phi{1} ).^2) ...
+        + (p+q) * abs(Phi{3}).^2;
+%         + (p+q) * sum(sum(sum(abs(Phi{3}).^2)));
     
     % spin-mixing terms
     % note that B = A' is the complex conjugate transpose of A

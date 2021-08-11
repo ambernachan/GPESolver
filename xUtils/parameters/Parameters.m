@@ -38,6 +38,7 @@ classdef Parameters  < handle
         dipoleWaist_y
         zRx
         zRy
+        xOmega
     end
     methods
         % Constructor
@@ -51,7 +52,7 @@ classdef Parameters  < handle
                 {'dx'}, {'dt'}, {'nComponents'} ...
                 {'transitionfreq'}, {'linewidth'}, {'Ehfs'}, {'detuning'}, ...
                 {'dipoleTrap0'}, {'dipoleWaist_x'}, {'dipoleWaist_y'}, ...
-                {'zRx'}, {'zRy'}];
+                {'zRx'}, {'zRy'}, {'xOmega'}];
             
             if isfield(inputparams, 'atom')
                 inputparams = obj.createAtomRelatedFields(inputparams);
@@ -139,6 +140,7 @@ classdef Parameters  < handle
             paramstruct.Ehfs = getsimconst(['Ehfs_' atom]);
             paramstruct.detuning = getsimconst(['detuning_' atom]);
             paramstruct.dipoleTrap0 = getsimconst(['dipoleTrap0_' atom]);
+            paramstruct.xOmega = getsimconst(['Wx_' atom]);
         end
     end
 end

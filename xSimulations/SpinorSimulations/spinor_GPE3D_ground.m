@@ -59,7 +59,7 @@ function [] = spinor_GPE3D_ground(info, params)
     Deltat = 0.1*dx^3;
     Stop_crit = {'MaxNorm', 1e-6};
     Max_iter = 7500;
-    Stop_time = floor(min(100, (Max_iter*Deltat)));
+    Stop_time = floor(min(100, round(Max_iter*Deltat/5)*5));
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
 
@@ -89,31 +89,38 @@ function [] = spinor_GPE3D_ground(info, params)
     Physics3D = Dispersion_Var3d(Method, Physics3D); % !!!
     
     % Potential function
-    Udp0 = info.params.dipoleTrap0;
-    Wx = sqrt(4*Udp0 / (info.params.atom_mass*info.params.dipoleWaist_x^2));
-    Wy = getphysconst('hbar') / (info.params.atom_mass * getsimconst('axicon_radius')^2);
-    Wz = Wy;
-    Wx = min(Wx/100, Wy); % limiting this 2d behaviour
-    Wmin = min(min(Wx, Wy), Wz);
-    gx = Wx/Wmin; gy = Wy/Wmin; gz = Wz/Wmin; % scaled parameters gamma => 1
+%     Udp0 = info.params.dipoleTrap0;
+%     Wx = info.params.xOmega;
+    gx = info.params.xOmega / info.params.trapfreq;
+    gy = 1; gz = 1;
+    
+%     Wx = sqrt(4*Udp0 / (info.params.atom_mass*info.params.dipoleWaist_x^2));
+%     Wy = getphysconst('hbar') / (info.params.atom_mass * getsimconst('axicon_radius')^2);
+%     Wz = Wy;
+%     Wx = min(Wx/100, Wy); % limiting this 2d behaviour
+%     Wmin = min(min(Wx, Wy), Wz);
+%     gx = Wx/Wmin; gy = Wy/Wmin; gz = Wz/Wmin; % scaled parameters gamma => 1
     
 %     dipoletrap = dipoleTrap(info.params, X, Y, Z);
 %     quadratictrap = quadratic_potential3d(gx, gy, gz, X, Y, Z);
-    Bz = 10^(-4); % Magnetic field in T (10^4 G = 1 T)
+    
+%     Bz = 10^(-4); % Magnetic field in T (10^4 G = 1 T)
+    Bz = 10^(-3) * 10^(-4); % Magnetic field in T (10^4 G = 1 T)
+    
 %     potential_with_Bfield = @(X,Y,Z) addingPotentials(info.params, ...
 %         dipole_plus_quadratictrap(info.params, gx,gy,gz, X,Y,Z), ...
 %         magneticFieldPotential(info.params, Bz, Wmin));
     % Optical dipole trap + harmonic oscillator (small-x approx) + axicon
     % in yz plane approximated as a harmonic oscillator with axicon radius
-    Nc = info.params.nComponents;
-    i = num2cell(eye(3));
-    fz = eye(Nc) .* [1, 0, -1]; fz2 = (fz).^2;
-    Fz = num2cell(fz); Fz2 = num2cell(fz2);
+%     Nc = info.params.nComponents;
+%     i = num2cell(eye(3));
+%     fz = eye(Nc) .* [1, 0, -1]; fz2 = (fz).^2;
+%     Fz = num2cell(fz); Fz2 = num2cell(fz2);
     
     % temp fix
-    gx = 1; gy = 1; gz = 1;
-    Wmin = 1 * 2*pi; % Hz
-    [p,q] = getMagneticFieldPars(Bz, Wmin, info.params.Ehfs);
+%     gx = 1; gy = 1; gz = 1;
+%     Wmin = 1 * 2*pi; % Hz
+    [p,q] = getMagneticFieldPars(Bz,  info.params.trapfreq, info.params.Ehfs);
 %     
 %     potential = cell(3,3);
 %     for n = 1:Nc
@@ -181,7 +188,7 @@ function [] = spinor_GPE3D_ground(info, params)
 
     %% Printing interaction strength
     
-    aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * Wmin));
+    aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * info.params.trapfreq));
     
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
@@ -205,7 +212,7 @@ function [] = spinor_GPE3D_ground(info, params)
     % Must be equal to or smaller than Evo from Print
     Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
     Evo_outputs = max(10, Evolim);
-    Evo_outputs = 1;
+%     Evo_outputs = 1;
     Save_solution = 1;
     
     globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
@@ -244,7 +251,7 @@ function [] = spinor_GPE3D_ground(info, params)
     Printing = 1;
     % Must be equal to or bigger than Evo_outputs
     Evo = max(25, Evo_outputs);
-    Evo = 1;
+%     Evo = 1;
     Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);
 

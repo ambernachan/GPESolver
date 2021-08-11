@@ -4,7 +4,7 @@ function [value] = getsimconst(simconst)
     
     axicon_radius = 288.75 * 10^(-6); % axicon radius (m)
     laser_power = 1.5; % laser power (W)
-    laser_freq = 563.53 * 2*pi * 10^(9); % laser frequency (Hz)
+    laser_freq = 563.53 * 2*pi * 10^(12); % laser frequency (Hz)
     laser_wavelength = 532 * 10^(-9); % laser wavelength (m)
     dipole_waist_x = 31.26 * 10^(-6); % dipole beam waist in x (m)
     dipole_waist_y = 406.42 * 10^(-6); % dipole beam waist in x (m)
@@ -18,7 +18,7 @@ function [value] = getsimconst(simconst)
     
     mass_Na = 22.989769 * getphysconst('amu'); % mass (kg)
     mass_Rb = 86.9091835 * getphysconst('amu'); % mass (kg)
-    transitionfreq_Na = 508.85 * 2*pi * 10^(9); % transition frequency (Hz)
+    transitionfreq_Na = 508.85 * 2*pi * 10^(12); % transition frequency (Hz)
     linewidth_Na = 9.79 *2*pi * 10^6; % natural linewith (Hz)
     transitionfreq_Rb = transitionfreq_Na;
     linewidth_Rb = linewidth_Na;
@@ -32,7 +32,7 @@ function [value] = getsimconst(simconst)
     TRb = 8.58177228994 * 10^(-8); % ?
     
     N = 17.45 * 10^6; % number of particles
-    trap_freq = 1 * 2*pi; % in Hz
+    trap_freq = 10 * 2*pi; % in Hz (minimum trap freq)
     spin_pair = 1; % hyperfine spin manifold
     density = 10^18; % density n in 1/m^3
     
@@ -41,16 +41,20 @@ function [value] = getsimconst(simconst)
     zRx = dipole_waist_x^2 * pi / laser_wavelength;
     zRy = dipole_waist_y^2 * pi / laser_wavelength;
     
-    dipoleTrap0_Na = 6*pi*getphysconst('c')^2 * laser_power * linewidth_Na ...
+    dipoleTrap0_unscaled_Na = 6*pi^2*getphysconst('c')^2 * laser_power * linewidth_Na ...
         / (transitionfreq_Na^2 * laser_wavelength * detuning_Na * (transitionfreq_Na + laser_freq)) ...
         / sqrt(zRx*zRy);
-    dipoleTrap0_Rb = 6*pi*getphysconst('c')^2 * laser_power * linewidth_Rb ...
+    dipoleTrap0_unscaled_Rb = 6*pi^2*getphysconst('c')^2 * laser_power * linewidth_Rb ...
         / (transitionfreq_Rb^2 * laser_wavelength * detuning_Rb * (transitionfreq_Rb + laser_freq)) ...
         / sqrt(zRx*zRy);
     
-    %% Something is going wrong with the dipole trap; it is much stronger than should be...
-    dipoleTrap0_Na = dipoleTrap0_Na^2;
-    dipoleTrap0_Rb = dipoleTrap0_Rb^2;
+    Wx_Na = sqrt(-4*dipoleTrap0_unscaled_Na / (mass_Na * dipole_waist_x^2));
+    Wx_Rb = sqrt(-4*dipoleTrap0_unscaled_Rb / (mass_Rb * dipole_waist_x^2));
+    Wy = sqrt(-4*dipoleTrap0_unscaled_Na / (mass_Na * dipole_waist_y^2));
+    
+    %% making Udp(0) dimensionless
+    dipoleTrap0_Na = dipoleTrap0_unscaled_Na / (getphysconst('hbar') * trap_freq);
+    dipoleTrap0_Rb = dipoleTrap0_unscaled_Rb / (getphysconst('hbar') * trap_freq);
     
     ws_variables = whos;
     wsnames = cell(1,length(ws_variables));

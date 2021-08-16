@@ -57,11 +57,14 @@ function [] = spinor_GPE3D_ground(info, params)
     Type = 'BESP';
     dx = (2*xlim / (Nx-1));
     Deltat = 0.1*dx^3;
-    Stop_crit = {'MaxNorm', 1e-6};
-    Max_iter = 7500;
+    Deltat = 0.25;
+    Stop_crit = {'MaxNorm', 1e-50};
+    Max_iter = 500;
     Stop_time = floor(min(100, round(Max_iter*Deltat/5)*5));
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
+    Method.M = info.params.M;
+    Method.projection = true;
 
     %% Geometry3D
     
@@ -92,7 +95,8 @@ function [] = spinor_GPE3D_ground(info, params)
 %     Udp0 = info.params.dipoleTrap0;
 %     Wx = info.params.xOmega;
     gx = info.params.xOmega / info.params.trapfreq;
-    gy = 1; gz = 1;
+    gx = 10;
+    gy = 1; gz = 1; gx = 1;
     
 %     Wx = sqrt(4*Udp0 / (info.params.atom_mass*info.params.dipoleWaist_x^2));
 %     Wy = getphysconst('hbar') / (info.params.atom_mass * getsimconst('axicon_radius')^2);
@@ -105,7 +109,12 @@ function [] = spinor_GPE3D_ground(info, params)
 %     quadratictrap = quadratic_potential3d(gx, gy, gz, X, Y, Z);
     
 %     Bz = 10^(-4); % Magnetic field in T (10^4 G = 1 T)
-    Bz = 10^(-3) * 10^(-4); % Magnetic field in T (10^4 G = 1 T)
+%     Bz = 10^(-3) * 10^(-4); % Magnetic field in T (10^4 G = 1 T)
+%     Bz = 10^(-10); % 1 uG = 0.1nT = small field
+%     Bz = 10^(-8); % 100 uG = 10 nT = moderate field
+%     Bz = 10^(-4); % 1 G = 100 uT = big field
+%     Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
+    Bz = 0; % no magnetic field
     
 %     potential_with_Bfield = @(X,Y,Z) addingPotentials(info.params, ...
 %         dipole_plus_quadratictrap(info.params, gx,gy,gz, X,Y,Z), ...
@@ -196,8 +205,12 @@ function [] = spinor_GPE3D_ground(info, params)
     info.add_custom_info('atom \t=\t %s \n', info.params.atom);
     info.add_custom_info('Beta_n \t=\t %f \n', info.params.betan); % print interaction parameter Beta_n
     info.add_custom_info('Beta_s \t=\t %f \n', info.params.betas); % print interaction parameter Beta_s
+    info.add_custom_info('Wmin \t=\t %.1g x 2pi Hz \n', info.params.trapfreq / (2*pi)); % (minimum) trap frequency
     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
-    info.add_custom_info('dt \t=\t %f \n', info.params.dt);
+    info.add_custom_info('Bz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gaus
+    if Method.projection proj = 'yes'; else proj = 'no'; end
+    info.add_custom_info('projections used? [%s] \t M = %.1g \n', proj, Method.M); % tells user whether projection constants are implemented
+    info.add_custom_info('dt \t=\t %f \n', Deltat);
     info.add_custom_info('dx \t=\t %f \n', dx);
     info.add_info_separator();
     info.add_custom_info('a_ho \t=\t %.2g um\n', aho*10^(6)); % harmonic oscillator length in um

@@ -61,49 +61,50 @@ while (Method.EvolutionCriterion > Method.Stop_crit{2}*Method.Deltat) && (Method
     %% Normalization of the ground states
     if strcmp(Method.Normalization,'Multi') % normalizing the total wavefunction, no conservation of components
     
-    Global_L2norm = 0;
-    for n = 1:Method.Ncomponents
-        Global_L2norm = Global_L2norm + L2_norm3d(FFTPhi{n},FFTGeometry3D)^2; % Computing the norm of each wave function
-    end
-    for n = 1:Method.Ncomponents
-        FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
-        phi{n} = sqrt(sum(sum(sum(abs(FFTPhi{n}).^2))));
-    end
-    
-    projection = zeros(3,1); projection = num2cell(projection);
-    M = 0;
-    projection{2} = sqrt(1 - M^2) ./ (sqrt( phi{2}.^2 + sqrt( 4*(1-M^2)*phi{1}.^2 .* phi{3}.^2 + M^2 * phi{2}.^4 ) ));
-    projection{1} = sqrt( 1 + M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{1});
-    projection{3} = sqrt( 1 - M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{3});
-    
-%     Global_L2norm = 0;
-%     for n = 1:Method.Ncomponents
-%         Global_L2norm = Global_L2norm + L2_norm3d(FFTPhi{n},FFTGeometry3D)^2; % Computing the norm of each wave function
-%     end
-    
-%     for n = 1:Method.Ncomponents
-%         FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
-%         phi{n} = sqrt(sum(sum(sum(abs(FFTPhi{n}).^2))));
-%     end
-    Global_L2norm = 0;
-    for n = 1:Method.Ncomponents
-%         projection{n} = projection{n} / (global_projection);
-        FFTPhi{n} = projection{n} .* FFTPhi{n};
-        Global_L2norm = Global_L2norm + L2_norm3d(FFTPhi{n},FFTGeometry3D)^2; % Computing the norm of each wave function
-    end
-    
-    for n = 1:Method.Ncomponents
-%         projection{n} = projection{n} / (global_projection);
-%         FFTPhi{n} = projection{n} .* FFTPhi{n};
-        FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
-%         FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
-        Method.LocalEvol(n) = max(max(max(abs(FFTPhi{n}-FFTPhi_tmp{n})))); % Computing the local evolution of each wave function
-    end
+    %     Global_L2norm = 0;
+        for n = 1:Method.Ncomponents
+    %         Global_L2norm = Global_L2norm + L2_norm3d(FFTPhi{n},FFTGeometry3D)^2; % Computing the norm of each wave function
+        end
+
+        projection = ones(3,1); projection = num2cell(projection);
+        if isfield(Method, 'M') && isfield(Method, 'projection')
+            M = Method.M;    
+            if Method.projection == true
+                for n = 1:Method.Ncomponents
+    %                 FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
+                    phi1{n} = sqrt(sum(abs(FFTPhi{n}).^2, 'all'));
+%                     phisq{n} = sum(abs(FFTPhi{n}).^2, 'all');
+%                     phiabs{n} = sum(abs(FFTPhi{n}), 'all');
+                    phi{n} = sum(abs(FFTPhi{n}), 'all');
+                end
+%                 projection{2} = sqrt(1 - M^2) ./ (sqrt( phi{2}.^2 + sqrt( 4*(1-M^2)*phi{1}.^2 .* phi{3}.^2 + M^2 * phi{2}.^4 ) ));
+%                 projection{1} = sqrt( 1 + M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{1});
+%                 projection{3} = sqrt( 1 - M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{3});
+                projection{2} = sqrt(1 - M^2) ./ (sqrt( phi{2}.^2 + sqrt( 4*(1-M^2)*phi{1}.^2 .* phi{3}.^2 + M^2 * phi{2}.^4 ) ));
+                projection{1} = sqrt( 1 + M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{1});
+                projection{3} = sqrt( 1 - M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{3});
+            end
+        else
+            Method.projection = false;
+        end
+        
+        % projecting and calculating the global norm
+        Global_L2norm = 0;
+        for n = 1:Method.Ncomponents
+            FFTPhi{n} = projection{n} .* FFTPhi{n};
+            Global_L2norm = Global_L2norm + L2_norm3d(FFTPhi{n},FFTGeometry3D)^2; % Computing the norm of each wave function
+        end
+        
+        % normalizing the wavefunctions
+        for n = 1:Method.Ncomponents
+%             FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
+            Method.LocalEvol(n) = max(max(max(abs(FFTPhi{n}-FFTPhi_tmp{n})))); % Computing the local evolution of each wave function
+        end
     elseif strcmp(Method.Normalization,'Single') % normalizing each component separately
-    for n = 1:Method.Ncomponents
-        FFTPhi{n} = FFTPhi{n}/L2_norm3d(FFTPhi{n},FFTGeometry3D)*sqrt(Method.NParticles(n)); % Normalization of each wave function
-        Method.LocalEvol(n) = max(max(max(abs(FFTPhi{n}-FFTPhi_tmp{n})))); % Computing the local evolution of each wave function
-    end
+        for n = 1:Method.Ncomponents
+            FFTPhi{n} = FFTPhi{n}/L2_norm3d(FFTPhi{n},FFTGeometry3D)*sqrt(Method.NParticles(n)); % Normalization of each wave function
+            Method.LocalEvol(n) = max(max(max(abs(FFTPhi{n}-FFTPhi_tmp{n})))); % Computing the local evolution of each wave function
+        end
     end
     
     %% Updating CPUtime and evolution criterions

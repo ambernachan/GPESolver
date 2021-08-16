@@ -18,11 +18,11 @@ function [value] = getsimconst(simconst)
     
     mass_Na = 22.989769 * getphysconst('amu'); % mass (kg)
     mass_Rb = 86.9091835 * getphysconst('amu'); % mass (kg)
-    transitionfreq_Na = 508.85 * 2*pi * 10^(12); % transition frequency (Hz)
-    linewidth_Na = 9.79 *2*pi * 10^6; % natural linewith (Hz)
+    transitionfreq_Na = 508.8487162 * 2*pi * 10^(12); % transition frequency (Hz)
+    linewidth_Na = 9.7946 *2*pi * 10^6; % natural linewith (Hz)
     transitionfreq_Rb = transitionfreq_Na;
     linewidth_Rb = linewidth_Na;
-    Ehfs_Na = 1772 * 2*pi * 10^(6) * getphysconst('hbar'); % hyperfine energy splitting (J)
+    Ehfs_Na = 1771.6261288 * 2*pi * 10^(6) * getphysconst('hbar'); % hyperfine energy splitting (J)
     Ehfs_Rb = 6835 * 2*pi * 10^(6) * getphysconst('hbar'); % hyperfine energy splitting (J)
     
     mass_ferro = 0.5*mass_Na + 0.5*mass_Rb;

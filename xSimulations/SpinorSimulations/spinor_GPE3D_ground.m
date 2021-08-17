@@ -64,7 +64,7 @@ function [] = spinor_GPE3D_ground(info, params)
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
     Method.M = info.params.M;
-    Method.projection = true;
+    Method.projection = info.params.projection;
 
     %% Geometry3D
     

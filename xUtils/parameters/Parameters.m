@@ -29,6 +29,7 @@ classdef Parameters  < handle
         dx
         dt
         nComponents
+        projection
         
         transitionfreq
         linewidth
@@ -50,7 +51,7 @@ classdef Parameters  < handle
                 {'run_dynamic'}, {'Phi_input'}, {'beta'}, {'a0'}, {'a2'},...
                 {'N'}, {'M'}, {'trapfreq'}, {'atom_mass'}, {'spin_pair'},...
                 {'aho'}, {'an'}, {'as'}, {'chin'}, {'chis'}, {'betan'},...
-                {'betas'}, {'dx'}, {'dt'}, {'nComponents'} ...
+                {'betas'}, {'dx'}, {'dt'}, {'nComponents'}, {'projection'}, ...
                 {'transitionfreq'}, {'linewidth'}, {'Ehfs'}, {'detuning'}, ...
                 {'dipoleTrap0'}, {'dipoleWaist_x'}, {'dipoleWaist_y'}, ...
                 {'zRx'}, {'zRy'}, {'xOmega'}];
@@ -89,6 +90,7 @@ classdef Parameters  < handle
             default.boxlimits = [boxlim, boxlim, boxlim];
             default.Ngridpts = gridpts;
             default.M = 0;
+            default.projection = false;
             
             default.chi = [];
             default.delta = 0.5;

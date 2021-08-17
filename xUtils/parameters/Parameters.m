@@ -26,6 +26,9 @@ classdef Parameters  < handle
         chis
         betan
         betas
+        Bz
+        p
+        q
         dx
         dt
         nComponents
@@ -51,7 +54,8 @@ classdef Parameters  < handle
                 {'run_dynamic'}, {'Phi_input'}, {'beta'}, {'a0'}, {'a2'},...
                 {'N'}, {'M'}, {'trapfreq'}, {'atom_mass'}, {'spin_pair'},...
                 {'aho'}, {'an'}, {'as'}, {'chin'}, {'chis'}, {'betan'},...
-                {'betas'}, {'dx'}, {'dt'}, {'nComponents'}, {'projection'}, ...
+                {'betas'}, {'Bz'}, {'p'}, {'q'}, ...
+                {'dx'}, {'dt'}, {'nComponents'}, {'projection'}, ...
                 {'transitionfreq'}, {'linewidth'}, {'Ehfs'}, {'detuning'}, ...
                 {'dipoleTrap0'}, {'dipoleWaist_x'}, {'dipoleWaist_y'}, ...
                 {'zRx'}, {'zRy'}, {'xOmega'}];
@@ -84,6 +88,7 @@ classdef Parameters  < handle
             default.dimensions = 3;
             default.run_dynamic = true;
             default.beta = 1;
+            default.Bz = 0; % zero magnetic field
             
             boxlim = 8;
             gridpts = 2^6+1;

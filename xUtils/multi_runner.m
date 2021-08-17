@@ -54,7 +54,7 @@ function [info] = multi_runner(parameters)
                 
             % printing information about the simulation
             creationTimeString = [datestr(creationTime, 'yyyy-mm-dd') '@' datestr(creationTime, 'HH.MM.SS') ];
-            sprintf('Running dynamic simulation at %s \n', creationTimeString)
+            sprintf('Running simulation at %s \n', creationTimeString)
             
             % run the simulation
             run_script(info{loop}, params)

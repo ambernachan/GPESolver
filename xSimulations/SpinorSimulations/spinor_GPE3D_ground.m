@@ -59,7 +59,7 @@ function [] = spinor_GPE3D_ground(info, params)
     Deltat = 0.1*dx^3;
     Deltat = 0.25;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 500;
+    Max_iter = 50;
     Stop_time = floor(min(100, round(Max_iter*Deltat/5)*5));
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
@@ -113,8 +113,8 @@ function [] = spinor_GPE3D_ground(info, params)
 %     Bz = 10^(-10); % 1 uG = 0.1nT = small field
 %     Bz = 10^(-8); % 100 uG = 10 nT = moderate field
 %     Bz = 10^(-4); % 1 G = 100 uT = big field
-%     Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
-    Bz = 0; % no magnetic field
+    Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
+%     Bz = 0; % no magnetic field
     
 %     potential_with_Bfield = @(X,Y,Z) addingPotentials(info.params, ...
 %         dipole_plus_quadratictrap(info.params, gx,gy,gz, X,Y,Z), ...
@@ -178,7 +178,7 @@ function [] = spinor_GPE3D_ground(info, params)
         Phi_0{j} = Phi_0{j} .* exp(1i*((j-1)*(2*pi/3) + phase));
     end
     
-    Phi_0 = params.Phi_input;
+    Phi_0 = info.params.Phi_input;
 % %     Phi_0{2} = 0.75 * Phi_0{2};
 %     Phi_0{1} = 0.5 * Phi_0{1};
 %     Phi_0{3} = 0.5 * Phi_0{3};
@@ -198,6 +198,10 @@ function [] = spinor_GPE3D_ground(info, params)
     %% Printing interaction strength
     
     aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * info.params.trapfreq));
+%     avg_density = 0;
+%     for j = 1:Ncomponents
+%         avg_density = avg_density + sum(info.params.Phi_input{j}, 'all');
+%     end
     
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
@@ -205,9 +209,14 @@ function [] = spinor_GPE3D_ground(info, params)
     info.add_custom_info('atom \t=\t %s \n', info.params.atom);
     info.add_custom_info('Beta_n \t=\t %f \n', info.params.betan); % print interaction parameter Beta_n
     info.add_custom_info('Beta_s \t=\t %f \n', info.params.betas); % print interaction parameter Beta_s
+%     info.add_custom_info('\tInteraction energies, [Bn,Bs]*avg||phi||^2 \t=\t %.3g, %.3g\n', ...
+%         info.params.betan*avg_density,info.params.betas*avg_density); % interaction energy
     info.add_custom_info('Wmin \t=\t %.1g x 2pi Hz \n', info.params.trapfreq / (2*pi)); % (minimum) trap frequency
     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
-    info.add_custom_info('Bz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gaus
+    info.add_custom_info('Magnetic field parameters:\n'); % 
+    info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
+    info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
+    info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
     if Method.projection proj = 'yes'; else proj = 'no'; end
     info.add_custom_info('projections used? [%s] \t M = %.1g \n', proj, Method.M); % tells user whether projection constants are implemented
     info.add_custom_info('dt \t=\t %f \n', Deltat);

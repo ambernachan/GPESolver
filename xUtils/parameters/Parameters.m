@@ -74,6 +74,19 @@ classdef Parameters  < handle
                 end
             end
             
+%             % Creating a Thomas-Fermi Phi_input if no Phi_input is given
+%             if ~isfield(inputparams, 'Phi_input')
+%                 L = obj.boxlimits; N = obj.Ngridpts;
+%                 geom = Geometry3D_Var3d(-L,L, -L,L, -L,L, N,N,N);
+%                 m.Ncomponents = obj.nComponents;
+%                 potential = quadratic_potential3d(1,1,1,geom.X,geom.Y,geom.Z);
+%                 for j = 1:obj.nComponents
+%                     phi{j} = Thomas_Fermi3d(1,1,1, obj.betan, potential);
+%                 end
+%                 % Normalizing
+%                 obj.Phi_input = normalize_global(m, geom, phi);
+%             end
+            
         end
         
         % Set the default properties of Parameters and return as a struct
@@ -90,7 +103,7 @@ classdef Parameters  < handle
             default.boxlimits = [boxlim, boxlim, boxlim];
             default.Ngridpts = gridpts;
             default.M = 0;
-            default.projection = false;
+            default.projection = true;
             
             default.chi = [];
             default.delta = 0.5;
@@ -99,6 +112,16 @@ classdef Parameters  < handle
             default.atom = 'Na';
             default = obj.createAtomRelatedFields(default);
             
+            L = boxlim; N = gridpts;
+            geom = Geometry3D_Var3d(-L,L, -L,L, -L,L, N,N,N);
+            m.Ncomponents = default.nComponents;
+            potential = quadratic_potential3d(1,1,1,geom.X,geom.Y,geom.Z);
+            for j = 1:m.Ncomponents
+                phi{j} = Thomas_Fermi3d(1,1,1, default.betan, potential);
+            end
+            % Normalizing
+            default.Phi_input = normalize_global(m, geom, phi);
+            
             default.dipoleWaist_x = getsimconst('dipole_waist_x');
             default.dipoleWaist_y = getsimconst('dipole_waist_y');
             default.zRx = getsimconst('zRx');
@@ -106,15 +129,6 @@ classdef Parameters  < handle
             
             default.dx = (2*boxlim) / (gridpts-1);
             default.dt = (default.dx)^2;
-            
-            % Creating a Thomas-Fermi Phi_input
-            geom = Geometry3D_Var3d(-boxlim, boxlim, -boxlim, boxlim, -boxlim, boxlim, gridpts, gridpts, gridpts);
-            potential = quadratic_potential3d(1,1,1,geom.X,geom.Y,geom.Z);
-            for n = 1:default.nComponents
-                Phi_in{n} = Thomas_Fermi3d(1,1,1, default.beta, potential);
-            end
-            default.Phi_input = Phi_in;
-            
         end
         
         function paramstruct = createAtomRelatedFields(obj, paramstruct)

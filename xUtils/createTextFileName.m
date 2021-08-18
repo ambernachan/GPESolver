@@ -25,7 +25,7 @@ function [fname] = createTextFileName(info, geometry, method, iterations)
         else
             proj = 'no';
         end 
-        p = sprintf('proj[%s]', info.params.projection);
+        p = sprintf('proj[%s]', proj);
         fname = [fname '_' p];
     end
     

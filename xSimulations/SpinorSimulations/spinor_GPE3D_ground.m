@@ -113,7 +113,9 @@ function [] = spinor_GPE3D_ground(info, params)
 %     Bz = 10^(-10); % 1 uG = 0.1nT = small field
 %     Bz = 10^(-8); % 100 uG = 10 nT = moderate field
 %     Bz = 10^(-4); % 1 G = 100 uT = big field
-    Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
+%     Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
+    Bz = info.params.Bz;
+    Bz = 0;
 %     Bz = 0; % no magnetic field
     
 %     potential_with_Bfield = @(X,Y,Z) addingPotentials(info.params, ...
@@ -129,8 +131,16 @@ function [] = spinor_GPE3D_ground(info, params)
     % temp fix
 %     gx = 1; gy = 1; gz = 1;
 %     Wmin = 1 * 2*pi; % Hz
-    [p,q] = getMagneticFieldPars(Bz,  info.params.trapfreq, info.params.Ehfs);
-%     
+%     p = info.params.p;
+%     q = info.params.q;
+    
+    % set q < 1/2
+    q = 0.25;
+    % for a ferromagnetic states mix, need sqrt(2*q)<|p|<1 & 0<q<1/2
+    p = 0.5*(1+sqrt(2*q));
+    
+    p = p*info.params.betas;
+    q = q*info.params.betas;
 %     potential = cell(3,3);
 %     for n = 1:Nc
 %         for m = 1:Nc
@@ -217,6 +227,7 @@ function [] = spinor_GPE3D_ground(info, params)
     info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
     info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
     info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
+    info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
     if Method.projection proj = 'yes'; else proj = 'no'; end
     info.add_custom_info('projections used? [%s] \t M = %.1g \n', proj, Method.M); % tells user whether projection constants are implemented
     info.add_custom_info('dt \t=\t %f \n', Deltat);
@@ -234,6 +245,9 @@ function [] = spinor_GPE3D_ground(info, params)
     % Must be equal to or smaller than Evo from Print
     Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
     Evo_outputs = max(10, Evolim);
+    if Max_iter < 60
+        Evo_outputs = 5;
+    end
 %     Evo_outputs = 1;
     Save_solution = 1;
     
@@ -273,6 +287,9 @@ function [] = spinor_GPE3D_ground(info, params)
     Printing = 1;
     % Must be equal to or bigger than Evo_outputs
     Evo = max(25, Evo_outputs);
+    if Max_iter < 60
+        Evo = 10;
+    end
 %     Evo = 1;
     Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);

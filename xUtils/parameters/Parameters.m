@@ -26,6 +26,9 @@ classdef Parameters  < handle
         chis
         betan
         betas
+        Bz
+        p
+        q
         dx
         dt
         nComponents
@@ -51,7 +54,8 @@ classdef Parameters  < handle
                 {'run_dynamic'}, {'Phi_input'}, {'beta'}, {'a0'}, {'a2'},...
                 {'N'}, {'M'}, {'trapfreq'}, {'atom_mass'}, {'spin_pair'},...
                 {'aho'}, {'an'}, {'as'}, {'chin'}, {'chis'}, {'betan'},...
-                {'betas'}, {'dx'}, {'dt'}, {'nComponents'}, {'projection'}, ...
+                {'betas'}, {'Bz'}, {'p'}, {'q'}, ...
+                {'dx'}, {'dt'}, {'nComponents'}, {'projection'}, ...
                 {'transitionfreq'}, {'linewidth'}, {'Ehfs'}, {'detuning'}, ...
                 {'dipoleTrap0'}, {'dipoleWaist_x'}, {'dipoleWaist_y'}, ...
                 {'zRx'}, {'zRy'}, {'xOmega'}];
@@ -74,18 +78,7 @@ classdef Parameters  < handle
                 end
             end
             
-%             % Creating a Thomas-Fermi Phi_input if no Phi_input is given
-%             if ~isfield(inputparams, 'Phi_input')
-%                 L = obj.boxlimits; N = obj.Ngridpts;
-%                 geom = Geometry3D_Var3d(-L,L, -L,L, -L,L, N,N,N);
-%                 m.Ncomponents = obj.nComponents;
-%                 potential = quadratic_potential3d(1,1,1,geom.X,geom.Y,geom.Z);
-%                 for j = 1:obj.nComponents
-%                     phi{j} = Thomas_Fermi3d(1,1,1, obj.betan, potential);
-%                 end
-%                 % Normalizing
-%                 obj.Phi_input = normalize_global(m, geom, phi);
-%             end
+            obj.setZeemanpars();
             
         end
         
@@ -97,6 +90,8 @@ classdef Parameters  < handle
             default.dimensions = 3;
             default.run_dynamic = true;
             default.beta = 1;
+            default.Bz = 0; % zero magnetic field
+            default.p = 0; default.q = 0;
             
             boxlim = 8;
             gridpts = 2^6+1;
@@ -159,6 +154,28 @@ classdef Parameters  < handle
             paramstruct.detuning = getsimconst(['detuning_' atom]);
             paramstruct.dipoleTrap0 = getsimconst(['dipoleTrap0_' atom]);
             paramstruct.xOmega = getsimconst(['Wx_' atom]);
+        end
+        
+        function [p, q] = getZeemanpars(obj, Bz, trapfreq, Ehfs)
+            if nargin < 2
+                Bz = obj.Bz;
+                trapfreq = obj.trapfreq;
+                Ehfs = obj.Ehfs;
+            end
+            if ~exist('Bz', 'var') || ~exist('trapfreq', 'var')
+                error('Not enough input parameters; please provide Bz, Wmin, Ehfs')
+            elseif ~exist('Ehfs', 'var')
+                [p,q] = getMagneticFieldPars(Bz, trapfreq);
+                return;
+            end
+            
+            [p,q] = getMagneticFieldPars(Bz, trapfreq, Ehfs);
+        end
+        
+        function setZeemanpars(obj)
+            [p, q] = obj.getZeemanpars();
+            obj.p = p;
+            obj.q = q;
         end
     end
 end

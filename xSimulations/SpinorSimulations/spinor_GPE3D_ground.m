@@ -59,7 +59,7 @@ function [] = spinor_GPE3D_ground(info, params)
     Deltat = 0.1*dx^3;
     Deltat = 0.25;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 50;
+    Max_iter = 100;
     Stop_time = floor(min(100, round(Max_iter*Deltat/5)*5));
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
@@ -115,7 +115,7 @@ function [] = spinor_GPE3D_ground(info, params)
 %     Bz = 10^(-4); % 1 G = 100 uT = big field
 %     Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
     Bz = info.params.Bz;
-    Bz = 0;
+%     Bz = 0;
 %     Bz = 0; % no magnetic field
     
 %     potential_with_Bfield = @(X,Y,Z) addingPotentials(info.params, ...
@@ -131,16 +131,16 @@ function [] = spinor_GPE3D_ground(info, params)
     % temp fix
 %     gx = 1; gy = 1; gz = 1;
 %     Wmin = 1 * 2*pi; % Hz
-%     p = info.params.p;
-%     q = info.params.q;
+    p = info.params.p;
+    q = info.params.q;
     
     % set q < 1/2
-    q = 0.25;
+%     q = 0.25;
     % for a ferromagnetic states mix, need sqrt(2*q)<|p|<1 & 0<q<1/2
-    p = 0.5*(1+sqrt(2*q));
+%     p = 0.5*(1+sqrt(2*q));
     
-    p = p*info.params.betas;
-    q = q*info.params.betas;
+%     p = p*info.params.betas;
+%     q = q*info.params.betas;
 %     potential = cell(3,3);
 %     for n = 1:Nc
 %         for m = 1:Nc
@@ -245,8 +245,8 @@ function [] = spinor_GPE3D_ground(info, params)
     % Must be equal to or smaller than Evo from Print
     Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
     Evo_outputs = max(10, Evolim);
-    if Max_iter < 60
-        Evo_outputs = 5;
+    if Max_iter < 101
+        Evo_outputs = min(5,Evo_outputs);
     end
 %     Evo_outputs = 1;
     Save_solution = 1;

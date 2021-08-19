@@ -79,6 +79,7 @@ classdef Parameters  < handle
             end
             
             obj.setZeemanpars();
+            obj.q = -obj.q; % make q negative (temporary)
             
         end
         

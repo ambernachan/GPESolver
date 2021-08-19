@@ -43,23 +43,23 @@ function [] = spinor_GPE3D_dynamics(info, params)
     alltheAs = [info.params.an info.params.as];
     XI = findhealinglengths(allthechis, alltheAs, info.params.atom);
     
-    %% Run a ground state simulation if Phi_in is not yet given.
-    
-    if ~exist('Phi_in', 'var')
-        groundst_simulation = 'spinor_GPE3D_ground';
-        ground_info = multi_runner(groundst_simulation, info.params.boxlimits, info.params.Ngridpts);
-        ws_ground = ground_info.get_workspace_path('groundstate'); % ground state workspace path/name
-        ws_ground = load(ws_ground); % ground state workspace struct of variables
-        names = fieldnames(ws_ground); % variable names cell in ground state ws
-        for i = 1:length(names)
-            if strcmp(names{i}, 'Phi_1')
-                Phi_in = ws_ground.(names{21});
-            end
-        end
-        if ~exist('Phi_in', 'var')
-            error('Something went wrong with the ground state simulation, please check.')
-        end
-    end
+%     %% Run a ground state simulation if Phi_in is not yet given.
+%     
+%     if ~exist('Phi_in', 'var')
+%         groundst_simulation = 'spinor_GPE3D_ground';
+%         ground_info = multi_runner(groundst_simulation, info.params.boxlimits, info.params.Ngridpts);
+%         ws_ground = ground_info.get_workspace_path('groundstate'); % ground state workspace path/name
+%         ws_ground = load(ws_ground); % ground state workspace struct of variables
+%         names = fieldnames(ws_ground); % variable names cell in ground state ws
+%         for i = 1:length(names)
+%             if strcmp(names{i}, 'Phi_1')
+%                 Phi_in = ws_ground.(names{21});
+%             end
+%         end
+%         if ~exist('Phi_in', 'var')
+%             error('Something went wrong with the ground state simulation, please check.')
+%         end
+%     end
         
     %{
     DYNAMICAL SIMULATION
@@ -73,11 +73,11 @@ function [] = spinor_GPE3D_dynamics(info, params)
 %     Type = 'Relaxation';
     dx = (2*xlim / (Nx-1));
 %     Deltat = info.params.dt;
-    Deltat = 0.1*(dx)^2;
-    LimitingIter = 120000; % A limitation to the iterations bc time
+    Deltat = min(0.25,0.1*(dx)^2);
+    LimitingIter = 100; % A limitation to the iterations bc time
     Stop_time = floor(min(100, (LimitingIter*Deltat)));
     Stop_crit = [];
-    Max_iter = 10000;
+    Max_iter = 100;
 %         Stop_crit = {'MaxNorm', 1e-12};
 %         Precond_type = 'FLaplace'; % defaults to 'FLaplace'
 %         Precond_type = []; % defaults to 'FLaplace'
@@ -89,6 +89,8 @@ function [] = spinor_GPE3D_dynamics(info, params)
 
     % Saving workspace with relevant data for fitting
     Method_dynamical = Method;
+    Method.M = info.params.M;
+    Method.projection = false;
     
     %% Save dynamical method to fittingdata workspace
     if isfile(info.get_workspace_path('fittingdata'))
@@ -117,32 +119,82 @@ function [] = spinor_GPE3D_dynamics(info, params)
     Physics3D = Dispersion_Var3d(Method, Physics3D); % !!!
     
     % Potential function
-    if strcmp(parameters.atom, 'Na')
-        Udp0 = getsimconst('dipoleTrap0_Na');
-    elseif strcmp(parameters.atom, 'Rb')
-        Udp0 = getsimconst('dipoleTrap0_Rb');
-    elseif strcmp(parameters.atom, 'ferro')
-        Udp0 = getsimconst('dipoleTrap0_Na');
-    else
-        error('atom type is not recognized with this input of parameters.')
-    end
-    Wx = sqrt(-4*Udp0 / (info.params.atom_mass*getsimconst('dipole_waist_x')^2));
-    Wy = hbar / (info.params.atom_mass * getsimconst('axicon_radius')^2);
-    Wz = Wy;
-    Wmin = min(min(Wx, Wy), Wz);
-    gx = Wx/Wmin; gy = Wy/Wmin; gz = Wz/Wmin; % scaled parameters gamma => 1
+%     Udp0 = info.params.dipoleTrap0;
+%     Wx = info.params.xOmega;
+    gx = info.params.xOmega / info.params.trapfreq;
+    gx = 10;
+    gy = 1; gz = 1; gx = 1;
     
-    dipolebeam = @(X,Y,Z) dipoleTrap(info.params);
-    quadraticTrap = @(X,Y,Z) quadratic_potential3d(gx, gy, gz, X, Y, Z);
+%     Wx = sqrt(4*Udp0 / (info.params.atom_mass*info.params.dipoleWaist_x^2));
+%     Wy = getphysconst('hbar') / (info.params.atom_mass * getsimconst('axicon_radius')^2);
+%     Wz = Wy;
+%     Wx = min(Wx/100, Wy); % limiting this 2d behaviour
+%     Wmin = min(min(Wx, Wy), Wz);
+%     gx = Wx/Wmin; gy = Wy/Wmin; gz = Wz/Wmin; % scaled parameters gamma => 1
+    
+%     dipoletrap = dipoleTrap(info.params, X, Y, Z);
+%     quadratictrap = quadratic_potential3d(gx, gy, gz, X, Y, Z);
+    
+%     Bz = 10^(-4); % Magnetic field in T (10^4 G = 1 T)
+%     Bz = 10^(-3) * 10^(-4); % Magnetic field in T (10^4 G = 1 T)
+%     Bz = 10^(-10); % 1 uG = 0.1nT = small field
+%     Bz = 10^(-8); % 100 uG = 10 nT = moderate field
+%     Bz = 10^(-4); % 1 G = 100 uT = big field
+%     Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
+    Bz = info.params.Bz;
+%     Bz = 0;
+%     Bz = 0; % no magnetic field
+    
+%     potential_with_Bfield = @(X,Y,Z) addingPotentials(info.params, ...
+%         dipole_plus_quadratictrap(info.params, gx,gy,gz, X,Y,Z), ...
+%         magneticFieldPotential(info.params, Bz, Wmin));
     % Optical dipole trap + harmonic oscillator (small-x approx) + axicon
     % in yz plane approximated as a harmonic oscillator with axicon radius
-    Physics3D = Potential_Var3d(Method, Physics3D, @(X,Y,Z) quadraticTrap(X,Y,Z) + dipolebeam(X,Y,Z));
-%     Physics3D = Potential_Var3d(Method, Physics3D); % std quadratic potential
+%     Nc = info.params.nComponents;
+%     i = num2cell(eye(3));
+%     fz = eye(Nc) .* [1, 0, -1]; fz2 = (fz).^2;
+%     Fz = num2cell(fz); Fz2 = num2cell(fz2);
+    
+    % temp fix
+%     gx = 1; gy = 1; gz = 1;
+%     Wmin = 1 * 2*pi; % Hz
+    p = info.params.p;
+    q = info.params.q;
+    
+    % set q < 1/2
+%     q = 0.25;
+    % for a ferromagnetic states mix, need sqrt(2*q)<|p|<1 & 0<q<1/2
+%     p = 0.5*(1+sqrt(2*q));
+    
+%     p = p*info.params.betas;
+%     q = q*info.params.betas;
+%     potential = cell(3,3);
+%     for n = 1:Nc
+%         for m = 1:Nc
+%             if n == m
+%                 potential{n,m} = @(X,Y,Z) ( i{n,m} * quadratic_potential3d(gx,gy,gz, X,Y,Z) ...
+%                     + Fz2{n,m} * q);
+% %                     + dipoleTrap(info.params, X,Y,Z) - Fz{n,m} * p + Fz2{n,m} * q);
+%             end
+%         end
+%     end
+    % making a simple potential
+    potential = @(X,Y,Z) ( quadratic_potential3d(gx,gy,gz, X,Y,Z) );
+                
+%     pot = @(X,Y,Z) (eye(3) .* quadratic_potential3d(gx,gy,gz, X,Y,Z) + eye(3) .* dipoleTrap(info.params, X,Y,Z) ...
+%         + (fx) * p + (fx).^2 * q );
+%     pot = addingPotentialsAndBfield(info.params, ...
+%         @(X,Y,Z) (@(X,Y,Z) quadratic_potential3d(gx,gy,gz, X,Y,Z) + @(X,Y,Z) dipoleTrap(info.params, X,Y,Z)), ...
+%         @(l) magneticFieldPotential(info.params, Bz, Wmin, l));
+    
+%     Physics3D = Potential_Var3d(Method, Physics3D, potential_with_Bfield, ones(Nc,Nc));
+%     Physics3D = Potential_Var3d(Method, Physics3D, potential, ones(Nc,Nc));
+    Physics3D = Potential_Var3d(Method, Physics3D, potential);
 
     % Nonlinearity
 %     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
-    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas), [], ...
-        Coupled_CubicEnergy3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
+    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas,p,q), [], ...
+        Coupled_CubicEnergy3d_spin1(Betan,Betas,p,q)); % cubic nonlinearity with off-diagonal coupling
     
     %% version mgmt
     curdir = strsplit(pwd, '/');
@@ -159,6 +211,13 @@ function [] = spinor_GPE3D_dynamics(info, params)
     info.add_custom_info('atom \t=\t %s \n', info.params.atom);
     info.add_custom_info('Beta_n \t=\t %f \n', info.params.betan); % print interaction parameter Beta_n
     info.add_custom_info('Beta_s \t=\t %f \n', info.params.betas); % print interaction parameter Beta_s
+    info.add_custom_info('Wmin \t=\t %.1g x 2pi Hz \n', info.params.trapfreq / (2*pi)); % (minimum) trap frequency
+    info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
+    info.add_custom_info('Magnetic field parameters:\n'); % 
+    info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
+    info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
+    info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
+    info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
     info.add_custom_info('dt \t=\t %f \n', info.params.dt);
     info.add_custom_info('dx \t=\t %f \n', dx);
     info.add_info_separator();
@@ -174,6 +233,9 @@ function [] = spinor_GPE3D_dynamics(info, params)
     % Must be equal to or smaller than Evo from Print
     Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
     Evo_outputs = max(10, Evolim);
+    if Max_iter < 101
+        Evo_outputs = min(5,Evo_outputs);
+    end
     Save_solution = 1;
     
     globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
@@ -185,27 +247,24 @@ function [] = spinor_GPE3D_dynamics(info, params)
     globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
     globaluserdef_outputs{5} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'Mx', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{6} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'My', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'Mz', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{8} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{9} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+    globaluserdef_outputs{6} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{10} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+    globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Directional_Magnetization(Method, Geometry3D, Phi, 'z', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{8} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'F2', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{9} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'M2', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_names{1} = 'Longitudinal magnetization';
     globaluserdef_names{2} = 'Population psi+';
     globaluserdef_names{3} = 'Population psi0';
     globaluserdef_names{4} = 'Population psi-';
-    globaluserdef_names{5} = 'Magnetization Mx';
-    globaluserdef_names{6} = 'Magnetization My';
-    globaluserdef_names{7} = 'Magnetization Mz';
-    globaluserdef_names{8} = 'Magnetization Fx';
-    globaluserdef_names{9} = 'Magnetization Fy';
-    globaluserdef_names{10} = 'Magnetization Fz';
+    globaluserdef_names{5} = 'Magnetization Fx';
+    globaluserdef_names{6} = 'Magnetization Fy';
+    globaluserdef_names{7} = 'Magnetization Fz';
+    globaluserdef_names{8} = 'Total magnetization F^2';
+    globaluserdef_names{9} = 'Total magnetization M^2';
     
     Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
         globaluserdef_outputs,globaluserdef_names);
@@ -215,6 +274,9 @@ function [] = spinor_GPE3D_dynamics(info, params)
     Printing = 1;
     % Must be equal to or bigger than Evo_outputs
     Evo = max(25, Evo_outputs);
+    if Max_iter < 60
+        Evo = 10;
+    end
     Draw = 0;
     Print = Print_Var3d(Printing, Evo, Draw);
 
@@ -267,9 +329,7 @@ function [] = spinor_GPE3D_dynamics(info, params)
     pause(2) % pauses the program for 2 seconds
     
     its = Outputs.Iterations;
-    
-    M = Outputs.User_defined_global(5:7);
-    F = Outputs.User_defined_global(8:10);
+    F = Outputs.User_defined_global(5:7);
     
     % Plot longitudinal magnetization
     plot_longmagnetization(its, Outputs.User_defined_global{1}, info, Outputs.Evo_outputs)
@@ -289,80 +349,30 @@ function [] = spinor_GPE3D_dynamics(info, params)
     timeslider_populationdistribution(Geometry3D, Outputs.Solution, info)
     % phase distribution as a sliced 3d function
     timeslider_phase(Geometry3D, Outputs.Solution, info)
+    % phi distribution as a sliced 3d function
+    timeslider_slicer(Geometry3D, Outputs.Solution, info)
     
     % adding extra parameters to workspace
-    save(info.get_workspace_path('dynamics_v7.3'), 'M', 'F', 'its', '-append');
+    save(info.get_workspace_path('dynamics_v7.3'), 'F', 'its', '-append');
     
-    %% Draw & save solution
-
     close all;
-    pause(2) % pauses the program for 2 seconds
-
-    % Set figure names
-    for i = 1 : Ncomponents
-        phistr = 'phi_sq';
-        anglestr = 'angle';
-        if Ncomponents > 1
-            component_str = componentstr(Ncomponents); % ['+0-']
-            phisqname{i} = [phistr '_' component_str(i)];
-            anglename{i} = [anglestr '_' component_str(i)];
-            if i == Ncomponents
-                phisqname{i+1} = [phistr '_tot'];
-            end
-        else
-            phisqname = {phistr};
-            anglename = {anglestr};
-        end
-    end
+    sprintf('%s', info.get_workspace_path('dynamics_v7.3'))
     
-    Draw_solution3d(Phi, Method, Geometry3D, Figure_Var3d());
-    for i = 1 : Ncomponents
-        info.save_figure(2*i-1, 'dynamics', phisqname{i},[],[]);
-        info.save_figure(2*i, 'dynamics', anglename{i},[],[]);
-
-        if ((Ncomponents > 1) && (i == Ncomponents))
-            info.save_figure(2*i+1, 'dynamics', phisqname{i+1},[],[]);
-        end
-    end
-
-    % Save dynamic sim results to workspace
-    phi_dyn = PhiData(Phi, Geometry3D);
-    save(info.get_workspace_path('fittingdata'), 'phi_dyn', '-append');
-
     %% Save PhiData structures for fitting w/o the whole workspace
 
-%     phi_initial = PhiData(Phi_0, Geometry3D);
     phi_input = PhiData(Phi_in, Geometry3D);
     phi_ground = PhiData(Phi_in, Geometry3D);
+    phi_dyn = PhiData(Phi, Geometry3D);
     timeunits = 1/info.params.trapfreq;
-   
+    
     % Saving workspace with relevant data for fitting
     save(info.get_workspace_path('fittingdata'), 'gx', 'gy', 'gz', ...
-        'phi_ground', 'phi_input', 'info', 'Method', 'timeunits',... % necessary data
-        '-append'); % to not overwrite Method_ground
+        'phi_dyn', 'phi_ground', 'phi_input', 'info', 'Geometry3D', ...
+        'Method', 'timeunits', '-append'); % to not overwrite Method_ground
 
-    simulation_finished = 'yes, but no plots yet!';
+    simulation_finished = 'yes!';
     save(info.get_workspace_path('fittingdata'),'simulation_finished', '-append')
     
-    %% Some new output
-
-    fulldir = info.fulldir;
-    wspath = info.get_workspace_path('fittingdata');
-    datestring = info.creationTimeString;
-    save(info.get_workspace_path('fittingdata'),'fulldir', 'wspath', 'datestring', 'info', '-append')
-    
-    clearvars -except wspath
-    analysisPhi3d(wspath);
-
-    close all;
-    
-    limits = [8];
-    saveBunchOfPlots(wspath, limits)
-    
-    simulation_finished = 'yes!';
-    save(wspath,'simulation_finished', '-append')
-    
-    load(wspath, 'info')
     info.finish_info();
     
     %% end

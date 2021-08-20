@@ -216,8 +216,15 @@ function [] = spinor_GPE3D_dynamics(info)
     info.add_custom_info('Magnetic field parameters:\n'); % 
     info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
     info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
-    info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
-    info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
+    if Bmin == 0
+        info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
+        info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
+    else
+        [pmin,qmin] = getMagneticFieldPars(Bmin, info.params.Wmin, info.params.Ehfs);
+        info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', pmin,p,qmin,q); % Zeeman energy
+        info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s)\n', ...
+            pmin/info.params.betas,p/info.params.betas,qmin/info.params.betas,q/info.params.betas); % Zeeman energy
+    end
     info.add_custom_info('dt \t=\t %f \n', info.params.dt);
     info.add_custom_info('dx \t=\t %f \n', dx);
     info.add_info_separator();
@@ -336,7 +343,17 @@ function [] = spinor_GPE3D_dynamics(info)
     % Plot population fractions
     plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs, Method)
     % Plot population distribution on x-axis
-    plot_populationdistribution(Geometry3D, Phi, info)
+    plot_populationdistribution(Geometry3D, Phi, info, 'z')
+    
+    hold on;
+    BZ = @(z) info.params.Bmin + (info.params.Bz-info.params.Bmin)*(1+z/xlim)/2;
+    zz = -xlim:dx:xlim;
+    yyaxis right
+    ylabel('Bz (G)')
+    plot(zz,BZ(zz)*10^4)
+    ax2 = gca;
+    ax2.Children.DisplayName = 'Magnetic field';
+    
     % Plot magnetization distribution on x-axis
     plot_magnetizationdistribution(Geometry3D, Phi, info)
     % Plot transverse & longitudinal magnetization

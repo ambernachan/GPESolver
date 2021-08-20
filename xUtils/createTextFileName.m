@@ -15,11 +15,9 @@ function [fname] = createTextFileName(info, geometry, method, iterations)
     
     fname = [str_atom '_dx=' str_dx  '_dt=' str_dt '_its=' str_its];
     
-    if isprop(info.params, 'M')
+    if strcmp(method.Computation, 'Ground')
         m = sprintf('M=%.2g', info.params.M);
         fname = [fname '_' m];
-    end
-    if isprop(info.params, 'projection')
         if info.params.projection
             proj = 'yes';
         else

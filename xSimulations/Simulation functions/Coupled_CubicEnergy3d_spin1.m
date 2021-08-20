@@ -4,7 +4,7 @@ function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas, 
         p = @(z) 0;
         q = @(z) 0;
     else
-        [p,q] = getVariableMagneticFieldPars(params.Bz, Bmin, params.trapfreq, params.Ehfs, params.boxlimits(3));
+        [p,q] = getVariableMagneticFieldPars(params.Bz, params.Bmin, params.trapfreq, params.Ehfs, params.boxlimits(3));
     end
     
     % In the spin-1 manifold, we have 3 components of the wavefunction.

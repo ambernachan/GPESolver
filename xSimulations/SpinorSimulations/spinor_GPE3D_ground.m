@@ -232,10 +232,10 @@ function [] = spinor_GPE3D_ground(info)
         info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
         info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
     else
-        [pmin,qmin] = getMagneticFieldPars(Bmin, info.params.Wmin, info.params.Ehfs);
-        info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', p,pmin,q,qmin); % Zeeman energy
+        [pmin,qmin] = getMagneticFieldPars(info.params.Bmin, info.params.trapfreq, info.params.Ehfs);
+        info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', pmin,p,qmin,q); % Zeeman energy
         info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s)\n', ...
-            p/info.params.betas,pmin/info.params.betas,q/info.params.betas,qmin/info.params.betas); % Zeeman energy
+            pmin/info.params.betas,p/info.params.betas,qmin/info.params.betas,q/info.params.betas); % Zeeman energy
     end
     if Method.projection proj = 'yes'; else proj = 'no'; end
     info.add_custom_info('projections used? [%s] \t M = %.1g \n', proj, Method.M); % tells user whether projection constants are implemented
@@ -343,8 +343,7 @@ function [] = spinor_GPE3D_ground(info)
     plot_populationdistribution(Geometry3D, Phi_1, info, 'z')
     
     hold on;
-    Bmax = 10^(-4); Bmin = 10^(-8); xlim = 16;
-    BZ = @(z) Bmin + (Bmax-Bmin)*(1+z/xlim)/2;
+    BZ = @(z) info.params.Bmin + (info.params.Bz-info.params.Bmin)*(1+z/xlim)/2;
     zz = -xlim:dx:xlim;
     yyaxis right
     ylabel('Bz (G)')
@@ -364,6 +363,8 @@ function [] = spinor_GPE3D_ground(info)
     timeslider_populationdistribution(Geometry3D, Outputs.Solution, info)
     % phase distribution as a sliced 3d function
     timeslider_phase(Geometry3D, Outputs.Solution, info)
+    % phi distribution as a sliced 3d function
+    timeslider_slicer(Geometry3D, Outputs.Solution, info)
     
     % saving groundstate workspace in v7.3 MAT file
     save(info.get_workspace_path('groundstate_v7.3'), 'F', 'its', '-append');

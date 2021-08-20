@@ -61,8 +61,8 @@ function [figHandles] = timeslider_phase(geometry, solution, info, componentsPlo
             'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
 
         % Save figure
-        info.save_figure(1, figureName, '')
-        info.save_figure(1, figureName, '', info.fulldir, '.png')
+        info.save_figure(idx, figureName, '')
+        info.save_figure(idx, figureName, '', info.fulldir, '.png')
         hold off  
 
     end

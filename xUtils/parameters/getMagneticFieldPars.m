@@ -9,6 +9,6 @@ function [p,q] = getMagneticFieldPars(Bz, Wmin, Ehfs)
     if nargin > 2
         q = getphysconst('ubohr')^2 * Bz^2 / (4*Ehfs*getphysconst('hbar')*Wmin);
     end
-        
     
 end
+

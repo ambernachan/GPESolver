@@ -57,13 +57,13 @@ function [info] = multi_runner(parameters)
             sprintf('Running simulation at %s \n', creationTimeString)
             
             % run the simulation
-            run_script(info{loop}, params)
+            run_script(info{loop})
         end
     else
         creationTime = now;
         params = Parameters(parameters);
         info = Info(params.scriptname, creationTime, params);
-        run_script(info, params)
+        run_script(info)
     end
     
 end

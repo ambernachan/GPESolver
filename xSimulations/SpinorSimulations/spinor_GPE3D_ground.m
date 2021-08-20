@@ -7,7 +7,7 @@ One can change the type of atom by changing :
     - the a0 and a2 parameters
 %}
 
-function [] = spinor_GPE3D_ground(info, params)
+function [] = spinor_GPE3D_ground(info)
     
     close all;
    
@@ -115,6 +115,8 @@ function [] = spinor_GPE3D_ground(info, params)
 %     Bz = 10^(-4); % 1 G = 100 uT = big field
 %     Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
     Bz = info.params.Bz;
+    Bmin = info.params.Bmin;
+    
 %     Bz = 0;
 %     Bz = 0; % no magnetic field
     
@@ -165,9 +167,9 @@ function [] = spinor_GPE3D_ground(info, params)
     Physics3D = Potential_Var3d(Method, Physics3D, potential);
 
     % Nonlinearity
-%     Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
-    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas, p,q), [], ...
-        Coupled_CubicEnergy3d_spin1(Betan,Betas, p,q)); % cubic nonlinearity with off-diagonal coupling
+      Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
+    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas, info.params), [], ...
+        Coupled_CubicEnergy3d_spin1(Betan,Betas, info.params)); % cubic nonlinearity with off-diagonal coupling
 
     %% Defining a starting function Phi_0
 
@@ -226,8 +228,15 @@ function [] = spinor_GPE3D_ground(info, params)
     info.add_custom_info('Magnetic field parameters:\n'); % 
     info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
     info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
-    info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
-    info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
+    if Bmin == 0
+        info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
+        info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
+    else
+        [pmin,qmin] = getMagneticFieldPars(Bmin, info.params.Wmin, info.params.Ehfs);
+        info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', p,pmin,q,qmin); % Zeeman energy
+        info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s)\n', ...
+            p/info.params.betas,pmin/info.params.betas,q/info.params.betas,qmin/info.params.betas); % Zeeman energy
+    end
     if Method.projection proj = 'yes'; else proj = 'no'; end
     info.add_custom_info('projections used? [%s] \t M = %.1g \n', proj, Method.M); % tells user whether projection constants are implemented
     info.add_custom_info('dt \t=\t %f \n', Deltat);
@@ -331,7 +340,18 @@ function [] = spinor_GPE3D_ground(info, params)
     % Plot population fractions
     plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
     % Plot population distribution on x-axis
-    plot_populationdistribution(Geometry3D, Phi_1, info)
+    plot_populationdistribution(Geometry3D, Phi_1, info, 'z')
+    
+    hold on;
+    Bmax = 10^(-4); Bmin = 10^(-8); xlim = 16;
+    BZ = @(z) Bmin + (Bmax-Bmin)*(1+z/xlim)/2;
+    zz = -xlim:dx:xlim;
+    yyaxis right
+    ylabel('Bz (G)')
+    plot(zz,BZ(zz)*10^4)
+    ax2 = gca;
+    ax2.Children.DisplayName = 'Magnetic field';
+
     % Plot magnetization distribution on x-axis
     plot_magnetizationdistribution(Geometry3D, Phi_1, info)
     % Plot transverse & longitudinal magnetization

@@ -1,8 +1,10 @@
-function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas, p, q)
+function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas, params)
     
     if ~(nargin > 2)
-        p = 0;
-        q = 0;
+        p = @(z) 0;
+        q = @(z) 0;
+    else
+        [p,q] = getVariableMagneticFieldPars(params.Bz, Bmin, params.trapfreq, params.Ehfs, params.boxlimits(3));
     end
     
     % In the spin-1 manifold, we have 3 components of the wavefunction.
@@ -13,7 +15,7 @@ function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas, 
     CoupledSpin1NonlinEnergy{1,1} = @(Phi,X,Y,Z) 0.5 * Betan * ...
         ( abs(Phi{1}).^2 + abs(Phi{2}).^2 + abs(Phi{3}).^2 ) + ...
         0.5 * Betas * ( abs(Phi{1}).^2 + abs(Phi{2}).^2 - abs(Phi{3}).^2 ) ...
-        + (-p+q) * abs(Phi{1}).^2;
+        + (-p(Z)+q(Z)) .* abs(Phi{1}).^2;
 %         + (q-p) * sum(sum(sum(abs(Phi{1}).^2)));
     CoupledSpin1NonlinEnergy{2,2} = @(Phi,X,Y,Z) 0.5 * Betan * ...
         ( abs(Phi{1}).^2 + abs(Phi{2}).^2 + abs(Phi{3}).^2 ) + ...
@@ -21,7 +23,7 @@ function [CoupledSpin1NonlinEnergy] = Coupled_CubicEnergy3d_spin1(Betan, Betas, 
     CoupledSpin1NonlinEnergy{3,3} = @(Phi,X,Y,Z) 0.5 * Betan * ...
         ( abs(Phi{1}).^2 + abs(Phi{2}).^2 + abs(Phi{3}).^2 ) + ...
         0.5 * Betas * ( abs(Phi{3}).^2 + abs(Phi{2}).^2 - abs(Phi{1} ).^2) ...
-        + (p+q) * abs(Phi{3}).^2;
+        + (p(Z)+q(Z)) .* abs(Phi{3}).^2;
 %         + (p+q) * sum(sum(sum(abs(Phi{3}).^2)));
     
     % spin-mixing terms

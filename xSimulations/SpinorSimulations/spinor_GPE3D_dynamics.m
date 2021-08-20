@@ -4,10 +4,10 @@ Spinor BEC in 3D
 No rotations, no magnetic field, optical dipole + harmonic osc trap
 %}
 
-function [] = spinor_GPE3D_dynamics(info, params)
+function [] = spinor_GPE3D_dynamics(info)
     
     close all;
-    Phi_in = params.Phi_input;
+    Phi_in = info.params.Phi_input;
    
     %% Setting variables
     
@@ -73,11 +73,11 @@ function [] = spinor_GPE3D_dynamics(info, params)
 %     Type = 'Relaxation';
     dx = (2*xlim / (Nx-1));
 %     Deltat = info.params.dt;
-    Deltat = min(0.25,0.1*(dx)^2);
-    LimitingIter = 100; % A limitation to the iterations bc time
+    Deltat = min(0.25,0.1*(dx)^3);
+    LimitingIter = 1000; % A limitation to the iterations bc time
     Stop_time = floor(min(100, (LimitingIter*Deltat)));
     Stop_crit = [];
-    Max_iter = 100;
+    Max_iter = 1000;
 %         Stop_crit = {'MaxNorm', 1e-12};
 %         Precond_type = 'FLaplace'; % defaults to 'FLaplace'
 %         Precond_type = []; % defaults to 'FLaplace'
@@ -203,7 +203,7 @@ function [] = spinor_GPE3D_dynamics(info, params)
 
     %% Printing interaction strength
 
-    aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * Wmin));
+    aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * info.params.trapfreq));
     
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder

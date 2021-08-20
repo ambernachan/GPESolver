@@ -174,33 +174,10 @@ function [] = spinor_GPE3D_ground(info)
     %% Defining a starting function Phi_0
 
 %     InitialData_choice = 1; % Gaussian initial data
-    InitialData_choice = 2; % Thomas Fermi initial data
+%     InitialData_choice = 2; % Thomas Fermi initial data
+%     Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice);
 
-%     X0 = 0; Y0 = 0; Z0 = 0;
-%     gamma_x = 1;    gamma_y = 1;    gamma_z = 1;
-    
-    Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice);
-%     Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice, X0, Y0, Z0, gamma_x, gamma_y, gamma_z);
-
-    % introduce gaussian phase
-    phase = 0;
-%     phase = GaussianInitialData3d(Geometry3D, Physics3D, 1, 1, 1, 0, 0, 0);
-    
-    for j = 1:Ncomponents
-        Phi_0{j} = Phi_0{j} .* exp(1i*((j-1)*(2*pi/3) + phase));
-    end
-    
     Phi_0 = info.params.Phi_input;
-% %     Phi_0{2} = 0.75 * Phi_0{2};
-%     Phi_0{1} = 0.5 * Phi_0{1};
-%     Phi_0{3} = 0.5 * Phi_0{3};
-%     globalnorm = 0;
-%     for j = 1:Ncomponents
-%         globalnorm = globalnorm + L2_norm3d(Phi_0{j}, Geometry3D);
-%     end
-%     for j = 1:Ncomponents
-%         Phi_0{j} = Phi_0{j} / sqrt(globalnorm);
-%     end
 
     %% version mgmt
     curdir = strsplit(pwd, '/');
@@ -210,10 +187,6 @@ function [] = spinor_GPE3D_ground(info)
     %% Printing interaction strength
     
     aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * info.params.trapfreq));
-%     avg_density = 0;
-%     for j = 1:Ncomponents
-%         avg_density = avg_density + sum(info.params.Phi_input{j}, 'all');
-%     end
     
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
@@ -226,12 +199,14 @@ function [] = spinor_GPE3D_ground(info)
     info.add_custom_info('Wmin \t=\t %.1g x 2pi Hz \n', info.params.trapfreq / (2*pi)); % (minimum) trap frequency
     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
     info.add_custom_info('Magnetic field parameters:\n'); % 
-    info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
-    info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
     if Bmin == 0
+        info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
+        info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
         info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
         info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
     else
+        info.add_custom_info('\tBz \t=\t [%.3g, %.3g] Gauss\n', Bmin*10^4, Bz*10^4); % magnetic field in Gauss
+        info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
         [pmin,qmin] = getMagneticFieldPars(info.params.Bmin, info.params.trapfreq, info.params.Ehfs);
         info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', pmin,p,qmin,q); % Zeeman energy
         info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s)\n', ...
@@ -275,9 +250,9 @@ function [] = spinor_GPE3D_ground(info)
     globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Directional_Magnetization(Method, Geometry3D, Phi, 'z', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_outputs{8} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'F2', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{9} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
         Directional_Magnetization(Method, Geometry3D, Phi, 'M2', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{9} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
+        Directional_Magnetization(Method, Geometry3D, Phi, 'F2', X, Y, Z, FFTX, FFTY, FFTZ);
     globaluserdef_names{1} = 'Longitudinal magnetization';
     globaluserdef_names{2} = 'Population psi+';
     globaluserdef_names{3} = 'Population psi0';
@@ -285,8 +260,8 @@ function [] = spinor_GPE3D_ground(info)
     globaluserdef_names{5} = 'Magnetization Fx';
     globaluserdef_names{6} = 'Magnetization Fy';
     globaluserdef_names{7} = 'Magnetization Fz';
-    globaluserdef_names{8} = 'Total magnetization F^2';
-    globaluserdef_names{9} = 'Total magnetization M^2';
+    globaluserdef_names{8} = 'Total magnetization M^2';
+    globaluserdef_names{9} = 'Total magnetization F^2';
     
     Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
         globaluserdef_outputs,globaluserdef_names);
@@ -351,16 +326,17 @@ function [] = spinor_GPE3D_ground(info)
     ax2 = gca;
     ax2.Children.DisplayName = 'Magnetic field';
 
-    % Plot magnetization distribution on x-axis
-    plot_magnetizationdistribution(Geometry3D, Phi_1, info)
+    % Plot magnetization distribution on z-axis
+    plot_magnetizationdistribution(Geometry3D, Phi_1, info, 'z')
     % Plot transverse & longitudinal magnetization
     plot_magnetizations(its, F, info, Outputs.Evo_outputs, Method)
     
     %% Time plots
-    % magnetization distribution on x-axis
-    timeslider_magnetizationdistribution(Geometry3D, Outputs.Solution, info)
-    % population distribution on x-axis
-    timeslider_populationdistribution(Geometry3D, Outputs.Solution, info)
+    % magnetization distribution on z-axis
+    timeslider_magnetizationdistribution(Geometry3D, Outputs.Solution, info, 'z')
+    % population distribution on x- and z-axis
+    timeslider_populationdistribution(Geometry3D, Outputs.Solution, info, 'x')
+    timeslider_populationdistribution(Geometry3D, Outputs.Solution, info, 'z')
     % phase distribution as a sliced 3d function
     timeslider_phase(Geometry3D, Outputs.Solution, info)
     % phi distribution as a sliced 3d function
@@ -373,47 +349,8 @@ function [] = spinor_GPE3D_ground(info)
 
     close all;
     sprintf('%s', info.get_workspace_path('groundstate_v7.3'))
-%     pause(1) % pauses the program for 1 second
-
-%     % Set figure names
-%     for i = 1 : Ncomponents
-%         phistr = 'phi_sq';
-%         anglestr = 'angle';
-%         if Ncomponents > 1
-%             component_str = componentstr(Ncomponents); % ['+0-']
-%             phisqname{i} = [phistr '_' component_str(i)];
-%             anglename{i} = [anglestr '_' component_str(i)];
-%             if i == Ncomponents
-%                 phisqname{i+1} = [phistr '_tot'];
-%             end
-%         else
-%             phisqname = {phistr};
-%             anglename = {anglestr};
-%         end
-%     end
-%             
-%     Draw_solution3d(Phi_0, Method, Geometry3D, Figure_Var3d());
-%     for i = 1 : Ncomponents
-%         info.save_figure(2*i-1, 'initialdata', phisqname{i},[],[]);
-%         info.save_figure(2*i, 'initialdata', anglename{i},[],[]);
-%         
-%         if ((Ncomponents > 1) && (i == Ncomponents))
-%             info.save_figure(2*i+1, 'initialdata', phisqname{i+1},[],[]);
-%         end
-%     end
-%     
-%     Draw_solution3d(Phi_1, Method, Geometry3D, Figure_Var3d());
-%     for i = 1 : Ncomponents
-%         info.save_figure(2*i-1, 'groundstate', phisqname{i},[],[]);
-%         info.save_figure(2*i, 'groundstate', anglename{i},[],[]);
-%         
-%         if ((Ncomponents > 1) && (i == Ncomponents))
-%             info.save_figure(2*i+1, 'groundstate', phisqname{i+1},[],[]);
-%         end
-%     end
 
     simulation_finished = 'Ground state simulation finished';
-
     save(info.get_workspace_path('fittingdata'),'simulation_finished', '-append')
     
     info.finish_info();

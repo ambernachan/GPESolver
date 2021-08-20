@@ -1,7 +1,7 @@
 function [figHandles] = timeslider_slicer(geometry, solution, info, componentsPlotted)
     
     if ~exist('componentsPlotted', 'var')
-        componentsPlotted = 1:length(solution{1});
+        componentsPlotted = 1:length(solution{1}); % = 1:nComponents
     end
     
     for i = 1:length(componentsPlotted)
@@ -16,8 +16,8 @@ function [figHandles] = timeslider_slicer(geometry, solution, info, componentsPl
     
     rho = cell(size(solution));
     for time = 1:length(solution)
-        for component = 1:length(solution{1})
-            rho{time}{component} = abs(solution{time}{component}).^2;
+        for component = 1:length(componentsPlotted)
+            rho{time}{component} = abs(solution{time}{componentsPlotted(component)}).^2;
         end
     end
     

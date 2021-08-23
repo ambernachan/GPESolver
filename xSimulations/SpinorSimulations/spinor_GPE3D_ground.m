@@ -187,6 +187,8 @@ function [] = spinor_GPE3D_ground(info)
     %% Printing interaction strength
     
     aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * info.params.trapfreq));
+    avg_density = density3d(Phi_0, Geometry3D);
+    Us = info.params.betas * avg_density;
     
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
@@ -194,8 +196,8 @@ function [] = spinor_GPE3D_ground(info)
     info.add_custom_info('atom \t=\t %s \n', info.params.atom);
     info.add_custom_info('Beta_n \t=\t %f \n', info.params.betan); % print interaction parameter Beta_n
     info.add_custom_info('Beta_s \t=\t %f \n', info.params.betas); % print interaction parameter Beta_s
-%     info.add_custom_info('\tInteraction energies, [Bn,Bs]*avg||phi||^2 \t=\t %.3g, %.3g\n', ...
-%         info.params.betan*avg_density,info.params.betas*avg_density); % interaction energy
+    info.add_custom_info('\tInteraction energies, [Bn,Bs]*||phi||^2 \t=\t %.3g, %.3g\n', ...
+        info.params.betan*avg_density,info.params.betas*avg_density); % interaction energy
     info.add_custom_info('Wmin \t=\t %.1g x 2pi Hz \n', info.params.trapfreq / (2*pi)); % (minimum) trap frequency
     info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
     info.add_custom_info('Magnetic field parameters:\n'); % 
@@ -203,14 +205,14 @@ function [] = spinor_GPE3D_ground(info)
         info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
         info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
         info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
-        info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
+        info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s*||phi||^2)\n', p/Us,q/Us); % Zeeman energy
     else
         info.add_custom_info('\tBz \t=\t [%.3g, %.3g] Gauss\n', Bmin*10^4, Bz*10^4); % magnetic field in Gauss
         info.add_custom_info('\tLinear and quadratic Zeeman energy,\n');
         [pmin,qmin] = getMagneticFieldPars(info.params.Bmin, info.params.trapfreq, info.params.Ehfs);
         info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', pmin,p,qmin,q); % Zeeman energy
-        info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s)\n', ...
-            pmin/info.params.betas,p/info.params.betas,qmin/info.params.betas,q/info.params.betas); % Zeeman energy
+        info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s*||phi||^2)\n', ...
+            pmin/Us,p/Us, qmin/Us,q/Us); % Zeeman energy
     end
     if Method.projection proj = 'yes'; else proj = 'no'; end
     info.add_custom_info('projections used? [%s] \t M = %.1g \n', proj, Method.M); % tells user whether projection constants are implemented
@@ -284,6 +286,24 @@ function [] = spinor_GPE3D_ground(info)
     [Phi_1, Outputs] = GPELab3d(Phi_0, Method, Geometry3D, Physics3D, Outputs, [], Print);
     
     save(info.get_workspace_path('phi_ini'), 'Phi_1')
+    
+    avg_density = density3d(Phi_1, Geometry3D);
+    Us = info.params.betas * avg_density;
+    info.add_info_separator();
+    info.add_custom_info('\tInteraction energies, [Bn,Bs]*||phi||^2 \t=\t %.3g, %.3g\n', ...
+        info.params.betan*avg_density,info.params.betas*avg_density); % interaction energy
+    if Bmin == 0
+        info.add_custom_info('Linear and quadratic Zeeman energy,\n');
+        info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
+        info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s*||phi||^2)\n', p/Us,q/Us); % Zeeman energy
+    else
+        info.add_custom_info('Linear and quadratic Zeeman energy,\n');
+        [pmin,qmin] = getMagneticFieldPars(info.params.Bmin, info.params.trapfreq, info.params.Ehfs);
+        info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', pmin,p,qmin,q); % Zeeman energy
+        info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s*||phi||^2)\n', ...
+            pmin/Us,p/Us, qmin/Us,q/Us); % Zeeman energy
+    end
+    info.add_info_separator();
     
     %% Save the workspace & simulation info
 

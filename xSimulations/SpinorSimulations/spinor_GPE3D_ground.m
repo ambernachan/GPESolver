@@ -56,7 +56,7 @@ function [] = spinor_GPE3D_ground(info)
     Ncomponents = 3;
     Type = 'BESP';
     dx = (2*xlim / (Nx-1));
-    Deltat = 0.1*dx^3;
+%     Deltat = 0.1*dx^3;
     Deltat = 0.25;
     Stop_crit = {'MaxNorm', 1e-50};
     Max_iter = 100;
@@ -345,7 +345,12 @@ function [] = spinor_GPE3D_ground(info)
     plot(zz,BZ(zz)*10^4)
     ax2 = gca;
     ax2.Children.DisplayName = 'Magnetic field';
-
+        % Save figure
+        savename = 'Population distribution w Bfield';
+        info.save_figure(1, savename, '')
+        info.save_figure(1, savename, '', info.fulldir, '.png')
+        hold off
+    
     % Plot magnetization distribution on z-axis
     plot_magnetizationdistribution(Geometry3D, Phi_1, info, 'z')
     % Plot transverse & longitudinal magnetization

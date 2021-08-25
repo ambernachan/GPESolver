@@ -1,5 +1,5 @@
 classdef ExpPhis < handle
-    properties (Access = private)
+    properties %(Access = private)
         %ncomponents % haven't yet implemented this, would have to change beta/chi/w?
         dr
 

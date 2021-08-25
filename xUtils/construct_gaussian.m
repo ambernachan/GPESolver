@@ -30,13 +30,16 @@ function [phi, spacebox] = construct_gaussian(geometry, varargin)
         [gamma_x, gamma_y, gamma_z, X0, Y0, Z0, w] = varargin{1:7};
         if nargin > 8
             angle = varargin{8};
-            if strcomp((varargin{9}), 'degrees')
+            if strcmp((varargin{9}), 'degrees')
                 angle = deg2rad(angle);
             end
         end
         R = Rotation_matrix(angle); % create 3d rotation matrix
+        if angle == 0
+            R = eye(3);
+        end
         Sigma = [gamma_x 0 0; 0 gamma_y 0; 0 0 gamma_z]./(2*w^2);
-        Sigma =  R*(Sigma)*R.';
+        Sigma =  R.*(Sigma).*R';
         prefactor = (gamma_x * gamma_y * gamma_z)^(1/4) / ((sqrt(pi)*w)^(3/2));
     end
 

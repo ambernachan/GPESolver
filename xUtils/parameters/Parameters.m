@@ -62,25 +62,30 @@ classdef Parameters  < handle
                 {'zRx'}, {'zRy'}, {'xOmega'}];
             
             if isfield(inputparams, 'atom')
-                inputparams = obj.createAtomRelatedFields(inputparams);
+                params = obj.createAtomRelatedFields(inputparams);
             end
             
             % make a struct with all default properties
             defaultprops = obj.setdefaultprops();
             
-            inputfn = fieldnames(inputparams);
+            % Set all inputparams to obj
+            inputfn = fieldnames(params);
             for k = 1:numel(inputfn)
-                obj.(inputfn{k}) = inputparams.(inputfn{k});
+                obj.(inputfn{k}) = params.(inputfn{k});
             end
             
+            % Set all params that are still empty to default parameters
             for n = 1:numel(allprops)
                 if isempty(obj.(allprops{n}))
                     obj.(allprops{n}) = defaultprops.(allprops{n});
                 end
             end
             
+            % Set Zeeman parameters p,q
             obj.setZeemanpars();
             obj.q = -obj.q; % make q negative (temporary)
+            
+            derivedQuantities(obj, inputparams);
             
         end
         
@@ -103,7 +108,7 @@ classdef Parameters  < handle
             default.M = 0;
             default.projection = true;
             
-            default.chi = [];
+            default.chi = default.beta / (4*pi);
             default.delta = 0.5;
             default.gammas = [1,1,1];
             
@@ -129,34 +134,132 @@ classdef Parameters  < handle
             default.dt = (default.dx)^2;
         end
         
+        % If in the input params, certain variables are given [specifically:
+        % box limits, gridpts, beta], the default struct will override
+        % the quantities that are derived from these variables. This
+        % function resets them according to the input.
+        function derivedQuantities(obj, inputparams)
+            inputprop = [{'boxlimits'}, {'Ngridpts'}, {'beta'}];
+
+            for n = 1:numel(inputprop)
+                % if the property is given in params
+                if isfield(inputparams, inputprop{n})
+                    % checking every derived property and inserting in obj
+                    if strcmp(inputprop{n}, 'boxlimits') || strcmp(inputprop{n}, 'Ngridpts')
+                        obj.(inputprop{n}) = inputparams.(inputprop{n});
+                        if strcmp(inputprop{n}, 'boxlimits')
+                            boxlim = inputparams.boxlimits;
+                        elseif strcmp(inputprop{n}, 'Ngridpts')
+                            gridpts = inputparams.Ngridpts;
+                        end
+                        obj.dx = 2*obj.boxlimits(1) / (obj.Ngridpts - 1);
+                        obj.dt = obj.dx^2;
+                    elseif strcmp(inputprop{n}, 'beta')
+                        obj.beta = inputparams.beta;
+                        obj.chi = obj.beta/(4*pi);
+                    end
+                end
+            end
+            
+            if exist('boxlim', 'var')
+                if numel(boxlim) > 1
+                    L = boxlim(1);
+                else
+                    L = boxlim;
+                end
+            else
+                L = obj.boxlimits(1);
+            end
+            if exist('gridpts', 'var')
+                N = gridpts;
+            else
+                N = obj.Ngridpts;
+            end
+            geom = Geometry3D_Var3d(-L,L, -L,L, -L,L, N,N,N);
+            m.Ncomponents = obj.nComponents;
+            potential = quadratic_potential3d(1,1,1,geom.X,geom.Y,geom.Z);
+            for j = 1:m.Ncomponents
+                phi{j} = Thomas_Fermi3d(1,1,1, obj.betan, potential);
+            end
+            % Normalizing
+            obj.Phi_input = normalize_global(m, geom, phi); 
+        end
+        
         function paramstruct = createAtomRelatedFields(obj, paramstruct)
             if isfield(paramstruct, 'atom')
                 atom = paramstruct.atom;
             else
                 atom = obj.atom;
             end
-            paramstruct.atom_mass = getsimconst(['mass_' paramstruct.atom]); % Atom mass in kg
-            paramstruct.N = getsimconst('N'); % number of particles
-            paramstruct.trapfreq = getsimconst('trap_freq'); % Trap strength in Hz (symmetric for now)
-            paramstruct.spin_pair = getsimconst('spin_pair'); % hyperfine spin manifold (=1)
-            paramstruct.aho = sqrt(getphysconst('hbar') / (paramstruct.atom_mass * paramstruct.trapfreq));
             
-            paramstruct.a0 = getsimconst(['a0_' atom]);
-            paramstruct.a2 = getsimconst(['a2_' atom]);
-            paramstruct.an = (2*paramstruct.a2+paramstruct.a0)/3;
-            paramstruct.as = (paramstruct.a2-paramstruct.a0)/3;
+%             fn = fieldnames(paramstruct);
+            props = [{'atom'}, {'atom_mass'}, {'N'}, {'trapfreq'}, {'spin_pair'},...
+                {'aho'}, {'a0'}, {'a2'}, {'an'}, {'as'}, {'chin'}, {'chis'}, {'betan'},...
+                {'betas'}, {'transitionfreq'}, {'linewidth'}, {'Ehfs'}, {'detuning'}, ...
+                {'dipoleTrap0'}, {'xOmega'}];
             
-            paramstruct.chin = paramstruct.N*paramstruct.an/paramstruct.aho;
-            paramstruct.chis = paramstruct.N*paramstruct.as/paramstruct.aho;
-            paramstruct.betan = 4*pi*paramstruct.chin;
-            paramstruct.betas = 4*pi*paramstruct.chis;
+            for n = 1:numel(props)
+                if ~isfield(paramstruct, props{n})
+                    paramstruct.(props{n}) = [];
+                end
+                % fill in chosen values
+                if ~isempty(paramstruct.(props{n}))
+                    ps.(props{n}) = paramstruct.(props{n});
+                end
+            end
             
-            paramstruct.transitionfreq = getsimconst(['transitionfreq_' atom]);
-            paramstruct.linewidth = getsimconst(['linewidth_' atom]);
-            paramstruct.Ehfs = getsimconst(['Ehfs_' atom]);
-            paramstruct.detuning = getsimconst(['detuning_' atom]);
-            paramstruct.dipoleTrap0 = getsimconst(['dipoleTrap0_' atom]);
-            paramstruct.xOmega = getsimconst(['Wx_' atom]);
+            if ~isfield(ps, 'atom')
+                ps.atom = atom;
+            end
+            if ~isfield(ps, 'atom_mass')
+                ps.atom_mass = getsimconst(['mass_' ps.atom]); % Atom mass in kg
+            end
+            if ~isfield(ps, 'N')
+                ps.N = getsimconst('N'); % number of particles
+            end
+            if ~isfield(ps, 'trapfreq')
+                ps.trapfreq = getsimconst('trap_freq'); % Trap strength in Hz (symmetric for now)
+            end
+            if ~isfield(ps, 'spin_pair')
+                ps.spin_pair = getsimconst('spin_pair'); % hyperfine spin manifold (=1)
+            end
+            
+            ps.aho = sqrt(getphysconst('hbar') / (ps.atom_mass * ps.trapfreq));
+            
+            if ~isfield(ps, 'a0')
+                ps.a0 = getsimconst(['a0_' atom]);
+            end
+            if ~isfield(ps, 'a2')
+                ps.a2 = getsimconst(['a2_' atom]);
+            end
+            % TEMPORARY EDIT
+            ps.a2 = ps.a0;
+            
+            ps.an = (2*ps.a2+ps.a0)/3;
+            ps.as = (ps.a2-ps.a0)/3;
+            ps.chin = ps.N*ps.an/ps.aho;
+            ps.chis = ps.N*ps.as/ps.aho;
+            ps.betan = 4*pi*ps.chin;
+            ps.betas = 4*pi*ps.chis;
+            
+            pr = [{'transitionfreq'}, {'linewidth'}, {'Ehfs'}, ...
+                {'detuning'}, {'dipoleTrap0'}];
+            for k = 1:numel(pr)
+                if ~isfield(ps, pr{k})
+                    ps.(pr{k}) = getsimconst([pr{k} '_' atom]);
+                end
+            end
+            
+            if ~isfield(ps, 'xOmega')
+                ps.xOmega = getsimconst(['Wx_' atom]);
+            end
+            
+            for k = 1:numel(props)
+                if isempty(paramstruct.(props{k}))
+                    paramstruct.(props{k}) = ps.(props{k});
+                end
+            end
+            
         end
         
         function [p, q] = getZeemanpars(obj, Bz, trapfreq, Ehfs)

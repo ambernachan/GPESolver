@@ -73,7 +73,8 @@ function [] = plot_magnetizationdistribution(geometry, Phi, info, direction)
             ylim([lowerlim*1.1 limity*1.1]);
         end
     else
-        ylim([-limity/100 limity*1.1]);
+%         ylim([-limity/100 limity*1.1]);
+        ylim ([-1.1 1.1]);
     end
     
     % Add axes labels and figure text

@@ -1,7 +1,19 @@
-function fitGaussianFromPhi(phi, Geometry2D, varargin)
+function fitGaussianFromPhi(Phi, geometry, varargin)
 
-xbox = Geometry2D.X(end);
-ybox = Geometry2D.Y(end);
+dims = 1;
+xbox{dims} = geometry.X(end);
+N{dims} = geometry.Nx;
+if isfield(geometry, 'Y')
+    dims = dims + 1;
+    xbox{dims} = geometry.Y(end);
+    N{dims} = geometry.Ny;
+    if isfield(geometry, 'Z')
+        dims = dims + 1;
+        xbox{dims} = geometry.Z(end);
+        N{dims} = geometry.Nz;
+    end
+end
+    
 
 %% Definition of the input options struct, with default values as given
 
@@ -21,10 +33,29 @@ end
 
 %% Find array sizes
 
-n = size(phi,1);
-m = size(phi,2);
+if iscell(Phi)
+%     phi = abs(Phi{1}).^2;
+    phi = abs(Phi{2});
+else
+%     phi = abs(Phi).^2;
+    phi = abs(Phi);
+end
+m = size(phi,1); % y
+l = size(phi,2); % x
+n = size(phi,3); % z
 
 %% Find peak location and define corresponding data arrays 
+
+if dims > 2 % reduce to 2 dimensions
+    phi = phi(:, :, round((N{3}-1)/2)); % phi_xy
+    phi = reshape(phi, N{1}, N{2});
+%     %
+%     phi = phi(round((N{2}-1)/2), :, :); % phi_xz
+%     phi = reshape(phi, N{2}, N{3});
+%     %
+%     phi = phi(round(:, (N{1}-1)/2), :); % phi_yz
+%     phi = reshape(phi, N{1}, N{3});
+end
 
 [rowindex, colindex] = findMaxRowAndCol(phi);
 
@@ -35,9 +66,9 @@ end
 xDATA = phi(rowindex, :);
 yDATA = phi(:, colindex);
 
-xa = linspace(-ybox, ybox, m);
+xa = linspace(-xbox{2}, xbox{2}, m);
 ya = xDATA;
-xb = linspace(-xbox, xbox, n);
+xb = linspace(-xbox{1}, xbox{1}, n);
 yb = yDATA;
 
 %% Derived quantities
@@ -61,7 +92,7 @@ if s.showsource
     fig = Figure_Var2d();
     fig.label = 1;
     fig.title = 'Input function \phi(x,y)';
-    draw_function_2d(phi,Geometry2D, fig)
+    draw_function_2d(phi,geometry, fig)
     
     %draw_phisq_2d(1, {phi}, Method, Geometry2D)
 end
@@ -171,7 +202,7 @@ if s.plotall
     width = 0.8;
     height = 0.6;
     
-    xlimit = [-xbox xbox];
+    xlimit = [-xbox{1} xbox{1}];
     
     if strcmp(s.fitmethod, 'manual') || strcmp(s.fitmethod, 'both')
         xdataFine = (linspace(xa(1),xa(end),length(xa)))';

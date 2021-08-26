@@ -1,4 +1,12 @@
-function compareGTF(geometry, phi, params)
+function compareGTF(geometry, phi, info, axis)
+    
+    params = info.params;
+    
+    if nargin > 3
+        xax = axis;
+    else
+        xax = 'x';
+    end
     
     dims = 1;
     N{1} = geometry.Nx;
@@ -94,6 +102,10 @@ function compareGTF(geometry, phi, params)
     TF(indexes) = 0;
     TF = sqrt(TF);
     
+    if dims == 3
+        TF = real(sqrt((1/2*(15*params.betan*params.gammas(1)*params.gammas(2)*params.gammas(3)/4/pi)^(2/5) - 0.5*r.^2)/params.betan));
+    end
+    
     %% Creating Gaussian
     
     if dims == 1
@@ -135,8 +147,96 @@ function compareGTF(geometry, phi, params)
         GAUSS = GAUSS / L2_norm3d(GAUSS, geometry);
     end
     
-    plot(X{1}, phi((N{2}-1)/2,:,(N{3}-1)/2));
+    % Defining the data array for phi
+    x = X{1};
+    if strcmp(xax, 'x')
+        boxlim = params.boxlimits(1);
+        phi_in = phi((N{2}-1)/2, :, (N{3}-1)/2);
+        tf_in = TF((N{2}-1)/2, :, (N{3}-1)/2);
+        gauss_in = GAUSS((N{2}-1)/2, :, (N{3}-1)/2);
+    elseif strcmp(xax, 'y')
+        boxlim = params.boxlimits(2);
+        phi_in = phi(:, (N{1}-1)/2, (N{3}-1)/2);
+        tf_in = TF(:, (N{1}-1)/2, (N{3}-1)/2);
+        gauss_in = GAUSS(:, (N{1}-1)/2, (N{3}-1)/2);
+    elseif strcmp(xax, 'z')
+        boxlim = params.boxlimits(3);
+        phi_in = phi((N{2}-1)/2, (N{1}-1)/2, :);
+        tf_in = TF((N{2}-1)/2, (N{1}-1)/2, :);
+        gauss_in = GAUSS(:, (N{1}-1)/2, (N{3}-1)/2);
+        phi_in = reshape(phi_in, [1, N{3}]);
+        tf_in = reshape(tf_in, [1, N{3}]);
+        gauss_in = reshape(gauss_in, [1, N{3}]);
+    end
+    
+    % renormalize again???
+    phi_in = phi_in / L2_norm1d(phi_in, geometry);
+    tf_in = tf_in / L2_norm1d(tf_in, geometry);
+    gauss_in = gauss_in / L2_norm1d(gauss_in, geometry);
+    
+    % Creating figure
+    evomarker = floor(length(x)/N{1});
+    
+    fig = figure();
+    plot(x, phi_in, '-o', ...
+        'MarkerIndices', 1:evomarker:length(phi_in), 'LineWidth', 1, ...
+        'MarkerSize', 2, 'Color', [0 0 0.2]);
     hold on;
-    plot(X{1}, TF((N{2}-1)/2,:,(N{3}-1)/2));
-    plot(X{1}, GAUSS((N{2}-1)/2,:,(N{3}-1)/2));
+    plot(x, tf_in, '-', ...
+        'LineWidth', 1, 'Color', [0.737 0.3216 0.5294]);
+    plot(x, gauss_in, '-', ...
+        'LineWidth', 1, 'Color', [0 0.6 0]);
+    
+    highesty = max(max(max(phi_in), max(tf_in)), max(gauss_in));
+    lowesty = min(min(max(phi_in), max(tf_in)), max(gauss_in));
+    
+    if highesty < 0
+        maxlimy = highesty / 1.1;
+    else % highesty > 0
+        maxlimy = highesty * 1.1;
+    end
+    if lowesty < 0
+        minlimy = lowesty * 1.1;
+    else % lowesty > 0
+        minlimy = min(min(abs(highesty)/100, 0), lowesty / 1.1);
+    end
+    
+    ylim([minlimy maxlimy]);
+    xlim([-boxlim, boxlim]);
+    
+    % Add axes labels and figure text
+    xlabel([xax ' (a_{ho})']); 
+    ylabel('|\phi|');
+    title('Comparing |\phi| to gaussian and Thomas-Fermi distributions');
+    
+    lgd = legend('|\psi|', '|\psi_{TF}|', '|\psi_{gauss}|');
+    
+    savename = 'Compare G,TF to phi';
+    
+    %add datestring to figure
+    annotation('textbox', [0, 0.05, 0, 0], 'string', sprintf('%s', info.creationTimeString))
+    
+    %add atom type text to figure
+    atom_str = getAtomStr(params.atom);
+    % add interaction parameters text to figure
+    a = sprintf('%.2g', params.an); 
+    ab = getphysconst('abohr'); nm = 10^(-9);
+    a_ab = sprintf('%.2g', params.an/ab);
+    a_nm = sprintf('%.2g', params.an/nm);
+    n = sprintf('%1.4g', params.N); chi = sprintf('%1.4g', params.chin);
+    param_str = {sprintf('%s', ['chi = ' chi]), sprintf('%s', ['at N = ' n ',']), ...
+        sprintf('%s', ['   as = ' a_ab ' aB']), sprintf('%s', ['        = ' a_nm ' nm'])};
+    
+    % Add annotation about atom type to graph
+    annotation('textbox', [0.15, 0.8, 0.1, 0.1], ...
+        'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
+    % Add annotation about interaction parameters to graph
+    annotation('textbox', [0.15, 0.72, 0.1, 0.1], ...
+        'string', param_str, 'FitBoxToText', 'on')
+    
+    % Save figure
+    fig = gcf;
+    info.save_figure(fig.Number, savename, '')
+    info.save_figure(fig.Number, savename, '', info.fulldir, '.png')
+    hold off
 end

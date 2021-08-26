@@ -153,6 +153,27 @@ classdef Info  < handle
                     path = obj.fulldir;
                 end
             end
+            if ~exist(path, 'dir')
+                % path doesn't exist
+                % Either prefix is D:\surfdrive\UNI or
+                % C:\AMBER\surfdrive\UNI
+                elements = strsplit(path, {'/', '\'});
+                for i = 1:numel(elements)
+                    if strcmp(elements{i}, 'surfdrive')
+                        idx = i;
+                        return;
+                    end
+                end
+                newpathsuffix = strjoin(elements{idx:end}, '\');
+                prefixes = [{'C:\AMBER\'}, {'D:\'}];
+                if strcmp(elements{1}, 'C:')
+                    prefix = prefixes{2};
+                elseif strcmp(elements{1}, 'D:')
+                    prefix = prefixes{1};
+                end
+
+                path = [prefix newpathsuffix];
+            end
             
             if ~exist('title','var') || isempty(title)
                 figurePath = [path '/' state obj.suffix() extension];

@@ -59,11 +59,12 @@ function [] = spinor_GPE3D_ground(info)
 %     Deltat = 0.1*dx^3;
     Deltat = 0.25;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 100;
+    Max_iter = 200;
     Stop_time = floor(min(100, round(Max_iter*Deltat/5)*5));
 
     Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
     Method.M = info.params.M;
+    Method.q = info.params.q; % Required for stability of the simulation!
     Method.projection = info.params.projection;
 
     %% Geometry3D

@@ -28,26 +28,26 @@ function compareGTF(geometry, phi, info, axis)
             phi = normalize_global(m, geometry, phi);
             reqnorm = false;
             for n = 1:numel(phi)
-                p = p + abs(phi{n});
+                p = p + abs(phi{n}).^2;
                 
             end
             phi = p;
         else
             reqnorm = true;
-            phi = abs(phi{1});
+            phi = abs(phi{1}).^2;
         end
     else
         reqnorm = true;
-        phi = abs(phi);
+        phi = abs(phi).^2;
     end
     
     if reqnorm
         if dims == 1
-            phi = phi / L2_norm1d(phi, geometry);
+            phi = phi / L2_norm1d(phi, geometry)^2;
         elseif dims == 2
-            phi = phi / L2_norm2d(phi, geometry);
+            phi = phi / L2_norm2d(phi, geometry)^2;
         elseif dims == 3
-            phi = phi / L2_norm3d(phi, geometry);
+            phi = phi / L2_norm3d(phi, geometry)^2;
         end
     end
     
@@ -102,8 +102,8 @@ function compareGTF(geometry, phi, info, axis)
     TF(indexes) = 0;
     TF = sqrt(TF);
     
-    if dims == 3
-        TF = real(sqrt((1/2*(15*params.betan*params.gammas(1)*params.gammas(2)*params.gammas(3)/4/pi)^(2/5) - 0.5*r.^2)/params.betan));
+    if dims == 3 % for |phi|^2
+        TF = real(sqrt((1/2*(15*params.betan*params.gammas(1)*params.gammas(2)*params.gammas(3)/4/pi)^(2/5) - 0.5*r.^2)/params.betan)).^2;
     end
     
     %% Creating Gaussian
@@ -126,25 +126,25 @@ function compareGTF(geometry, phi, info, axis)
         W = W(W>0);
     end
     
-    GAUSS = 1;
+    GAUSS = 1; % for |phi|^2
     for d = 1:dims
-        GAUSS = GAUSS * ( params.gammas(d)/(pi*W^2) )^(1/4);
-    end
-    GAUSS = GAUSS * exp(-r.^2 / (2*W^2));
+        GAUSS = GAUSS * sqrt( params.gammas(d)/(pi*W^2) );
+    end 
+    GAUSS = GAUSS * exp(-r.^2 / (W^2));
     
     % Renormalizing everything
     if dims == 1
-        phi = phi / L2_norm1d(phi, geometry);
-        TF = TF / L2_norm1d(TF, geometry);
-        GAUSS = GAUSS / L2_norm1d(GAUSS, geometry);
+        phi = phi / L2_norm1d(phi, geometry)^2;
+        TF = TF / L2_norm1d(TF, geometry)^2;
+        GAUSS = GAUSS / L2_norm1d(GAUSS, geometry)^2;
     elseif dims == 2
-        phi = phi / L2_norm2d(phi, geometry);
-        TF = TF / L2_norm2d(TF, geometry);
-        GAUSS = GAUSS / L2_norm2d(GAUSS, geometry);
+        phi = phi / L2_norm2d(phi, geometry)^2;
+        TF = TF / L2_norm2d(TF, geometry)^2;
+        GAUSS = GAUSS / L2_norm2d(GAUSS, geometry)^2;
     elseif dims == 3
-        phi = phi / L2_norm3d(phi, geometry);
-        TF = TF / L2_norm3d(TF, geometry);
-        GAUSS = GAUSS / L2_norm3d(GAUSS, geometry);
+        phi = phi / L2_norm3d(phi, geometry)^2;
+        TF = TF / L2_norm3d(TF, geometry)^2;
+        GAUSS = GAUSS / L2_norm3d(GAUSS, geometry)^2;
     end
     
     % Defining the data array for phi
@@ -170,9 +170,9 @@ function compareGTF(geometry, phi, info, axis)
     end
     
     % renormalize again???
-    phi_in = phi_in / L2_norm1d(phi_in, geometry);
-    tf_in = tf_in / L2_norm1d(tf_in, geometry);
-    gauss_in = gauss_in / L2_norm1d(gauss_in, geometry);
+    phi_in = phi_in / L2_norm1d(phi_in, geometry)^2;
+    tf_in = tf_in / L2_norm1d(tf_in, geometry)^2;
+    gauss_in = gauss_in / L2_norm1d(gauss_in, geometry)^2;
     
     % Creating figure
     evomarker = floor(length(x)/N{1});
@@ -206,10 +206,10 @@ function compareGTF(geometry, phi, info, axis)
     
     % Add axes labels and figure text
     xlabel([xax ' (a_{ho})']); 
-    ylabel('|\phi|');
+    ylabel('|\phi|^2');
     title('Comparing |\phi| to gaussian and Thomas-Fermi distributions');
     
-    lgd = legend('|\psi|', '|\psi_{TF}|', '|\psi_{gauss}|');
+    lgd = legend('|\psi|^2', '|\psi_{TF}|^2', '|\psi_{gauss}|^2');
     
     savename = 'Compare G,TF to phi';
     

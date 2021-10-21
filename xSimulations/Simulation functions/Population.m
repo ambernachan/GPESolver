@@ -1,17 +1,11 @@
-function [rho] = Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, m)
+function [rho] = Population(Method, geometry, Phi, X, Y, Z, FFTX, FFTY, FFTZ, m)
     
-    Global_L2norm = 0;
-    for n = 1:Method.Ncomponents
-        Global_L2norm = Global_L2norm + L2_norm3d(Phi{n},Geometry3D)^2; % Computing the norm of each wave function
-    end
-    for n = 1:Method.Ncomponents
-        Phi{n} = Phi{n} / sqrt(Global_L2norm); % Computing the norm of each wave function
-    end
+    Phi = normalize_global(Method, geometry, Phi);
     
-    TotalPhi = sum(sum(sum(abs(Phi{1}.^2))))+sum(sum(sum(abs(Phi{2}.^2))))+sum(sum(sum(abs(Phi{3}.^2))));
-    rho_up = sum(sum(sum(abs(Phi{1}.^2)))) / TotalPhi;
-    rho_zero = sum(sum(sum(abs(Phi{2}.^2)))) / TotalPhi;
-    rho_down = sum(sum(sum(abs(Phi{3}.^2)))) / TotalPhi;
+    TotalPhi = sum(abs(Phi{1}.^2),'all')+sum(abs(Phi{2}.^2),'all')+sum(abs(Phi{3}.^2),'all');
+    rho_up = sum(abs(Phi{1}.^2),'all') / TotalPhi;
+    rho_zero = sum(abs(Phi{2}.^2),'all') / TotalPhi;
+    rho_down = sum(abs(Phi{3}.^2),'all') / TotalPhi;
     
     if m == 1
         rho = rho_up;

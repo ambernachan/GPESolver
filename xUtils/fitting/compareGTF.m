@@ -66,7 +66,7 @@ function compareGTF(geometry, phi, info, axis)
     
     if dims == 1
         TF = ((3*params.betan*params.gammas(1)/2)^(2/3) - r.^2) / (2*params.betan);
-        redge = 1;
+        redge = (3*params.betan*params.gammas(1)/2)^(2/3);
     elseif dims == 2
         TF = sqrt(params.gammas(1)*params.gammas(2)/(params.betan*pi)) - 0.5*r.^2/params.betan;
         C = (4*params.betan / pi)^(1/4) / params.gammas(2);
@@ -103,7 +103,9 @@ function compareGTF(geometry, phi, info, axis)
     TF = sqrt(TF);
     
     if dims == 3 % for |phi|^2
-        TF = real(sqrt((1/2*(15*params.betan*params.gammas(1)*params.gammas(2)*params.gammas(3)/4/pi)^(2/5) - 0.5*r.^2)/params.betan)).^2;
+        TF = real(sqrt( (1/2*(15*params.betan*params.gammas(1)*params.gammas(2)*params.gammas(3)/(4*pi))^(2/5) - 0.5*r.^2)/params.betan )).^2;
+    elseif dims == 1
+        TF = real(sqrt( ((3*params.betan/2)^(2/3) - r.^2)/(2*params.betan) ));
     end
     
     %% Creating Gaussian
@@ -132,47 +134,71 @@ function compareGTF(geometry, phi, info, axis)
     end 
     GAUSS = GAUSS * exp(-r.^2 / (W^2));
     
-    % Renormalizing everything
-    if dims == 1
-        phi = phi / L2_norm1d(phi, geometry)^2;
-        TF = TF / L2_norm1d(TF, geometry)^2;
-        GAUSS = GAUSS / L2_norm1d(GAUSS, geometry)^2;
-    elseif dims == 2
-        phi = phi / L2_norm2d(phi, geometry)^2;
-        TF = TF / L2_norm2d(TF, geometry)^2;
-        GAUSS = GAUSS / L2_norm2d(GAUSS, geometry)^2;
-    elseif dims == 3
-        phi = phi / L2_norm3d(phi, geometry)^2;
-        TF = TF / L2_norm3d(TF, geometry)^2;
-        GAUSS = GAUSS / L2_norm3d(GAUSS, geometry)^2;
+%     % Renormalizing everything
+%     if dims == 1
+%         phi = phi / L2_norm1d(phi, geometry)^2;
+%         TF = TF / L2_norm1d(TF, geometry)^2;
+%         GAUSS = GAUSS / L2_norm1d(GAUSS, geometry)^2;
+%     elseif dims == 2
+%         phi = phi / L2_norm2d(phi, geometry)^2;
+%         TF = TF / L2_norm2d(TF, geometry)^2;
+%         GAUSS = GAUSS / L2_norm2d(GAUSS, geometry)^2;
+%     elseif dims == 3
+%         phi = phi / L2_norm3d(phi, geometry)^2;
+%         TF = TF / L2_norm3d(TF, geometry)^2;
+%         GAUSS = GAUSS / L2_norm3d(GAUSS, geometry)^2;
+%     end
+
+    if dims == 3
+        TF = real(sqrt( (1/2*(15*params.betan*params.gammas(1)*params.gammas(2)*params.gammas(3)/(4*pi))^(2/5) - 0.5*X{1}.^2)/params.betan )).^2;
     end
+    GAUSS = 1; % for |phi|^2
+    for d = 1:dims
+        GAUSS = GAUSS * sqrt( params.gammas(d)/(pi*W^2) );
+    end 
+    GAUSS = GAUSS * exp(-X{1}.^2 / (W^2));
     
     % Defining the data array for phi
     x = X{1};
-    if strcmp(xax, 'x')
-        boxlim = params.boxlimits(1);
-        phi_in = phi((N{2}-1)/2, :, (N{3}-1)/2);
-        tf_in = TF((N{2}-1)/2, :, (N{3}-1)/2);
-        gauss_in = GAUSS((N{2}-1)/2, :, (N{3}-1)/2);
-    elseif strcmp(xax, 'y')
-        boxlim = params.boxlimits(2);
-        phi_in = phi(:, (N{1}-1)/2, (N{3}-1)/2);
-        tf_in = TF(:, (N{1}-1)/2, (N{3}-1)/2);
-        gauss_in = GAUSS(:, (N{1}-1)/2, (N{3}-1)/2);
-    elseif strcmp(xax, 'z')
-        boxlim = params.boxlimits(3);
-        phi_in = phi((N{2}-1)/2, (N{1}-1)/2, :);
-        tf_in = TF((N{2}-1)/2, (N{1}-1)/2, :);
-        gauss_in = GAUSS(:, (N{1}-1)/2, (N{3}-1)/2);
-        phi_in = reshape(phi_in, [1, N{3}]);
-        tf_in = reshape(tf_in, [1, N{3}]);
-        gauss_in = reshape(gauss_in, [1, N{3}]);
+    
+    if dims == 1
+        boxlim = params.boxlimits(1)
+        phi_in = phi;
+        tf_in = TF;
+        gauss_in = GAUSS;
+    elseif dims == 2
+        error('2d plotting is not supported yet.')
+    elseif dims == 3
+        if strcmp(xax, 'x')
+            boxlim = params.boxlimits(1);
+    %         phi_in = phi((N{2}-1)/2, :, (N{3}-1)/2);
+    %         tf_in = TF((N{2}-1)/2, :, (N{3}-1)/2);
+    %         gauss_in = GAUSS((N{2}-1)/2, :, (N{3}-1)/2);
+            if dims == 3
+                phi_in = phi((N{2}-1)/2, :, (N{3}-1)/2);
+                tf_in = TF;
+                gauss_in = GAUSS;
+            end
+        elseif strcmp(xax, 'y')
+            boxlim = params.boxlimits(2);
+            phi_in = phi(:, (N{1}-1)/2, (N{3}-1)/2);
+            tf_in = TF(:, (N{1}-1)/2, (N{3}-1)/2);
+            gauss_in = GAUSS(:, (N{1}-1)/2, (N{3}-1)/2);
+        elseif strcmp(xax, 'z')
+            boxlim = params.boxlimits(3);
+            phi_in = phi((N{2}-1)/2, (N{1}-1)/2, :);
+            tf_in = TF((N{2}-1)/2, (N{1}-1)/2, :);
+            gauss_in = GAUSS(:, (N{1}-1)/2, (N{3}-1)/2);
+            phi_in = reshape(phi_in, [1, N{3}]);
+            tf_in = reshape(tf_in, [1, N{3}]);
+            gauss_in = reshape(gauss_in, [1, N{3}]);
+        end
     end
     
     % renormalize again???
-    phi_in = phi_in / L2_norm1d(phi_in, geometry)^2;
-    tf_in = tf_in / L2_norm1d(tf_in, geometry)^2;
-    gauss_in = gauss_in / L2_norm1d(gauss_in, geometry)^2;
+    phi_in = phi_in / L2_norm1d(phi_in, geometry);
+    tf_in = tf_in / L2_norm1d(tf_in, geometry);
+    gauss_in = gauss_in / L2_norm1d(gauss_in, geometry);
     
     % Creating figure
     evomarker = floor(length(x)/N{1});
@@ -187,7 +213,11 @@ function compareGTF(geometry, phi, info, axis)
     plot(x, gauss_in, '-', ...
         'LineWidth', 1, 'Color', [0 0.6 0]);
     
-    highesty = max(max(max(phi_in), max(tf_in)), max(gauss_in));
+    if params.chin > 1
+        highesty = max(max(max(phi_in), max(tf_in)), max(gauss_in));
+    else
+        highesty = max(max(phi_in), max(gauss_in));
+    end
     lowesty = min(min(max(phi_in), max(tf_in)), max(gauss_in));
     
     if highesty < 0

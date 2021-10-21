@@ -1,6 +1,10 @@
 function [P,Q] = getVariableMagneticFieldPars(Bmax, Bmin, Wmin, Ehfs, xlim)
     
-    BZ = @(z) Bmin + (Bmax-Bmin)*(1+z/xlim)/2;
+    if (Bmax-Bmin) == 0
+        BZ = @(z) Bmin;
+    else
+        BZ = @(z) Bmin + (Bmax-Bmin)*(1+z/xlim)/2;
+    end
     
     % From Stamper-Kurn, Ueda I get a 100*2pi difference in the linear
     % Zeeman energy parameter (compared to Bao's paper), here's the diff:

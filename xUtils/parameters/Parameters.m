@@ -68,7 +68,19 @@ classdef Parameters  < handle
             % make a struct with all default properties
             defaultprops = obj.setdefaultprops();
             
-            % Set all inputparams to obj
+            % Set all empty dimension-dependent params
+            if isfield(inputparams, 'dimensions')
+                dimpars = obj.setDefaultDimensionRelatedFields(inputparams, params);
+                % Set all dimension-dependent pars to params
+                dimnames = fieldnames(dimpars);
+                for k = 1:numel(dimnames)
+                    if ~isfield(params, dimnames{k})
+                        params.(dimnames{k}) = dimpars.(dimnames{k});
+                    end
+                end
+            end
+            
+            % Set all params to obj
             inputfn = fieldnames(params);
             for k = 1:numel(inputfn)
                 obj.(inputfn{k}) = params.(inputfn{k});
@@ -134,6 +146,65 @@ classdef Parameters  < handle
             default.dt = (default.dx)^2;
         end
         
+        % Set the default properties of Parameters and return as a struct
+        function dimparams = setDefaultDimensionRelatedFields(obj, inputparams, params)
+
+            dimparams.scriptname = ['spinor_GPE' num2str(params.dimensions) 'D_dynamics'];
+            dimparams.dimensions = params.dimensions;
+            
+            boxlim = 8;
+            gridpts = 2^6+1;
+            dimparams.boxlimits = [];
+            dimparams.gammas = [];
+            for d = 1:(dimparams.dimensions)
+                dimparams.boxlimits = [dimparams.boxlimits, boxlim];
+                dimparams.gammas = [dimparams.gammas, 1];
+            end
+            
+            if isfield(dimparams, 'nComponents')
+                nComp = dimparams.nComponents;
+            elseif isfield(obj, 'nComponents')
+                nComp = obj.nComponents;
+            elseif isfield(params, 'nComponents')
+                nComp = params.nComponents;
+            elseif isfield(params, 'Ncomponents')
+                nComp = params.Ncomponents;
+            elseif isfield(inputparams, 'nComponents')
+                nComp = inputparams.nComponents;
+            elseif isfield(inputparams, 'Ncomponents')
+                nComp = inputparams.Ncomponents;
+            else
+                nComp = 3;
+            end
+            m.Ncomponents = nComp;
+            
+            L = boxlim; N = gridpts; gx = dimparams.gammas(1);
+            if dimparams.dimensions == 1
+                geom = Geometry1D_Var1d(-L,L, N);
+                potential = quadratic_potential1d(gx,geom.X);
+                for j = 1:nComp
+                    phi{j} = Thomas_Fermi1d(gx, params.betan, potential);
+                end
+            elseif dimparams.dimensions == 2
+                gy = dimparams.gammas(2);
+                geom = Geometry2D_Var2d(-L,L, -L,L, N,N);
+                potential = quadratic_potential2d(gx,gy,geom.X,geom.Y);
+                for j = 1:nComp
+                    phi{j} = Thomas_Fermi2d(gx,gy, params.betan, potential);
+                end
+            elseif dimparams.dimensions == 3
+                gz = dimparams.gammas(3);
+                geom = Geometry3D_Var3d(-L,L, -L,L, -L,L, N,N,N);
+                potential = quadratic_potential3d(gx,gy,gz,geom.X,geom.Y,geom.Z);
+                for j = 1:nComp
+                    phi{j} = Thomas_Fermi3d(gx,gy,gz, params.betan, potential);
+                end
+            end
+            
+            % Normalizing
+            dimparams.Phi_input = normalize_global(m, geom, phi);
+        end
+        
         % If in the input params, certain variables are given [specifically:
         % box limits, gridpts, beta], the default struct will override
         % the quantities that are derived from these variables. This
@@ -162,11 +233,7 @@ classdef Parameters  < handle
             end
             
             if exist('boxlim', 'var')
-                if numel(boxlim) > 1
-                    L = boxlim(1);
-                else
-                    L = boxlim;
-                end
+                L = boxlim(1);
             else
                 L = obj.boxlimits(1);
             end
@@ -175,11 +242,31 @@ classdef Parameters  < handle
             else
                 N = obj.Ngridpts;
             end
-            geom = Geometry3D_Var3d(-L,L, -L,L, -L,L, N,N,N);
+            gx = obj.gammas(1);
             m.Ncomponents = obj.nComponents;
-            potential = quadratic_potential3d(1,1,1,geom.X,geom.Y,geom.Z);
-            for j = 1:m.Ncomponents
-                phi{j} = Thomas_Fermi3d(1,1,1, obj.betan, potential);
+
+            if ~isfield(obj, 'Phi_input')
+                if obj.dimensions == 1
+                    geom = Geometry1D_Var1d(-L,L, N);
+                    potential = quadratic_potential1d(gx,geom.X);
+                    for j = 1:obj.nComponents
+                        phi{j} = Thomas_Fermi1d(gx, obj.betan, potential);
+                    end
+                elseif obj.dimensions == 2
+                    gy = obj.gammas(2);
+                    geom = Geometry2D_Var2d(-L,L, -L,L, N,N);
+                    potential = quadratic_potential2d(gx,gy,geom.X,geom.Y);
+                    for j = 1:obj.nComponents
+                        phi{j} = Thomas_Fermi2d(gx,gy, obj.betan, potential);
+                    end
+                elseif obj.dimensions == 3
+                    gz = obj.gammas(3);
+                    geom = Geometry3D_Var3d(-L,L, -L,L, -L,L, N,N,N);
+                    potential = quadratic_potential3d(gx,gy,gz,geom.X,geom.Y,geom.Z);
+                    for j = 1:obj.nComponents
+                        phi{j} = Thomas_Fermi3d(gx,gy,gz, obj.betan, potential);
+                    end
+                end
             end
             % Normalizing
             obj.Phi_input = normalize_global(m, geom, phi); 
@@ -232,8 +319,8 @@ classdef Parameters  < handle
             if ~isfield(ps, 'a2')
                 ps.a2 = getsimconst(['a2_' atom]);
             end
-            % TEMPORARY EDIT
-            ps.a2 = ps.a0;
+%             % TEMPORARY EDIT (only required for as/gs/bs=0, no spinor)
+%             ps.a2 = ps.a0;
             
             ps.an = (2*ps.a2+ps.a0)/3;
             ps.as = (ps.a2-ps.a0)/3;

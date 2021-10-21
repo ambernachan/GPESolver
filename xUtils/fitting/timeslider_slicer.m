@@ -34,7 +34,15 @@ function [figHandles] = timeslider_slicer(geometry, solution, info, componentsPl
         figHandle = gcf;
         figureName = ['abs(Phi_' str_mF{idx} ')^2'];
         figHandle.Name = figureName;
-        lineHandle = slice(geometry.X, geometry.Y, geometry.Z, datas{1}, 0, 0, 0);
+        if isfield(geometry, 'Y')
+            if isfield(geometry, 'Z')
+                lineHandle = slice(geometry.X, geometry.Y, geometry.Z, datas{1}, 0, 0, 0);
+            else
+                error('2d plotting not yet implemented.')
+            end
+        else
+            lineHandle = plot(geometry.X, datas{1});
+        end
         
         % Register slider callback
         addlistener(sliderHandle, 'ContinuousValueChange', @(hObject, event) updateSlice(hObject, event, datas, lineHandle, geometry));
@@ -43,7 +51,9 @@ function [figHandles] = timeslider_slicer(geometry, solution, info, componentsPl
         colorbar
         xlabel('x')
         ylabel('y')
-        zlabel('z')
+        if isfield(geometry, 'Z')
+            zlabel('z')
+        end
         str_title = sprintf('%s', str_mF{idx});
         title(['|\phi_{m_F=' str_title '}|^2'])
 

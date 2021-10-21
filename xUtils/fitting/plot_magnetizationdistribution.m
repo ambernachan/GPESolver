@@ -5,39 +5,79 @@ function [] = plot_magnetizationdistribution(geometry, Phi, info, direction)
     flag = []; % to specify whether direction was explicitly chosen
     if ~exist('direction','var') || isempty(direction)
         direction = 'x';
+        dir = 1;
     else
         flag = 1; %direction explicitly given
+        [direction, dir] = getDirection(direction);
     end
+    xax = direction;
+    
+    dims = getDimensionality(geometry);
+    directions = [{'X'}, {'Y'}, {'Z'}];
     
     close all;
     datestring = info.creationTimeString;
     
     % Get phi
-    x = geometry.X;
-    y = geometry.Y;
-    z = geometry.Z;
+    for d=1:dims
+        X{d} = geometry.(directions{d});
+    end
     
-    ly = floor(size(x,1)/2);
-    lx = floor(size(y,2)/2);
-    lz = floor(size(z,3)/2);
+    if dims == 1
+        lx = floor(numel(X{1})/2);
+    else
+        ly = floor(size(X{1},1)/2);
+        lx = floor(size(X{2},2)/2);
+        if dims == 3
+            lz = floor(size(X{3},3)/2);
+        end
+    end
     
     M = abs(Phi{1}).^2 - abs(Phi{3}).^2;
     
-    Mx = M(ly, :, lz);
-    My = M(:, lx, lz);
-    Mz = M(ly, lx, :); Mz = Mz(:)';
+    if dims > 1
+        Mx = M(ly, :, lz);
+        My = M(:, lx, lz);
+        if dims > 2
+            Mz = M(ly, lx, :); Mz = Mz(:)';
+        end
+    elseif dims == 1
+        Mx = M;
+    end
     
-    % Find appropriate arrays
-    if strcmp(direction, 'x')
-        x = x(ly, :, lz);
-        M = Mx;
-        xax = 'x (centered in y,z) (a_{ho})';
-    elseif strcmp(direction, 'y')
-        y = y(:, lx, lz);
-        M = My;
-        x = y;
-        xax = 'y (centered in x,z) (a_{ho})';
-    elseif strcmp(direction, 'z')
+    % Sanity check for matching directions of plotting to dimensionality
+    if dir == 3
+        if dims < 3
+            error('Dimensions required do not match direction specified.')
+        end
+    elseif dir == 2
+        if dims < 2
+            error('Dimensions required do not match direction specified.')
+        end
+    end
+    if dims == 1
+        if dir>1
+            error('Dimensions required do not match direction specified.')
+        end
+    elseif dims == 2
+        if dir>2
+            error('Dimensions required do not match direction specified.')
+        end
+    end
+    
+    if dir == 1 % x
+        x = X{1};
+        % M = Mx already holds
+    elseif dir == 2 % y
+        if dims == 2
+            error('2d plotting not yet supported for magnetizationdistribution')
+        elseif dims == 3
+            y = y(:, lx, lz);
+            M = My;
+            x = y;
+            xax = 'y (centered in x,z) (a_{ho})';
+        end
+    elseif dir == 3 % z
         z = z(ly, lx, :); z = z(:)';
         M = Mz;
         x = z;

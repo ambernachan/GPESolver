@@ -8,55 +8,91 @@ function [] = timeslider_magnetizationdistribution(geometry, solution, info, dir
     flag = []; % to specify whether direction was explicitly chosen
     if ~exist('direction','var') || isempty(direction)
         direction = 'x';
+        dir = 1;
     else
         flag = 1; %direction explicitly given
+        [direction, dir] = getDirection(direction);
     end
+    xax = direction;
+    
+    dims = getDimensionality(geometry);
+    directions = [{'X'}, {'Y'}, {'Z'}];
 
     % 3d spatial meshgrids
-    x = geometry.X;
-    y = geometry.Y;
-    z = geometry.Z;
+    for d=1:dims
+        X{d} = geometry.(directions{d});
+    end
     
     % define midpoints for each of the x-arrays
-    ly = floor(size(x,1)/2);
-    lx = floor(size(y,2)/2);
-    lz = floor(size(z,3)/2);
-    
+    if dims == 1
+        lx = floor(numel(X{1})/2);
+    else
+        ly = floor(size(X{1},1)/2);
+        lx = floor(size(X{2},2)/2);
+        if dims == 3
+            lz = floor(size(X{3},3)/2);
+        end
+    end
+
     % make the grid space axes 1d
-    x = x(ly, :, lz);
-    y = y(:, lx, lz);
-    z = z(ly, lx, :); z = z(:)';
-    
-    % Find appropriate arrays: phi{time} 1d arrays
-    for i = 1:length(solution)
+    if dims == 3
         if strcmp(direction, 'x')
-            Mx{i} = abs(solution{i}{1}(ly, :, lz)).^2 ...
-                - abs(solution{i}{3}(ly, :, lz)).^2;
+            x = X{1}(ly, :, lz);
         elseif strcmp(direction, 'y')
-            My{i} = abs(solution{i}{1}(:, lx, lz)).^2 ...
-                - abs(solution{i}{3}(:, lx, lz)).^2;
+            y = X{2}(:, lx, lz);
+            x = y;
         elseif strcmp(direction, 'z')
-            Mz{i} = abs(solution{i}{1}(ly, lx, :)).^2 ...
-                - abs(solution{i}{3}(ly, lx, :)).^2;
-            Mz{i} = Mz{i}(:)';
+            z = X{3}(ly, lx, :); z = z(:)';
+            x = z;
         else
             error('Something went wrong: direction is not recognized.')
+        end        
+    elseif dims == 1
+        x = X{1};
+    else
+        error('2-dimensional plotting not implemented yet.')
+    end
+    
+    % Find appropriate arrays: phi{time} 1d arrays
+    if dims == 3
+        for i = 1:length(solution)
+            if strcmp(direction, 'x')
+                Mx{i} = abs(solution{i}{1}(ly, :, lz)).^2 ...
+                    - abs(solution{i}{3}(ly, :, lz)).^2;
+            elseif strcmp(direction, 'y')
+                My{i} = abs(solution{i}{1}(:, lx, lz)).^2 ...
+                    - abs(solution{i}{3}(:, lx, lz)).^2;
+            elseif strcmp(direction, 'z')
+                Mz{i} = abs(solution{i}{1}(ly, lx, :)).^2 ...
+                    - abs(solution{i}{3}(ly, lx, :)).^2;
+                Mz{i} = Mz{i}(:)';
+            else
+                error('Something went wrong: direction is not recognized.')
+            end
+        end
+    elseif dims == 1
+        for i = 1:length(solution)
+            Mx{i} = abs(solution{i}{1}).^2 - abs(solution{i}{3}).^2;
+            xax = 'x (centered in y,z) (a_{ho})';
+            M = Mx;
         end
     end
     
     % Create 1d plot data: ydata M set to appropriate direction & xaxis
     % title selected
-    if strcmp(direction, 'x')
-        xax = 'x (centered in y,z) (a_{ho})';
-        M = Mx;
-    elseif strcmp(direction, 'y')
-        xax = 'y (centered in x,z) (a_{ho})';
-        x = y;
-        M = My;
-    elseif strcmp(direction, 'z')
-        xax = 'z (centered in x,y) (a_{ho})';
-        x = z;
-        M = Mz;
+    if dims > 1
+        if strcmp(direction, 'x')
+            xax = 'x (centered in y,z) (a_{ho})';
+            M = Mx;
+        elseif strcmp(direction, 'y')
+            xax = 'y (centered in x,z) (a_{ho})';
+            x = y;
+            M = My;
+        elseif strcmp(direction, 'z')
+            xax = 'z (centered in x,y) (a_{ho})';
+            x = z;
+            M = Mz;
+        end
     end
      
     % Creating figure

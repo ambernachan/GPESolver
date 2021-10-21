@@ -3,11 +3,11 @@ function [M] = Directional_Magnetization(Method, Geometry3D, Phi, direction, X, 
     F = findExpF(Method, Geometry3D, Phi);
     
     Phi = normalize_global(Method, Geometry3D, Phi);
-    TotalPhi = sum(sum(sum(abs(Phi{1}.^2))))+sum(sum(sum(abs(Phi{2}.^2))))+sum(sum(sum(abs(Phi{3}.^2))));
+    TotalPhi = sum(abs(Phi{1}.^2),'all')+sum(abs(Phi{2}.^2),'all')+sum(abs(Phi{3}.^2),'all');
     for n = 1:Method.Ncomponents
 %         p{n} = sum(sum(sum(Phi{n})));
 %         p{n} = sum(sum(sum(abs(Phi{n}))));
-        p{n} = sqrt(sum(sum(sum(abs(Phi{n}).^2)))); % absolute value of phi component
+        p{n} = sqrt(sum(abs(Phi{n}).^2),'all'); % absolute value of phi component
 %         p1{n} = sqrt(sum(sum(sum(real(Phi{n}).^2))));
 %         p2{n} = sqrt(sum(sum(sum(imag(Phi{n}).^2))));
 %         P{n} = p1{n} + 1i * p2{n};

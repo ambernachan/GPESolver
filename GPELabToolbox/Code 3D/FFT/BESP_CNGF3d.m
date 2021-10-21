@@ -77,9 +77,11 @@ while (Method.EvolutionCriterion > Method.Stop_crit{2}*Method.Deltat) && (Method
                 pref = 1;
                 if isfield(Method, 'q') % making the scheme more numerically stable against p >> q
                     pref = exp(-4*Method.q*Method.Deltat);
-%                     sprintf('Input of prefactor in projection constant: e^(-4q*dt)=%.2g', pref)
+                    if mod(Method.Iterations, 10) == 0
+                        sprintf('Input of prefactor in projection constant: e^(-4q*dt)=%.6g', pref)
+                    end
                 end
-                projection{2} = sqrt(1 - M^2) ./ (sqrt( phi{2}.^2 + sqrt( 4*pref*(1-M^2)*phi{1}.^2 .* phi{3}.^2 + M^2 * phi{2}.^4 ) ));
+                projection{2} = sqrt(1 - M^2) / (sqrt( phi{2}^2 + sqrt( 4*pref*(1-M^2)*phi{1}^2*phi{3}^2 + M^2 * phi{2}^4 ) ));
                 projection{1} = sqrt( 1 + M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{1});
                 projection{3} = sqrt( 1 - M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{3});
             end

@@ -1,21 +1,21 @@
 %{
 23Na in the F=1 manifold
-Spinor BEC in 3D
+Spinor BEC in 1D
 No rotations, no magnetic field, quadratic optical trap
 One can change the type of atom by changing :
     - the atom mass
     - the a0 and a2 parameters
 %}
 
-function [] = spinor_GPE3D_ground(info)
+function [] = spinor_GPE1D_ground(info)
     
     close all;
    
     %% Setting variables
     
     % Setting simulation space
-    xlim = info.params.boxlimits(1); ylim = info.params.boxlimits(2); zlim = info.params.boxlimits(3);
-    Nx = info.params.Ngridpts; Ny = info.params.Ngridpts; Nz = info.params.Ngridpts;
+    xlim = info.params.boxlimits(1);
+    Nx = info.params.Ngridpts;
     
     % Setting physical parameters
     if isprop(info.params, 'delta')
@@ -25,17 +25,15 @@ function [] = spinor_GPE3D_ground(info)
         info.params.delta = Delta;
     end
     if isprop(info.params, 'gammas')
-        gx = info.params.gammas(1); gy = info.params.gammas(2); gz = info.params.gammas(3);
+        gx = info.params.gammas(1);
     else
-        gx = 1; gy = 1; gz = 1;
+        gx = 1;
         info.params.gammas(1) = gx;
-        info.params.gammas(1) = gy;
-        info.params.gammas(1) = gz;
     end
     if isprop(info.params, 'dimensions')
         dimensions = info.params.dimensions;
     else
-        dimensions = 3;
+        dimensions = 1;
         info.params.dimensions = dimensions;
     end
     
@@ -56,24 +54,25 @@ function [] = spinor_GPE3D_ground(info)
     Ncomponents = 3;
     Type = 'BESP';
     dx = (2*xlim / (Nx-1));
+    if dx >= 1
+        warning('You simulation may fail because dx => 1.')
+    end
 %     Deltat = 0.1*dx^3;
-    Deltat = 0.25;
+    Deltat = 0.125;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 100;
-    Stop_time = floor(min(100, round(Max_iter*Deltat/5)*5));
+    Max_iter = 5000;
+    Stop_time = floor(min(5000, round(Max_iter*Deltat/5)*5));
 
-    Method = Method_Var3d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
+    Method = Method_Var1d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
     Method.M = info.params.M;
     Method.q = info.params.q; % Required for stability of the simulation!
     Method.projection = info.params.projection;
 
-    %% Geometry3D
+    %% Geometry1D
     
     xmin = -xlim;   xmax = xlim;
-    ymin = -ylim;   ymax = ylim;
-    zmin = -zlim;   zmax = zlim;
     
-    Geometry3D = Geometry3D_Var3d(xmin, xmax, ymin, ymax, zmin, zmax, Nx, Ny, Nz);
+    Geometry1D = Geometry1D_Var1d(xmin, xmax, Nx);
 
     %% Take into account possible higher # of chis/S
     
@@ -82,102 +81,39 @@ function [] = spinor_GPE3D_ground(info)
     save(info.get_workspace_path('fittingdata'),'Method_ground')
     clear Method_ground;
     
-    %% Physics3D
+    %% Physics1D
 
     % Delta is already defined
     Beta = info.params.beta; % multiplication factor for Beta_n and Beta_s
     Betan = info.params.betan;
     Betas = info.params.betas;
-    Omega = 0;
-    Physics3D = Physics3D_Var3d(Method, Delta, Betan, Omega);
-    Physics3D = Dispersion_Var3d(Method, Physics3D); % !!!
+    Physics1D = Physics1D_Var1d(Method, Delta, Betan);
+    Physics1D = Dispersion_Var1d(Method, Physics1D); % !!!
     
-    % Potential function
-%     Udp0 = info.params.dipoleTrap0;
-%     Wx = info.params.xOmega;
     gx = info.params.xOmega / info.params.trapfreq;
-    gx = 10;
-    gy = 1; gz = 1; gx = 1;
-    
-%     Wx = sqrt(4*Udp0 / (info.params.atom_mass*info.params.dipoleWaist_x^2));
-%     Wy = getphysconst('hbar') / (info.params.atom_mass * getsimconst('axicon_radius')^2);
-%     Wz = Wy;
-%     Wx = min(Wx/100, Wy); % limiting this 2d behaviour
-%     Wmin = min(min(Wx, Wy), Wz);
-%     gx = Wx/Wmin; gy = Wy/Wmin; gz = Wz/Wmin; % scaled parameters gamma => 1
-    
-%     dipoletrap = dipoleTrap(info.params, X, Y, Z);
-%     quadratictrap = quadratic_potential3d(gx, gy, gz, X, Y, Z);
-    
-%     Bz = 10^(-4); % Magnetic field in T (10^4 G = 1 T)
-%     Bz = 10^(-3) * 10^(-4); % Magnetic field in T (10^4 G = 1 T)
-%     Bz = 10^(-10); % 1 uG = 0.1nT = small field
-%     Bz = 10^(-8); % 100 uG = 10 nT = moderate field
-%     Bz = 10^(-4); % 1 G = 100 uT = big field
-%     Bz = 100 * 10^(-4); % 100 G = 10 mT = even bigger field
+    gx = 1;
     Bz = info.params.Bz;
     Bmin = info.params.Bmin;
     
-%     Bz = 0;
-%     Bz = 0; % no magnetic field
-    
-%     potential_with_Bfield = @(X,Y,Z) addingPotentials(info.params, ...
-%         dipole_plus_quadratictrap(info.params, gx,gy,gz, X,Y,Z), ...
-%         magneticFieldPotential(info.params, Bz, Wmin));
-    % Optical dipole trap + harmonic oscillator (small-x approx) + axicon
-    % in yz plane approximated as a harmonic oscillator with axicon radius
-%     Nc = info.params.nComponents;
-%     i = num2cell(eye(3));
-%     fz = eye(Nc) .* [1, 0, -1]; fz2 = (fz).^2;
-%     Fz = num2cell(fz); Fz2 = num2cell(fz2);
-    
-    % temp fix
-%     gx = 1; gy = 1; gz = 1;
-%     Wmin = 1 * 2*pi; % Hz
     p = info.params.p;
     q = info.params.q;
     
-    % set q < 1/2
-%     q = 0.25;
-    % for a ferromagnetic states mix, need sqrt(2*q)<|p|<1 & 0<q<1/2
-%     p = 0.5*(1+sqrt(2*q));
-    
-%     p = p*info.params.betas;
-%     q = q*info.params.betas;
-%     potential = cell(3,3);
-%     for n = 1:Nc
-%         for m = 1:Nc
-%             if n == m
-%                 potential{n,m} = @(X,Y,Z) ( i{n,m} * quadratic_potential3d(gx,gy,gz, X,Y,Z) ...
-%                     + Fz2{n,m} * q);
-% %                     + dipoleTrap(info.params, X,Y,Z) - Fz{n,m} * p + Fz2{n,m} * q);
-%             end
-%         end
-%     end
     % making a simple potential
-    potential = @(X,Y,Z) ( quadratic_potential3d(gx,gy,gz, X,Y,Z) );
-                
-%     pot = @(X,Y,Z) (eye(3) .* quadratic_potential3d(gx,gy,gz, X,Y,Z) + eye(3) .* dipoleTrap(info.params, X,Y,Z) ...
-%         + (fx) * p + (fx).^2 * q );
-%     pot = addingPotentialsAndBfield(info.params, ...
-%         @(X,Y,Z) (@(X,Y,Z) quadratic_potential3d(gx,gy,gz, X,Y,Z) + @(X,Y,Z) dipoleTrap(info.params, X,Y,Z)), ...
-%         @(l) magneticFieldPotential(info.params, Bz, Wmin, l));
+    potential = @(X) ( quadratic_potential1d(gx, X) );
     
-%     Physics3D = Potential_Var3d(Method, Physics3D, potential_with_Bfield, ones(Nc,Nc));
-%     Physics3D = Potential_Var3d(Method, Physics3D, potential, ones(Nc,Nc));
-    Physics3D = Potential_Var3d(Method, Physics3D, potential);
+    Physics1D = Potential_Var1d(Method, Physics1D, potential);
 
     % Nonlinearity
-%     Physics3D = Nonlinearity_Var3d(Method, Physics3D); % std cubic nonlinearity
-%       Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
-    Physics3D = Nonlinearity_Var3d(Method, Physics3D, Coupled_Cubic3d_spin1(Betan,Betas, info.params), [], ...
-        Coupled_CubicEnergy3d_spin1(Betan,Betas, info.params)); % cubic nonlinearity with off-diagonal coupling
+%     Physics1D = Nonlinearity_Var1d(Method, Physics1D); % std cubic nonlinearity
+%       Physics1D = Nonlinearity_Var1d(Method, Physics1D, Coupled_Cubic1d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
+    Physics1D = Nonlinearity_Var1d(Method, Physics1D, Coupled_Cubic1d_spin1(Betan,Betas, info.params), [], ...
+        Coupled_CubicEnergy1d_spin1(Betan,Betas, info.params)); % cubic nonlinearity with off-diagonal coupling
 
     %% Defining a starting function Phi_0
 
 %     InitialData_choice = 1; % Gaussian initial data
 %     InitialData_choice = 2; % Thomas Fermi initial data
-%     Phi_0 = InitialData_Var3d(Method, Geometry3D, Physics3D, InitialData_choice);
+%     Phi_0 = InitialData_Var1d(Method, Geometry1D, Physics1D, InitialData_choice);
 
     Phi_0 = info.params.Phi_input;
 
@@ -189,7 +125,7 @@ function [] = spinor_GPE3D_ground(info)
     %% Printing interaction strength
     
     aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * info.params.trapfreq));
-    avg_density = density3d(Phi_0, Geometry3D);
+    avg_density = theDensity(Phi_0, Geometry1D);
     Us = info.params.betas * avg_density;
     
     info.add_info_separator();
@@ -201,7 +137,7 @@ function [] = spinor_GPE3D_ground(info)
     info.add_custom_info('Interaction energies,\n\t[Bn,Bs]*||phi||^2 \t=\t %.3g, %.3g\n', ...
         info.params.betan*avg_density,info.params.betas*avg_density); % interaction energy
     info.add_custom_info('Wmin \t=\t %.1g x 2pi Hz \n', info.params.trapfreq / (2*pi)); % (minimum) trap frequency
-    info.add_custom_info('gammas \t=\t [%.4f,%.4f,%.4f] \n', gx,gy,gz); % print gammas
+    info.add_custom_info('gammas \t=\t %.4f \n', gx); % print gamma
     info.add_custom_info('Magnetic field parameters:\n'); % 
     if Bmin == 0
         info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss
@@ -222,16 +158,16 @@ function [] = spinor_GPE3D_ground(info)
     info.add_custom_info('dx \t=\t %f \n', dx);
     info.add_info_separator();
     info.add_custom_info('a_ho \t=\t %.2g um\n', aho*10^(6)); % harmonic oscillator length in um
-    info.add_custom_info('a_ho(xyz) \t=\t [%.2g,%.2g,%.2g] aho, or:\n', ...
-        1/sqrt(gx),1/sqrt(gy),1/sqrt(gz)); % normalized harm osc length (x,y,z)
-    info.add_custom_info('a_ho(xyz) \t=\t [%.2g,%.2g,%.2g] um, or:\n', ...
-        aho*10^(6)/sqrt(gx), aho*10^(6)/sqrt(gy), aho*10^(6)/sqrt(gz)); % harm osc length (x,y,z)
+    info.add_custom_info('a_ho(x) \t=\t %.2g aho, or:\n', ...
+        1/sqrt(gx)); % normalized harm osc length (x,y,z)
+    info.add_custom_info('a_ho(x) \t=\t %.2g um, or:\n', ...
+        aho*10^(6)/sqrt(gx)); % harm osc length (x,y,z)
     info.add_info_separator();
 
     %% Determining outputs
     
     % Must be equal to or smaller than Evo from Print
-    Evolim = round((3*(Nx)^3*Stop_time / (Deltat*7e7))/5)*5;
+    Evolim = round(((3*(Nx)^3*Stop_time / (Deltat*7e7))^(1/3))/5)*5;
     Evo_outputs = max(10, Evolim);
     if Max_iter < 101
         Evo_outputs = min(5,Evo_outputs);
@@ -239,24 +175,24 @@ function [] = spinor_GPE3D_ground(info)
 %     Evo_outputs = 1;
     Save_solution = 1;
     
-    globaluserdef_outputs{1} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Magnetization(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{2} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 1);
-    globaluserdef_outputs{3} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, 0);
-    globaluserdef_outputs{4} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Population(Method, Geometry3D, Phi, X, Y, Z, FFTX, FFTY, FFTZ, -1);
-    globaluserdef_outputs{5} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'x', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{6} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'y', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{7} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'z', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{8} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'M2', X, Y, Z, FFTX, FFTY, FFTZ);
-    globaluserdef_outputs{9} = @(Phi,X,Y,Z,FFTX,FFTY,FFTZ) ...
-        Directional_Magnetization(Method, Geometry3D, Phi, 'F2', X, Y, Z, FFTX, FFTY, FFTZ);
+    globaluserdef_outputs{1} = @(Phi,X,FFTX) ...
+        Magnetization(Method, Geometry1D, Phi, X,[],[], FFTX,[],[]);
+    globaluserdef_outputs{2} = @(Phi,X,FFTX) ...
+        Population(Method, Geometry1D, Phi, X,[],[], FFTX,[],[], 1);
+    globaluserdef_outputs{3} = @(Phi,X,FFTX) ...
+        Population(Method, Geometry1D, Phi, X,[],[], FFTX,[],[], 0);
+    globaluserdef_outputs{4} = @(Phi,X,FFTX) ...
+        Population(Method, Geometry1D, Phi, X,[],[], FFTX,[],[], -1);
+    globaluserdef_outputs{5} = @(Phi,X,FFTX) ...
+        Directional_Magnetization(Method, Geometry1D, Phi, 'x', X,[],[], FFTX,[],[]);
+    globaluserdef_outputs{6} = @(Phi,X,FFTX) ...
+        Directional_Magnetization(Method, Geometry1D, Phi, 'y', X,[],[], FFTX,[],[]);
+    globaluserdef_outputs{7} = @(Phi,X,FFTX) ...
+        Directional_Magnetization(Method, Geometry1D, Phi, 'z', X,[],[], FFTX,[],[]);
+    globaluserdef_outputs{8} = @(Phi,X,FFTX) ...
+        Directional_Magnetization(Method, Geometry1D, Phi, 'M2', X,[],[], FFTX,[],[]);
+    globaluserdef_outputs{9} = @(Phi,X,FFTX) ...
+        Directional_Magnetization(Method, Geometry1D, Phi, 'F2', X,[],[], FFTX,[],[]);
     globaluserdef_names{1} = 'Longitudinal magnetization';
     globaluserdef_names{2} = 'Population psi+';
     globaluserdef_names{3} = 'Population psi0';
@@ -267,7 +203,7 @@ function [] = spinor_GPE3D_ground(info)
     globaluserdef_names{8} = 'Total magnetization M^2';
     globaluserdef_names{9} = 'Total magnetization F^2';
     
-    Outputs = OutputsINI_Var3d(Method, Evo_outputs, Save_solution, [], [], ...
+    Outputs = OutputsINI_Var1d(Method, Evo_outputs, Save_solution, [], [], ...
         globaluserdef_outputs,globaluserdef_names);
 
     %% Printing preliminary outputs
@@ -280,16 +216,16 @@ function [] = spinor_GPE3D_ground(info)
     end
 %     Evo = 1;
     Draw = 0;
-    Print = Print_Var3d(Printing, Evo, Draw);
+    Print = Print_Var1d(Printing, Evo, Draw);
 
     %% RUN THE SIMULATION to find the ground state
 
-    info.add_simulation_info(Geometry3D);
-    [Phi_1, Outputs] = GPELab3d(Phi_0, Method, Geometry3D, Physics3D, Outputs, [], Print);
+    info.add_simulation_info(Geometry1D);
+    [Phi_1, Outputs] = GPELab1d(Phi_0, Method, Geometry1D, Physics1D, Outputs, [], Print);
     
     save(info.get_workspace_path('phi_ini'), 'Phi_1')
     
-    avg_density = density3d(Phi_1, Geometry3D);
+    avg_density = theDensity(Phi_1, Geometry1D);
     Us = info.params.betas * avg_density;
     info.add_info_separator();
     info.add_custom_info('\tInteraction energies,\n\t[Bn,Bs]*||phi||^2 \t=\t %.3g, %.3g\n', ...
@@ -319,7 +255,7 @@ function [] = spinor_GPE3D_ground(info)
     save(info.get_workspace_path('groundstate'))
 
     %% create file that shows type of atom and simulation stats
-    fname = createTextFileName(info, Geometry3D, Method, Outputs.Iterations*Outputs.Evo_outputs);
+    fname = createTextFileName(info, Geometry1D, Method, Outputs.Iterations*Outputs.Evo_outputs);
     fname = [info.fulldir '/' fname '.txt'];
     fileID = fopen(fname,'w');
     fclose(fileID);
@@ -337,7 +273,7 @@ function [] = spinor_GPE3D_ground(info)
     % Plot population fractions
     plot_populationfractions(its, Outputs.User_defined_global(2:4), info, Outputs.Evo_outputs)
     % Plot population distribution on x-axis
-    plot_populationdistribution(Geometry3D, Phi_1, info, 'z')
+    plot_populationdistribution(Geometry1D, Phi_1, info, 'x')
     
     hold on;
     BZ = @(z) info.params.Bmin + (info.params.Bz-info.params.Bmin)*(1+z/xlim)/2;
@@ -354,23 +290,23 @@ function [] = spinor_GPE3D_ground(info)
         hold off
     
     % Plot magnetization distribution on z-axis
-    plot_magnetizationdistribution(Geometry3D, Phi_1, info, 'z')
+    plot_magnetizationdistribution(Geometry1D, Phi_1, info, 'x')
     % Plot transverse & longitudinal magnetization
     plot_magnetizations(its, F, info, Outputs.Evo_outputs, Method)
     
     %% Time plots
     % magnetization distribution on z-axis
-    timeslider_magnetizationdistribution(Geometry3D, Outputs.Solution, info, 'z')
+    timeslider_magnetizationdistribution(Geometry1D, Outputs.Solution, info, 'x')
     % population distribution on x- and z-axis
-    timeslider_populationdistribution(Geometry3D, Outputs.Solution, info, 'x')
-    timeslider_populationdistribution(Geometry3D, Outputs.Solution, info, 'z')
-    % phase distribution as a sliced 3d function
-    timeslider_phase(Geometry3D, Outputs.Solution, info)
-    % phi distribution as a sliced 3d function
-    timeslider_slicer(Geometry3D, Outputs.Solution, info)
+    timeslider_populationdistribution(Geometry1D, Outputs.Solution, info, 'x')
+    timeslider_populationdistribution(Geometry1D, Outputs.Solution, info, 'x')
+    % phase distribution as a sliced 1d function
+    timeslider_phase(Geometry1D, Outputs.Solution, info)
+    % phi distribution as a sliced 1d function
+    timeslider_slicer(Geometry1D, Outputs.Solution, info)
     
     % Gaussian + Thomas-Fermi comparison
-    compareGTF(Geometry3D, Phi_1, info);
+    compareGTF(Geometry1D, Phi_1, info);
     
     % saving groundstate workspace in v7.3 MAT file
     save(info.get_workspace_path('groundstate_v7.3'), 'F', 'its', '-append');

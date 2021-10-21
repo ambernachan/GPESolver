@@ -11,15 +11,25 @@ function updateSlice(hObject, event, datas, lineHandle, geometry)
     newfig = figure(num);
     newax = axes(newfig);
     % plot the sliced angle into the temporary axes
-    curSlicer = slice(newax, geometry.X,geometry.Y,geometry.Z, curData, 0,0,0);
+    if isfield(geometry, 'Y')
+        if isfield(geometry, 'Z')
+            curSlicer = slice(newax, geometry.X,geometry.Y,geometry.Z, curData, 0,0,0);
+        end
+    else
+        curSlicer = plot(newax, geometry.X, curData);
+    end
     
     curLineHandle = lineHandle;
     % Update the line with the new sliced data
     for i = 1:length(curLineHandle)
         set(curLineHandle(i), 'xdata', get(curSlicer(i), 'XData'));
         set(curLineHandle(i), 'ydata', get(curSlicer(i), 'YData'));
-        set(curLineHandle(i), 'zdata', get(curSlicer(i), 'ZData'));
-        set(curLineHandle(i), 'cdata', get(curSlicer(i), 'CData'));
+        if isfield(geometry, 'Y')
+            set(curLineHandle(i), 'zdata', get(curSlicer(i), 'ZData'));
+            if isfield(geometry, 'Z')
+                set(curLineHandle(i), 'cdata', get(curSlicer(i), 'CData'));
+            end
+        end
     end
     
     close(newfig);

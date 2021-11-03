@@ -60,7 +60,7 @@ function [] = spinor_GPE1D_ground(info)
 %     Deltat = 0.1*dx^3;
     Deltat = 0.0625;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 100000;
+    Max_iter = 125000;
     Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
 
     Method = Method_Var1d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);

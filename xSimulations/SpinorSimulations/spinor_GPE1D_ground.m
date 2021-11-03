@@ -58,10 +58,10 @@ function [] = spinor_GPE1D_ground(info)
         warning('You simulation may fail because dx => 1.')
     end
 %     Deltat = 0.1*dx^3;
-    Deltat = 0.125;
+    Deltat = 0.0625;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 5000;
-    Stop_time = floor(min(5000, round(Max_iter*Deltat/5)*5));
+    Max_iter = 100000;
+    Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
 
     Method = Method_Var1d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
     Method.M = info.params.M;
@@ -87,7 +87,7 @@ function [] = spinor_GPE1D_ground(info)
     Beta = info.params.beta; % multiplication factor for Beta_n and Beta_s
     Betan = info.params.betan;
     Betas = info.params.betas;
-    Physics1D = Physics1D_Var1d(Method, Delta, Betan);
+    Physics1D = Physics1D_Var1d(Method, Delta, Beta);
     Physics1D = Dispersion_Var1d(Method, Physics1D); % !!!
     
     gx = info.params.xOmega / info.params.trapfreq;

@@ -68,20 +68,58 @@ while (Method.EvolutionCriterion > Method.Stop_crit{2}*Method.Deltat) && (Method
     end
     
     %% Normalization of the ground states
-    if strcmp(Method.Normalization,'Multi')
-    Global_L2norm = 0;
-    for n = 1:Method.Ncomponents
-        Global_L2norm = Global_L2norm + L2_norm1d(FFTPhi{n},FFTGeometry1D)^2; % Computing the norm of each wave function
-    end
-    for n = 1:Method.Ncomponents
-        FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(1)); % Normalization of each wave function
-        Method.LocalEvol(n) = max(abs(FFTPhi{n}-FFTPhi_tmp{n})); % Computing the local evolution of each wave function
-    end
+    if strcmp(Method.Normalization,'Multi') % normalizing the total wavefunction, no conservation of components
+    
+        Global_L2norm = 0;
+        for n = 1:Method.Ncomponents
+            Global_L2norm = Global_L2norm + L2_norm1d(FFTPhi{n},FFTGeometry1D)^2; % Computing the norm of each wave function
+        end
+        
+        projection = ones(3,1); projection = num2cell(projection);
+        if isfield(Method, 'M') && isfield(Method, 'projection')
+            M = Method.M;    
+            if Method.projection == true
+                for n = 1:Method.Ncomponents
+    %                 FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
+                    phi{n} = sqrt(sum(abs(FFTPhi{n}).^2, 'all'));
+                end
+                pref = 1;
+                if isfield(Method, 'q') % making the scheme more numerically stable against p >> q
+                    pref = exp(-4*Method.q*Method.Deltat);
+                    if mod(Method.Iterations, 100) == 0
+                        sprintf('Input of prefactor in projection constant: e^(-4q*dt)=%.6g', pref)
+                    end
+                end
+                projection{2} = sqrt(1 - M^2) / (sqrt( phi{2}^2 + sqrt( 4*pref*(1-M^2)*phi{1}^2*phi{3}^2 + M^2 * phi{2}^4 ) ));
+                projection{1} = sqrt( 1 + M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{1});
+                projection{3} = sqrt( 1 - M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{3});
+            end
+        else % projection or M are not field of Method
+            Method.projection = false;
+        end
+        
+        % projecting and calculating the global norm
+        Global_L2norm = 0;
+        for n = 1:Method.Ncomponents
+            FFTPhi{n} = projection{n} .* FFTPhi{n};
+            Global_L2norm = Global_L2norm + L2_norm1d(FFTPhi{n},FFTGeometry1D)^2; % Computing the norm of each wave function
+        end
+        
+        % Computing the local evolution of the wavefunction, normalizing if
+        % no projection constants are used.
+        for n = 1:Method.Ncomponents
+            if Method.projection == false
+                FFTPhi{n} = FFTPhi{n}/sqrt(Global_L2norm)*sqrt(Method.NParticles(n)); % Normalization of each wave function
+            end
+            Method.LocalEvol(n) = max(abs(FFTPhi{n}-FFTPhi_tmp{n})); % Computing the local evolution of each wave function
+        end
+        
     elseif strcmp(Method.Normalization,'Single')
-    for n = 1:Method.Ncomponents
-        FFTPhi{n} = FFTPhi{n}/L2_norm1d(FFTPhi{n},FFTGeometry1D)*sqrt(Method.NParticles(n)); % Normalization of each wave function
-        Method.LocalEvol(n) = max(abs(FFTPhi{n}-FFTPhi_tmp{n})); % Computing the local evolution of each wave function
-    end
+        
+        for n = 1:Method.Ncomponents
+            FFTPhi{n} = FFTPhi{n}/L2_norm1d(FFTPhi{n},FFTGeometry1D)*sqrt(Method.NParticles(n)); % Normalization of each wave function
+            Method.LocalEvol(n) = max(abs(FFTPhi{n}-FFTPhi_tmp{n})); % Computing the local evolution of each wave function
+        end
     end
     %% Updating CPUtime and evolution criterions
     if strcmp(Method.Stop_crit{1},'MaxNorm')

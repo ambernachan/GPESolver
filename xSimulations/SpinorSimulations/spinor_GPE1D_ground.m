@@ -60,8 +60,12 @@ function [] = spinor_GPE1D_ground(info)
 %     Deltat = 0.1*dx^3;
     Deltat = 0.0625;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 125000;
+    Max_iter = 137500;
     Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
+%     LimitingIter = 1000; % A limitation to the iterations bc time
+%     Stop_time = floor(min(100, (LimitingIter*Deltat)));
+%     Stop_crit = [];
+%     Max_iter = 1000;
 
     Method = Method_Var1d(Computation, Ncomponents, Type, Deltat, Stop_time, Stop_crit, Max_iter);
     Method.M = info.params.M;
@@ -137,7 +141,7 @@ function [] = spinor_GPE1D_ground(info)
     info.add_custom_info('Interaction energies,\n\t[Bn,Bs]*||phi||^2 \t=\t %.3g, %.3g\n', ...
         info.params.betan*avg_density,info.params.betas*avg_density); % interaction energy
     info.add_custom_info('Wmin \t=\t %.1g x 2pi Hz \n', info.params.trapfreq / (2*pi)); % (minimum) trap frequency
-    info.add_custom_info('gammas \t=\t %.4f \n', gx); % print gamma
+    info.add_custom_info('gamma \t=\t %.4f \n', gx); % print gamma
     info.add_custom_info('Magnetic field parameters:\n'); % 
     if Bmin == 0
         info.add_custom_info('\tBz \t=\t %.3g Gauss\n', Bz*10^4); % magnetic field in Gauss

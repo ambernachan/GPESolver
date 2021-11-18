@@ -7,7 +7,26 @@ function [] = plot_longmagnetization(its, M, info, evo)
         evo = 1;
     end
     
-    x = evo:evo:its*evo;
+    % Determine whether this was a ground state or dynamic simulation
+    % if 'ground' exists in the path name; OR neither 'ground' nor 'dynamic' does
+    if ~isempty(strfind(info.name, 'ground')) || ...
+            (isempty(strfind(info.name, 'ground')) && isempty(strfind(info.name, 'dynamic')))
+        labelx = 'iterations';
+        x = evo:evo:its*evo;
+    end
+    % if 'ground' doesn't exist in the path name but 'dynamic' does
+    if isempty(strfind(info.name, 'ground'))
+        if ~isempty(strfind(info.name, 'dynamic'))
+            labelx = 'time (\omega_{osc}^{-1})';
+            if exist('method', 'var')
+                dt = method.Deltat;
+            else
+                dt = 1;
+            end
+            x = evo*dt:evo*dt:its*evo*dt; % time in 1/w_ho
+            [x, labelx] = makedynamictimeline(x, info);
+        end
+    end
     
     % Creating figure
     evomarker = floor(length(x)/20);
@@ -16,7 +35,7 @@ function [] = plot_longmagnetization(its, M, info, evo)
         'LineWidth', 1.2, 'MarkerSize', 6)
     
     % Add axes labels and figure text
-    xlabel('iterations'); 
+    xlabel(labelx); 
     ylabel('m = M/N');
     title('Magnetization |\psi_+|^2-|\psi_-|^2');
     

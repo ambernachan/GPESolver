@@ -52,8 +52,12 @@ function compareGTF(geometry, phi, info, axis)
     end
     
     X{1} = xMin:geometry.dx:xMax;
-    X{2} = meshgrid(X{1}, X{1});
-    X{3} = meshgrid(X{1}, X{1}, X{1});
+    if isfield(geometry, 'dy')
+        X{2} = meshgrid(X{1}, X{1});
+        if isfield(geometry, 'dz')
+            X{3} = meshgrid(X{1}, X{1}, X{1});
+        end
+    end
     
     alpha = [{'X'}, {'Y'}, {'Z'}];
     r = 0;
@@ -160,9 +164,10 @@ function compareGTF(geometry, phi, info, axis)
     
     % Defining the data array for phi
     x = X{1};
+    [x, lbl] = makexaxisinmeters(x, info);
     
     if dims == 1
-        boxlim = params.boxlimits(1)
+        boxlim = params.boxlimits(1);
         phi_in = phi;
         tf_in = TF;
         gauss_in = GAUSS;
@@ -232,10 +237,12 @@ function compareGTF(geometry, phi, info, axis)
     end
     
     ylim([minlimy maxlimy]);
-    xlim([-boxlim, boxlim]);
+%     xlim([-boxlim, boxlim]);
+    xlim([min(x), max(x)]);
     
     % Add axes labels and figure text
-    xlabel([xax ' (a_{ho})']); 
+%     xlabel([xax ' (a_{ho})']); 
+    xlabel([xax ' ' lbl]); 
     ylabel('|\phi|^2');
     title('Comparing |\phi| to gaussian and Thomas-Fermi distributions');
     

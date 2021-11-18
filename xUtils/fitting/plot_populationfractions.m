@@ -23,7 +23,8 @@ function [] = plot_populationfractions(its, rho, info, evo, method)
             else
                 dt = 1;
             end
-            x = evo*dt:evo*dt:its*evo*dt;
+            x = evo*dt:evo*dt:its*evo*dt; % time in 1/w_ho
+            [x, labelx] = makedynamictimeline(x, info);
         end
     end
     

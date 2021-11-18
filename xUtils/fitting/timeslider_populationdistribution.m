@@ -80,6 +80,7 @@ function [] = timeslider_populationdistribution(geometry, solution, info, direct
             phizero{i} = abs(solution{i}{2});
             phimin{i} = abs(solution{i}{3});
         end
+        [x, lbl] = makexaxisinmeters(x, info);
     elseif dims == 2
         error('2-dimensional plotting not implemented yet.')
     end
@@ -119,7 +120,7 @@ function [] = timeslider_populationdistribution(geometry, solution, info, direct
     set(gca, 'Position', [0.1300 0.1150 0.7750 0.8100]) 
     
     % Add axes labels and figure text
-    xlabel(xax); 
+    xlabel([xax ' ' lbl]); 
     ylabel('|\phi_i|');
     title('Population distribution |\phi_i|');
     

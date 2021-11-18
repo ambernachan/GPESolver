@@ -8,7 +8,7 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     else
         [direction, dir] = getDirection(direction);
     end
-    xax = direction;
+    xax = [direction ' (a_{ho})'];
     
     dims = getDimensionality(geometry);
     directions = [{'X'}, {'Y'}, {'Z'}];
@@ -62,7 +62,10 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
         end        
     elseif dims == 1
         x = X{1};
+        xax = [direction ' (a_{ho})'];
         % phi doesn't need to change as it's already 1d
+        [x, labl] = makexaxisinmeters(x, info);
+        xax = [direction labl];
     else
         error('2-dimensional plotting not implemented yet.')
     end

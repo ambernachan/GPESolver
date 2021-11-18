@@ -72,10 +72,11 @@ function [] = spinor_GPE1D_dynamics(info)
 %     Type = 'Relaxation';
     dx = (2*xlim / (Nx-1));
     if dx >= 1
-        warning('You simulation may fail because dx => 1.')
+        warning('Your simulation may fail because dx => 1.')
     end
 %     Deltat = info.params.dt;
-    Deltat = min(0.0625,0.1*(dx)^3);
+%     Deltat = min(min(min(0.0625,0.1*(dx)^3),0.00625),0.0000625);
+    Deltat = 0.001; % set at 
     LimitingIter = 10000; % A limitation to the iterations bc time
     Stop_time = floor(min(100, (LimitingIter*Deltat)));
     Stop_crit = [];

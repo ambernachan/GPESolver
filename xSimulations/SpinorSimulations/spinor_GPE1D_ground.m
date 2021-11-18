@@ -60,7 +60,8 @@ function [] = spinor_GPE1D_ground(info)
 %     Deltat = 0.1*dx^3;
     Deltat = 0.0625;
     Stop_crit = {'MaxNorm', 1e-50};
-    Max_iter = 137500;
+%     Max_iter = 137500;
+    Max_iter = 50000;
     Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
 %     LimitingIter = 1000; % A limitation to the iterations bc time
 %     Stop_time = floor(min(100, (LimitingIter*Deltat)));
@@ -312,9 +313,6 @@ function [] = spinor_GPE1D_ground(info)
     % Gaussian + Thomas-Fermi comparison
     compareGTF(Geometry1D, Phi_1, info);
     
-    % saving groundstate workspace in v7.3 MAT file
-    save(info.get_workspace_path('groundstate_v7.3'), 'F', 'its', '-append');
-    
     %% Draw & save solution
 
     close all;
@@ -324,5 +322,8 @@ function [] = spinor_GPE1D_ground(info)
     save(info.get_workspace_path('fittingdata'),'simulation_finished', '-append')
     
     info.finish_info();
+    
+    % saving groundstate workspace in v7.3 MAT file (this may be too big)
+    save(info.get_workspace_path('groundstate_v7.3'), 'F', 'its', '-append');
     
 end

@@ -56,6 +56,9 @@ function [] = spinor_GPE3D_ground(info)
     Ncomponents = 3;
     Type = 'BESP';
     dx = (2*xlim / (Nx-1));
+    if dx >= 1
+        warning('You simulation may fail because dx => 1.')
+    end
 %     Deltat = 0.1*dx^3;
     Deltat = 0.25;
     Stop_crit = {'MaxNorm', 1e-50};

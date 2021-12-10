@@ -22,6 +22,7 @@
 %%          Iterative_tol: Stopping criterion for the iterative method concerning the evolution of the wave functions (double, Default: 1e-9)
 %%          Iterative_maxit: Stopping criterion for the iterative method concerning the number of iterations (double, Default: 1e3)
 %%          Iterative_restart: Number of iterations before restarting the GMRES iterative method for the BEFD method (double, Default: [])
+%%          M: Longitudinal magnetization (double, Default: 0), takes values [-1,1] if there are multiple spin components in the system.
 %% OUTPUT:
 %%          Method: Structure containing variables concerning the method (structure)
 

@@ -22,6 +22,7 @@
 %%          Iterative_tol: Stopping criterion for the iterative method concerning the evolution of the wave functions (double, Default: 1e-9)
 %%          Iterative_maxit: Stopping criterion for the iterative method concerning the number of iterations (double, Default: 1e3)
 %%          Iterative_restart: Number of iterations before restarting the GMRES iterative method for the BEFD method (double, Default: [])
+%%          M: Longitudinal magnetization (double, Default: 0), takes values [-1,1] if there are multiple spin components in the system.
 %% OUTPUT:
 %%          Method: Structure containing variables concerning the method (structure)
 
@@ -46,6 +47,7 @@ Analyse_Var.addOptional('BESP',0,@(x)(x==1 || x==0)+isempty(x)); % Optional inpu
 Analyse_Var.addOptional('Solver_FD',0,@(x)(x==1 || x==0)+isempty(x)); % Optional input 'Solver_FD' which must either be 1 or 0 with default value 0
 Analyse_Var.addOptional('Iterative_tol',1e-9,@(x)isposrealscalar(x)); % Optional input 'Iterative_tol' with default value 1e-9
 Analyse_Var.addOptional('Iterative_maxit',1e3,@(x)isposintscalar(x)); % Optional input 'Iterative_maxit' with default value 1e3
+Analyse_Var.addOptional('M',0,@(x)isscalar(x)); % Optional input 'M' for longitudinal magnetization, values [-1,1].
 
 %% Parsing inputs and creating the Method structure
 % Parsing inputs
@@ -65,6 +67,7 @@ Method.Solver_BESP = Analyse_Var.Results.BESP; %Storing the 'BESP' input
 Method.Solver_FD = Analyse_Var.Results.Solver_FD; %Storing the 'Solver_FD' input
 Method.Iterative_tol = Analyse_Var.Results.Iterative_tol; %Storing the 'Iterative_tol' input
 Method.Iterative_maxit = Analyse_Var.Results.Iterative_maxit; %Storing the 'Iterative_maxit' input
+Method.M = Analyse_Var.Results.M; %Storing the 'M' magnetization input
 if (isempty(Method.Stop_crit) == 0)
     Method.EvolutionCriterion = 2*Method.Stop_crit{2}; % Initializing the global evolution variable
 else

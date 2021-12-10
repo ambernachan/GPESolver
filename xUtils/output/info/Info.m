@@ -1,3 +1,37 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Creates INFO class %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last updated Amber de Bruijn, 2021-12-10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{ 
+Info object requires input of directory name (str), creationTime (float, 
+Matlab time code), and parameters. It creates folders for simulation output 
+at pwd/..xOutputs/name/timestring, where 'name' is (conventionally) the 
+script name you're running and the timestring is generated from
+creationTime. It also opens a file info.txt, where the simulation
+parameters can be saved, automatically and manually.
+%} %{ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+===> Dependencies: format_str()
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+===> Methods: 
+  suffix(),                         get_workspace_path(name),
+  add_simulation_info(Geometry),    save_figure(fignum, state, title,
+  add_result_info(Method, Outputs),              path,extension),
+  add_custom_info(str, vararg),     add_info_separator()
+  finish_info(),
+---> All *info*() methods are meant to add information about the
+  simulations to the generated INFO.txt file. Struct arguments (Method,
+  Geometry, Outputs) are assumed to be from the GPELab Toolbox.
+---> get_workspace_path takes arg 'name' (e.g. 'groundstate' or 'dynamics')
+  to return the full path to the workspace that is automatically saved
+  upon finish_info(). 
+---> save_figure requires arguments 'fignum' (figure number to be saved) 
+  and 'state' (str) (e.g. 'groundstate' or 'dynamics'). Optional 
+  arguments are 'title' (str) (title of the plot, left out if not given),
+  'path' (str) (defaults to output path in obj), and 'extension' (str)
+  (defaults to '.fig').
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef Info  < handle
     properties

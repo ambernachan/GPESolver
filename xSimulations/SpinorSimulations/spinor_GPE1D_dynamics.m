@@ -26,7 +26,7 @@ function [] = spinor_GPE1D_dynamics(info)
     if isprop(info.params, 'gammas')
         gx = info.params.gammas(1);
     else
-        gx = 1; gy = 1; gz = 1;
+        gx = 1;
         info.params.gammas(1) = gx;
     end
     if isprop(info.params, 'dimensions')
@@ -76,11 +76,11 @@ function [] = spinor_GPE1D_dynamics(info)
     end
 %     Deltat = info.params.dt;
 %     Deltat = min(min(min(0.0625,0.1*(dx)^3),0.00625),0.0000625);
-    Deltat = 0.001; % set at 
-    LimitingIter = 10000; % A limitation to the iterations bc time
+    Deltat = info.params.dt; % set at 
+    LimitingIter = 100000; % A limitation to the iterations bc time
     Stop_time = floor(min(100, (LimitingIter*Deltat)));
     Stop_crit = [];
-    Max_iter = 1000;
+    Max_iter = 100000;
 %     Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
     
 %         Stop_crit = {'MaxNorm', 1e-12};
@@ -132,12 +132,6 @@ function [] = spinor_GPE1D_dynamics(info)
     % making a simple potential
     potential = @(X) ( quadratic_potential1d(gx, X) );
                 
-%     pot = @(X,Y,Z) (eye(3) .* quadratic_potential1d(gx,gy,gz, X,Y,Z) + eye(3) .* dipoleTrap(info.params, X,Y,Z) ...
-%         + (fx) * p + (fx).^2 * q );
-%     pot = addingPotentialsAndBfield(info.params, ...
-%         @(X,Y,Z) (@(X,Y,Z) quadratic_potential1d(gx,gy,gz, X,Y,Z) + @(X,Y,Z) dipoleTrap(info.params, X,Y,Z)), ...
-%         @(l) magneticFieldPotential(info.params, Bz, Wmin, l));
-    
 %     Physics1D = Potential_Var1d(Method, Physics1D, potential_with_Bfield, ones(Nc,Nc));
 %     Physics1D = Potential_Var1d(Method, Physics1D, potential, ones(Nc,Nc));
     Physics1D = Potential_Var1d(Method, Physics1D, potential);

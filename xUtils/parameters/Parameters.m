@@ -98,6 +98,9 @@ classdef Parameters  < handle
             obj.q = -obj.q; % make q negative (temporary)
             
             derivedQuantities(obj, inputparams);
+            if isfield(inputparams, 'dt')
+                obj.dt = inputparams.dt;
+            end
             
         end
         
@@ -212,28 +215,28 @@ classdef Parameters  < handle
         function derivedQuantities(obj, inputparams)
             inputprop = [{'boxlimits'}, {'Ngridpts'}, {'beta'}];
 
-            if isfield(inputparams, 'Phi_input')
-                return;
-            else
-                for n = 1:numel(inputprop)
-                    % if the property is given in params
-                    if isfield(inputparams, inputprop{n})
-                        % checking every derived property and inserting in obj
-                        if strcmp(inputprop{n}, 'boxlimits') || strcmp(inputprop{n}, 'Ngridpts')
-                            obj.(inputprop{n}) = inputparams.(inputprop{n});
-                            if strcmp(inputprop{n}, 'boxlimits')
-                                boxlim = inputparams.boxlimits;
-                            elseif strcmp(inputprop{n}, 'Ngridpts')
-                                gridpts = inputparams.Ngridpts;
-                            end
-                            obj.dx = 2*obj.boxlimits(1) / (obj.Ngridpts - 1);
-                            obj.dt = obj.dx^2;
-                        elseif strcmp(inputprop{n}, 'beta')
-                            obj.beta = inputparams.beta;
-                            obj.chi = obj.beta/(4*pi);
+            for n = 1:numel(inputprop)
+                % if the property is given in params
+                if isfield(inputparams, inputprop{n})
+                    % checking every derived property and inserting in obj
+                    if strcmp(inputprop{n}, 'boxlimits') || strcmp(inputprop{n}, 'Ngridpts')
+                        obj.(inputprop{n}) = inputparams.(inputprop{n});
+                        if strcmp(inputprop{n}, 'boxlimits')
+                            boxlim = inputparams.boxlimits;
+                        elseif strcmp(inputprop{n}, 'Ngridpts')
+                            gridpts = inputparams.Ngridpts;
                         end
+                        obj.dx = 2*obj.boxlimits(1) / (obj.Ngridpts - 1);
+                        obj.dt = obj.dx^2;
+                    elseif strcmp(inputprop{n}, 'beta')
+                        obj.beta = inputparams.beta;
+                        obj.chi = obj.beta/(4*pi);
                     end
                 end
+            end
+            
+            if isfield(inputparams, 'Phi_input')
+                return;
             end
             
             if exist('boxlim', 'var')

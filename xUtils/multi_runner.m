@@ -1,3 +1,35 @@
+%%%%%%%%%%%%% multi_runner for running a specified code file %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%% with given (or default) parameters %%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%% using the GPELab toolbox functions %%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last updated Amber de Bruijn, 2021-12-10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{ 
+DESCRIPTION OF THE MULTI_RUNNER FUNCTION
+%} %{ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+===> Dependencies: format_str()
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+===> Methods: 
+  suffix(),                         get_workspace_path(name),
+  add_simulation_info(Geometry),    save_figure(fignum, state, title,
+  add_result_info(Method, Outputs),              path,extension),
+  add_custom_info(str, vararg),     add_info_separator()
+  finish_info(),
+---> All *info*() methods are meant to add information about the
+  simulations to the generated INFO.txt file. Struct arguments (Method,
+  Geometry, Outputs) are assumed to be from the GPELab Toolbox.
+---> get_workspace_path takes arg 'name' (e.g. 'groundstate' or 'dynamics')
+  to return the full path to the workspace that is automatically saved
+  upon finish_info(). 
+---> save_figure requires arguments 'fignum' (figure number to be saved) 
+  and 'state' (str) (e.g. 'groundstate' or 'dynamics'). Optional 
+  arguments are 'title' (str) (title of the plot, left out if not given),
+  'path' (str) (defaults to output path in obj), and 'extension' (str)
+  (defaults to '.fig').
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % for multi-parameter runs
 function [info] = multi_runner(parameters)
     
@@ -17,7 +49,6 @@ function [info] = multi_runner(parameters)
             continue;
         end
     end
-    % params = Parameters(parameters);
     
     % condition for multirun
     if ~isempty(loopnames)

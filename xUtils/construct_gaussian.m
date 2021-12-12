@@ -40,8 +40,10 @@ function [phi, spacebox] = construct_gaussian(geometry, varargin)
     end
     cellfun(@(x,y) assignin('caller', x, y), Names, Data)
     
-    if strcomp(xInput.Results.angleunits, 'degrees')
-        angle = deg2rad(angle);
+    if exist('angleunits', 'var')
+        if strcomp(xInput.Results.angleunits, 'degrees')
+            angle = deg2rad(angle);
+        end
     end
     
     % Create 3d rotation matrix about the z-axis
@@ -96,5 +98,8 @@ function [phi, spacebox] = construct_gaussian(geometry, varargin)
             error('Something went wrong, check function input.')
         end
     end
+    
+    % Global normalization (over all components of phi)
+    phi = normalize_global([], geometry, phi);
 
 end

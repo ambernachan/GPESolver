@@ -6,7 +6,7 @@ function [num] = elementIndex(nthElement, elementNames, multiplicity, currentRun
         maxRunNumber = maxRunNumber*multiplicity(i);
     end
     if currentRunNumber > maxRunNumber
-        error('Your current run number exceeds the allowed maximum')
+        warning('Your current run number exceeds the allowed maximum')
         return;
     end
     

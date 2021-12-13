@@ -6,4 +6,5 @@
 %%          L2norm: L2 norm of the function phi (double)
 
 function [L2norm]= L2_norm1d(phi,Geometry1D)
-L2norm = sqrt(Geometry1D.dx)*sqrt(sum(abs(phi).^2)); % Computation of the L2 norm
+    L2norm = sqrt(Geometry1D.dx)*sqrt(sum(abs(phi).^2)); % Computation of the L2 norm
+end

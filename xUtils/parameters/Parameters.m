@@ -81,6 +81,10 @@ classdef Parameters  < handle
             end
             
             % Set all params to obj
+            if ~exist('params','var')
+                params = inputparams;
+            end
+            
             inputfn = fieldnames(params);
             for k = 1:numel(inputfn)
                 obj.(inputfn{k}) = params.(inputfn{k});
@@ -156,7 +160,7 @@ classdef Parameters  < handle
             dimparams.dimensions = params.dimensions;
             
             boxlim = 8;
-            gridpts = 2^6+1;
+            gridpts = 2^7+1;
             dimparams.boxlimits = [];
             dimparams.gammas = [];
             for d = 1:(dimparams.dimensions)

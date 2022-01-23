@@ -76,11 +76,18 @@ function [] = spinor_GPE1D_dynamics(info)
     end
 %     Deltat = info.params.dt;
 %     Deltat = min(min(min(0.0625,0.1*(dx)^3),0.00625),0.0000625);
-    Deltat = info.params.dt; % set at 
-    LimitingIter = 5000; % A limitation to the iterations bc time
-    Stop_time = floor(min(1000, (LimitingIter*Deltat)));
+    Deltat = info.params.dt; 
+    if ~isempty(info.params.iterations)
+        LimitingIter = info.params.iterations;
+        Max_iter = info.params.iterations;
+    else
+        LimitingIter = 10000; % A limitation to the iterations bc time
+        Max_iter = 10000;
+    end
+%     Stop_time = floor(min(1000, (LimitingIter*real(Deltat))));
+    Stop_time = max(1,floor(LimitingIter*real(Deltat)));
     Stop_crit = [];
-    Max_iter = 5000;
+    
 %     Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
     
 %         Stop_crit = {'MaxNorm', 1e-12};
@@ -96,6 +103,7 @@ function [] = spinor_GPE1D_dynamics(info)
     Method_dynamical = Method;
     Method.M = info.params.M;
     Method.projection = info.params.projection;
+    Method.q = info.params.q; % Required for stability of the simulation!
     
     %% Save dynamical method to fittingdata workspace
     if isfile(info.get_workspace_path('fittingdata'))
@@ -139,7 +147,7 @@ function [] = spinor_GPE1D_dynamics(info)
     % Nonlinearity
 %     Physics1D = Nonlinearity_Var1d(Method, Physics1D, Coupled_Cubic1d_spin1(Betan,Betas)); % cubic nonlinearity with off-diagonal coupling
     Physics1D = Nonlinearity_Var1d(Method, Physics1D, Coupled_Cubic1d_spin1(Betan,Betas,info.params), [], ...
-        Coupled_CubicEnergy1d_spin1(Betan,Betas,info.params)); % cubic nonlinearity with off-diagonal coupling
+        Coupled_CubicEnergy1d_spin1(Betan,Betas));%,info.params)); % cubic nonlinearity with off-diagonal coupling
     
     %% version mgmt
     curdir = strsplit(pwd, '/');
@@ -165,12 +173,17 @@ function [] = spinor_GPE1D_dynamics(info)
         info.add_custom_info('\t[p,q] \t=\t %.3g, %.3g (in h.o. energy units)\n', p,q); % Zeeman energy
         info.add_custom_info('\t \t=\t %.3g, %.3g (in units beta_s)\n', p/info.params.betas,q/info.params.betas); % Zeeman energy
     else
-        [pmin,qmin] = getMagneticFieldPars(Bmin, info.params.Wmin, info.params.Ehfs);
+        [pmin,qmin] = getMagneticFieldPars(Bmin, info.params.trapfreq, info.params.Ehfs);
         info.add_custom_info('\t[p,q] \t=\t (%.3g;%.3g), (%.3g;%.3g) (in h.o. energy units)\n', pmin,p,qmin,q); % Zeeman energy
         info.add_custom_info('\t \t=\t (%.3g;%.3g), (%.3g;%.3g) (in units beta_s)\n', ...
             pmin/info.params.betas,p/info.params.betas,qmin/info.params.betas,q/info.params.betas); % Zeeman energy
     end
-    info.add_custom_info('dt \t=\t %f \n', info.params.dt);
+    sgn_imag_dt = sign(imag(Deltat)); str_sgn = '+'; 
+    if (sgn_imag_dt == -1) str_sgn = '-'; end
+    info.add_custom_info('dt \t=\t %.2g%s%.2gi \n', real(Deltat), str_sgn, abs(imag(Deltat)));
+    info.add_custom_info('\t (dt = %.3g us real time & %.2g pct damping) \n', ...
+        real(Deltat)*1e6/info.params.trapfreq, abs(imag(Deltat)) / abs(Deltat));
+%     info.add_custom_info('dt \t=\t %f \n', info.params.dt);
     info.add_custom_info('dx \t=\t %f \n', dx);
     info.add_info_separator();
     info.add_custom_info('a_ho \t=\t %.2g um\n', aho*10^(6)); % harmonic oscillator length in um
@@ -183,7 +196,7 @@ function [] = spinor_GPE1D_dynamics(info)
     %% Determining outputs
 
     % Must be equal to or smaller than Evo from Print
-    Evolim = round(((3*(Nx)^3*Stop_time / (Deltat*7e7))^(1/3))/5)*5;
+    Evolim = round(((3*(Nx)^3*Stop_time / (real(Deltat)*7e7))^(1/3))/5)*5;
     Evo_outputs = max(10, Evolim);
     if Max_iter < 101
         Evo_outputs = min(5,Evo_outputs);
@@ -223,7 +236,7 @@ function [] = spinor_GPE1D_dynamics(info)
     
     %% Printing preliminary outputs
     
-    Printing = 1;
+    Printing = 0;
     % Must be equal to or bigger than Evo_outputs
     Evo = max(25, Evo_outputs);
     if Max_iter < 60

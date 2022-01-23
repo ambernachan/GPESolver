@@ -85,14 +85,23 @@ while (Method.EvolutionCriterion > Method.Stop_crit{2}*Method.Deltat) && (Method
                 end
                 pref = 1;
                 if isfield(Method, 'q') % making the scheme more numerically stable against p >> q
-                    pref = exp(-4*Method.q*Method.Deltat);
-                    if mod(Method.Iterations, 100) == 0
+                    dt = Method.Deltat;
+                    if imag(dt) ~= 0 % Imaginary time propagation with a real (=imag(dt)) component
+                        dt = real(dt); % <- imaginary time step
+                    end
+                    pref = exp(-4*Method.q*dt);
+                    if mod(Method.Iterations, 1000) == 0
                         sprintf('Input of prefactor in projection constant: e^(-4q*dt)=%.6g', pref)
                     end
                 end
                 projection{2} = sqrt(1 - M^2) / (sqrt( phi{2}^2 + sqrt( 4*pref*(1-M^2)*phi{1}^2*phi{3}^2 + M^2 * phi{2}^4 ) ));
                 projection{1} = sqrt( 1 + M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{1});
                 projection{3} = sqrt( 1 - M - (projection{2}^2) * phi{2}^2 ) / (sqrt(2) * phi{3});
+                if imag(Method.Deltat) ~= 0
+                    projection{1} = projection{1};
+                    projection{2} = projection{2};
+                    projection{3} = projection{3};
+                end
             end
         else % projection or M are not field of Method
             Method.projection = false;

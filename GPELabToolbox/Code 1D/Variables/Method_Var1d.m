@@ -36,7 +36,8 @@ Analyse_Var = inputParser; % Creating the parser
 Analyse_Var.addOptional('Computation','Ground',@(x)ischar(validatestring(x,valid_Computation))); % Optional input 'Computation' with default value 'Ground'
 Analyse_Var.addOptional('Ncomponents',1,@(x)isposintscalar(x)); % Optional input 'Ncomponents' with default value 1
 Analyse_Var.addOptional('Type','BESP',@(x)ischar(validatestring(x,valid_Method))); % Optional input 'Type' which must be part of the valid inputs with default value 'CNSP'
-Analyse_Var.addOptional('Deltat',1e-3,@(x)isposrealscalar(x)); % Optional input 'Deltat' with default value 1e-2
+% Analyse_Var.addOptional('Deltat',1e-3,@(x)isposrealscalar(x)); % Optional input 'Deltat' with default value 1e-2
+Analyse_Var.addOptional('Deltat',1e-3,@(x) (x)); % Optional input 'Deltat' with default value 1e-2
 Analyse_Var.addOptional('Stop_time',1,@(x)isposrealscalar(x)+isempty(x)); % Optional input 'Stop_time' with default value 1
 Analyse_Var.addOptional('Stop_crit',{'MaxNorm',1.e-6},@(x)iscell(x)+isempty(x)); % Optional input 'Stop_crit' with default value 1e-6
 Analyse_Var.addOptional('Max_iter',1e6,@(x)isposintscalar(x)+isempty(x)); % Optional input 'Max_iter' with default value 1e6

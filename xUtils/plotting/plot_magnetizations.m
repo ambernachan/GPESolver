@@ -15,12 +15,19 @@ function [] = plot_magnetizations(its, M, info, evo, method)
         labelx = 'iterations';
         x = evo:evo:its*evo;
     end
+    
     % if 'ground' doesn't exist in the path name but 'dynamic' does
     if isempty(strfind(info.name, 'ground'))
         if ~isempty(strfind(info.name, 'dynamic'))
             labelx = 'time (\omega_{osc}^{-1})';
             if exist('method', 'var')
-                dt = method.Deltat;
+                dt = real(method.Deltat);
+                if imag(method.Deltat) ~= 0
+%                     imag_str = ['\tau=%.2g'];
+                    imag_str = sprintf('τ=%.2gΔτ', -imag(method.Deltat)/abs(method.Deltat));
+                    annotation('textbox', [0.151,0.75,0.120,0.063], 'string', ...
+                        sprintf('%s', imag_str), 'FitBoxToText', 'on')
+                end
             else
                 dt = 1;
             end

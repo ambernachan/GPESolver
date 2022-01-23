@@ -62,8 +62,8 @@ function [] = spinor_GPE1D_ground(info)
     Deltat = info.params.dt;
     Stop_crit = {'MaxNorm', 1e-50};
 %     Max_iter = 137500;
-    Max_iter = 50000;
-    Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
+    Max_iter = 100000;
+    Stop_time = floor(min(1000, round(Max_iter*abs(Deltat)/5)*5));
 %     LimitingIter = 1000; % A limitation to the iterations bc time
 %     Stop_time = floor(min(100, (LimitingIter*Deltat)));
 %     Stop_crit = [];
@@ -160,7 +160,9 @@ function [] = spinor_GPE1D_ground(info)
     end
     if Method.projection proj = 'yes'; else proj = 'no'; end
     info.add_custom_info('projections used? [%s] \t M = %.1g \n', proj, Method.M); % tells user whether projection constants are implemented
-    info.add_custom_info('dt \t=\t %f \n', Deltat);
+    sgn_imag_dt = sign(imag(Deltat)); str_sgn = '+'; 
+    if (sgn_imag_dt == -1) str_sgn = '-'; end
+    info.add_custom_info('dt \t=\t %.2g%s%.2gi \n', real(Deltat), str_sgn, abs(imag(Deltat)));
     info.add_custom_info('dx \t=\t %f \n', dx);
     info.add_info_separator();
     info.add_custom_info('a_ho \t=\t %.2g um\n', aho*10^(6)); % harmonic oscillator length in um
@@ -173,7 +175,7 @@ function [] = spinor_GPE1D_ground(info)
     %% Determining outputs
     
     % Must be equal to or smaller than Evo from Print
-    Evolim = round(((3*(Nx)^3*Stop_time / (Deltat*7e7))^(1/3))/5)*5;
+    Evolim = round(((3*(Nx)^3*Stop_time / (abs(Deltat)*7e7))^(1/3))/5)*5;
     Evo_outputs = max(10, Evolim);
     if Max_iter < 101
         Evo_outputs = min(5,Evo_outputs);

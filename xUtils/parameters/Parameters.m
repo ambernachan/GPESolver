@@ -34,6 +34,7 @@ classdef Parameters  < handle
         dt
         nComponents
         projection
+        iterations
         
         transitionfreq
         linewidth
@@ -56,7 +57,7 @@ classdef Parameters  < handle
                 {'N'}, {'M'}, {'trapfreq'}, {'atom_mass'}, {'spin_pair'},...
                 {'aho'}, {'an'}, {'as'}, {'chin'}, {'chis'}, {'betan'},...
                 {'betas'}, {'Bz'}, {'Bmin'}, {'p'}, {'q'}, ...
-                {'dx'}, {'dt'}, {'nComponents'}, {'projection'}, ...
+                {'dx'}, {'dt'}, {'nComponents'}, {'projection'}, {'iterations'}, ...
                 {'transitionfreq'}, {'linewidth'}, {'Ehfs'}, {'detuning'}, ...
                 {'dipoleTrap0'}, {'dipoleWaist_x'}, {'dipoleWaist_y'}, ...
                 {'zRx'}, {'zRy'}, {'xOmega'}];
@@ -64,6 +65,8 @@ classdef Parameters  < handle
             if isfield(inputparams, 'atom')
                 params = obj.createAtomRelatedFields(inputparams);
             end
+            
+%             obj.iterations = [];
             
             % make a struct with all default properties
             defaultprops = obj.setdefaultprops();

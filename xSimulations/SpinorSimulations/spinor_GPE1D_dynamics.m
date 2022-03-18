@@ -85,7 +85,9 @@ function [] = spinor_GPE1D_dynamics(info)
         Max_iter = 10000;
     end
 %     Stop_time = floor(min(1000, (LimitingIter*real(Deltat))));
-    Stop_time = max(1,floor(LimitingIter*real(Deltat)));
+%     Stop_time = max(1,floor(LimitingIter*real(Deltat)));
+%     Stop_time = LimitingIter*real(Deltat);
+    Stop_time = pi/10;
     Stop_crit = [];
     
 %     Stop_time = floor(min(1000, round(Max_iter*Deltat/5)*5));
@@ -157,6 +159,22 @@ function [] = spinor_GPE1D_dynamics(info)
     %% Printing interaction strength
 
     aho = sqrt(getphysconst('hbar') / (info.params.atom_mass * info.params.trapfreq));
+    % calc rhos
+    clear rho;
+    rho{1} = sum(abs(Phi_in{1}).^2, 'all');
+    rho{2} = sum(abs(Phi_in{2}).^2, 'all');
+    rho{3} = sum(abs(Phi_in{3}).^2, 'all');
+    for i = 1:3
+        rho{i} = rho{i} / (rho{1} + rho{2} + rho{3});
+    end
+%     R = 0;
+%     for i=1:3
+%         R = R+rho{i};
+%     end
+%     for i=1:3
+%     rho{i} = rho{i} / R;
+%     end
+    Mz = rho{1}-rho{3};
     
     info.add_info_separator();
     info.add_custom_info('Folder: \t %s \n', curdir); % print current folder
@@ -185,6 +203,8 @@ function [] = spinor_GPE1D_dynamics(info)
         real(Deltat)*1e6/info.params.trapfreq, abs(imag(Deltat)) / abs(Deltat));
 %     info.add_custom_info('dt \t=\t %f \n', info.params.dt);
     info.add_custom_info('dx \t=\t %f \n', dx);
+    info.add_custom_info('Initial spin config \t=\t %.2g, %.2g, %.2g \n', rho{1}, rho{2}, rho{3});
+    info.add_custom_info('Magnetization Fz \t=\t %.2g \n', Mz);
     info.add_info_separator();
     info.add_custom_info('a_ho \t=\t %.2g um\n', aho*10^(6)); % harmonic oscillator length in um
     info.add_custom_info('a_ho(x) \t=\t %.2g aho, or:\n', ...
@@ -201,6 +221,8 @@ function [] = spinor_GPE1D_dynamics(info)
     if Max_iter < 101
         Evo_outputs = min(5,Evo_outputs);
     end
+%     Evo_outputs = Evo_outputs / 20;
+    Evo_outputs = 10;
     Save_solution = 1;
     
     globaluserdef_outputs{1} = @(Phi,X,FFTX) ...
@@ -236,12 +258,13 @@ function [] = spinor_GPE1D_dynamics(info)
     
     %% Printing preliminary outputs
     
-    Printing = 0;
+    Printing = 1;
     % Must be equal to or bigger than Evo_outputs
     Evo = max(25, Evo_outputs);
     if Max_iter < 60
         Evo = 10;
     end
+    Evo = 2500;
     Draw = 0;
     Print = Print_Var1d(Printing, Evo, Draw);
 

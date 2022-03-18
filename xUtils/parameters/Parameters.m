@@ -109,6 +109,15 @@ classdef Parameters  < handle
                 obj.dt = inputparams.dt;
             end
             
+            % Hard coded no gradient, should be removed for gradients.
+            if obj.Bmin == 0
+                obj.Bmin = obj.Bz;
+            end
+            
+            if isfield(inputparams, 'Phi_input')
+                obj.Phi_input = inputparams.Phi_input;
+            end
+            
         end
         
         % Set the default properties of Parameters and return as a struct
@@ -242,7 +251,7 @@ classdef Parameters  < handle
                 end
             end
             
-            if isfield(inputparams, 'Phi_input')
+            if isprop(inputparams, 'Phi_input')
                 return;
             end
             

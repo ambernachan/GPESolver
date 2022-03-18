@@ -1,6 +1,6 @@
 % Plot population distributions of different mF in one figure on one axis
 
-function [] = plot_populationdistribution(geometry, Phi, info, direction)
+function [] = plot_populationdistribution(geometry, Phi, info, direction, extraPhi)
 
     if ~exist('direction','var') || isempty(direction)
         direction = 'x';
@@ -34,6 +34,8 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     for n = 1:info.params.nComponents
         phi{n} = abs(Phi{n});
     end
+    
+    phi = normalize_global([], geometry, phi);
     
     % Find appropriate arrays
     if dims == 3
@@ -69,8 +71,17 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     else
         error('2-dimensional plotting not implemented yet.')
     end
-       
+    
     limity = max(max(max(phi{1}),max(phi{2})),max(phi{3}));
+    
+    Q = false; maxi = limity;
+    if nargin > 4
+        Q = true;
+        inphi = normalize_global([], geometry, extraPhi);
+        maxi = max(max(max(inphi{1}),max(inphi{2})),max(inphi{3}));
+    end
+    
+    limity = max(limity, maxi);
     
     % Creating figure
     evomarker = floor(length(x)/20);
@@ -84,12 +95,22 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
     
     ylim([-limity/100 limity*1.1]);
     
+    if Q
+        plot(x, inphi{1}, '--', 'LineWidth', 1, 'Color', [0.4 0.59 0.43])
+        plot(x, inphi{2}, '-.', 'LineWidth', 1, 'Color', [0.33 0.545 0.545])
+        plot(x, inphi{3}, '-.', 'LineWidth', 1, 'Color', [0.8 0.28 0.28])
+    end
+    
     % Add axes labels and figure text
     xlabel(xax); 
     ylabel('|\phi_i|');
     title('Population distribution |\phi_i|');
     
-    lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|');
+    if Q
+        lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|', '|\psi_+|_{in}', '|\psi_0|_{in}', '|\psi_-|_{in}');
+    else
+        lgd = legend('|\psi_+|', '|\psi_0|', '|\psi_-|');
+    end
     
     savename = 'Population distribution';
     
@@ -104,8 +125,15 @@ function [] = plot_populationdistribution(geometry, Phi, info, direction)
         'string', sprintf('%s', atom_str), 'FitBoxToText', 'on')
     
     % Save figure
-    info.save_figure(1, savename, '')
-    info.save_figure(1, savename, '', info.fulldir, '.png')
+    if Q
+        infostr = [info.fulldir(end-10:end-9) info.fulldir(end-8:end)];
+        info.save_figure(1, savename, [infostr '_inphi'])
+        info.save_figure(1, savename, [infostr '_inphi'], info.fulldir, '.png')
+    else
+        infostr = [info.fulldir(end-10:end-9) info.fulldir(end-8:end)];
+        info.save_figure(1, savename, infostr)
+        info.save_figure(1, savename, infostr, info.fulldir, '.png')
+    end
     hold off
     
 end

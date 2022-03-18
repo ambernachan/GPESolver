@@ -1,4 +1,4 @@
-function [M] = Directional_Magnetization(Method, Geometry3D, Phi, direction, X, Y, Z, FFTX, FFTY, FFTZ)
+function [M, phi] = Directional_Magnetization(Method, Geometry3D, Phi, direction, X, Y, Z, FFTX, FFTY, FFTZ)
     
     F = findExpF(Method, Geometry3D, Phi);
     

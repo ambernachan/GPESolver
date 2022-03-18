@@ -31,7 +31,8 @@ function [value] = getsimconst(simconst)
     TNa = 3.24420293315 * 10^(-7); % ?
     TRb = 8.58177228994 * 10^(-8); % ?
     
-    N = 2 * 10^6; % number of particles
+%     N = 2 * 10^6; % number of particles
+    N = 17.45 * 10^6; % number of particles
     trap_freq = 1 * 2*pi; % in Hz (minimum trap freq)
     spin_pair = 1; % hyperfine spin manifold
     density = 10^18; % density n in 1/m^3

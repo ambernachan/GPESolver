@@ -67,8 +67,10 @@ function [] = plot_populationfractions(its, rho, info, evo, method)
         'BackgroundColor', [1, 1, 1], 'FaceAlpha', 0.8)
     
     % Save figure
-    info.save_figure(1, savename, '')
-    info.save_figure(1, savename, '', info.fulldir, '.png')
+    % TEMP
+    infostr = [info.fulldir(end-10:end-9) info.fulldir(end-8:end)];
+    info.save_figure(1, savename, infostr)
+    info.save_figure(1, savename, infostr, info.fulldir, '.png')
     hold off  
     
 end

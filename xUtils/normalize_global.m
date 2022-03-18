@@ -34,7 +34,7 @@ function [Phi] = normalize_global(Method, Geometry, Phi)
         end
     end
     for n = 1:nComponents
-        Phi{n} = Phi{n} / sqrt(Global_L2norm); % Computing the norm of each wave function
+        Phi{n} = Phi{n} ./ sqrt(Global_L2norm); % Computing the norm of each wave function
     end
     
 end

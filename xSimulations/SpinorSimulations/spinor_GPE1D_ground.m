@@ -62,7 +62,11 @@ function [] = spinor_GPE1D_ground(info)
     Deltat = info.params.dt;
     Stop_crit = {'MaxNorm', 1e-50};
 %     Max_iter = 137500;
-    Max_iter = 100000;
+    if ~isempty(info.params.iterations)
+        Max_iter = info.params.iterations;
+    else
+        Max_iter = 10000;
+    end
     Stop_time = floor(min(1000, round(Max_iter*abs(Deltat)/5)*5));
 %     LimitingIter = 1000; % A limitation to the iterations bc time
 %     Stop_time = floor(min(100, (LimitingIter*Deltat)));
@@ -180,7 +184,7 @@ function [] = spinor_GPE1D_ground(info)
     if Max_iter < 101
         Evo_outputs = min(5,Evo_outputs);
     end
-%     Evo_outputs = 1;
+%     Evo_outputs = Evo_outputs / 20;
     Save_solution = 1;
     
     globaluserdef_outputs{1} = @(Phi,X,FFTX) ...
